@@ -1,0 +1,27 @@
+{
+  "name": "clusterpost",
+  "version": "1.0.0",
+  "description": "Post jobs to a computing grid and store the results in a couch database local or remote",
+  "main": "index.js",
+  "dependencies": {
+    "good": "^6.6.0",
+    "good-console": "^5.3.1",
+    "good-file": "^5.1.2",
+    "hapi": "12.1.0",
+    "inert": "^3.2.0",
+    "joi": "^7.3.0",
+    "lout": "^8.1.1",
+    "vision": "^4.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Cluster",
+    "computing",
+    "provider"
+  ],
+  "author": "juanprietob@gmail.com",
+  "license": "Apache-2.0"
+}

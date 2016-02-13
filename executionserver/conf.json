@@ -1,0 +1,10 @@
+{
+	"dataprovider":{
+		"hostname": "http://localhost:5984/",
+		"database": "clusterjobs",
+		"username": "",
+		"password": ""
+	},
+	"engine" : "unix", 
+	"storagedir" : "/Users/prieto/NetBeansProjects/clusterpost_storage"
+}

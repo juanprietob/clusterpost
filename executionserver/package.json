@@ -1,0 +1,21 @@
+{
+  "name": "executionserver",
+  "version": "1.0.0",
+  "description": "Manages job submision to a cluster and pushing the processing results to a couchdb database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Cluster",
+    "submit",
+    "job"
+  ],
+  "author": "juanprietob@gmail.com",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bluebird": "^3.3.0",
+    "request": "^2.69.0",
+    "underscore": "^1.8.3"
+  }
+}

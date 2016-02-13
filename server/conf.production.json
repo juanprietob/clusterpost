@@ -1,0 +1,10 @@
+{
+	"host": "localhost",
+	"port": 8180,
+	"plugins": {
+		"vision": {},
+		"inert": {},
+		"lout": {},
+		"./plugins/clusterprovider": {"env": "production"}
+	}
+}

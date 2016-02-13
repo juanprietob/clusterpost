@@ -1,0 +1,21 @@
+{
+	"default" : {
+		"dataprovider" : "clusterjobs"
+	},
+	"dataproviders" : {
+		"clusterjobs" : {
+			"hostname": "http://localhost:5984/",
+			"database": "clusterjobs",
+			"username": "",
+			"password": ""
+		}
+	},
+	"executionservers" : {
+		"killdevil" : {
+			"hostname" : "KillDevil.unc.edu", 
+			"user" : "jprieto",
+			"identityfile" : "/path/to/ssh/rsa_key",
+			"sourcedir" : "/path/to/source/dir/in/cluster"
+		}
+	}
+}
