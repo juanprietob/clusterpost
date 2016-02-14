@@ -35,7 +35,7 @@ module.exports = function (server, conf) {
 		method: 'GET',
 		path: "/executionserver/{id}",
 		config: {
-	      handler: handlers.updateJob,
+	      handler: handlers.jobStatus,
 	      description: 'Update job status'
 	    }
 	});

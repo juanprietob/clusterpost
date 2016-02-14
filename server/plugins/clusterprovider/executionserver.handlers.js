@@ -23,7 +23,7 @@ module.exports = function (server, conf) {
 			throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
 		}
 
-		const submitjob = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname,"NODE_ENV="+conf.env, "node", executionserver.sourcedir + "/submitjob.js", "-j", req.params.id]);
+		const submitjob = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/submitjob.js", "-j", req.params.id]);
 
 		var alldata = "";
 		submitjob.stdout.on('data', function(data){
@@ -37,14 +37,38 @@ module.exports = function (server, conf) {
 
 		submitjob.on('close', function(code){
 			if(code !== 0){
-				console.error(allerror)
+				rep(allerror);
+			}else{
+				rep(alldata);
 			}
-			rep(alldata);
 		});
 	}
 
-	handler.updateJob = function(req, rep){
+	handler.jobStatus = function(req, rep){
 
+		var executionserver = conf.executionservers[req.payload.executionserver];
+		if(!executionserver){
+			throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
+		}
+
+		const submitjob = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/updatejob.js", "-j", req.params.id]);
+
+		var alldata = "";
+		submitjob.stdout.on('data', function(data){
+			alldata += data;
+		});
+
+		var allerror = "";
+		submitjob.stderr.on('data', function(data){
+			allerror += data;
+		});
+
+		submitjob.on('close', function(code){
+			if(allerror !== ""){
+				alldata += allerror;
+			}
+			rep(alldata);
+		});
 	}
 
 	return handler;
