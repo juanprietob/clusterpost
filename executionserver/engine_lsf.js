@@ -74,7 +74,7 @@ module.exports = function (conf) {
 					}
 
 					var ind = alldata.indexOf('<');
-					var jobid = alldata.substr(ind, alldata.indexOf('>'));
+					var jobid = alldata.substr(ind + 1, alldata.indexOf('>') - 1);
 
 					console.log(jobid);
 
