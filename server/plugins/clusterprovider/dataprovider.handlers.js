@@ -17,6 +17,13 @@ module.exports = function (server, conf) {
 		job.timestamp = new Date();
 
 		server.methods.clusterprovider.uploadDocumentsDataProvider(job)
+		.then(function(res){
+			if(res.length === 1){
+				return res[0];
+			}else{
+				return res;
+			}
+		})
 		.then(rep)
 		.catch(rep);
 		
@@ -27,7 +34,7 @@ module.exports = function (server, conf) {
 	handler.addData = function(req, rep){
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
-			return server.methods.clusterprovider.addDocumentAttachment(doc, req.params.name, req.payload.file);
+			return server.methods.clusterprovider.addDocumentAttachment(doc, req.params.name, req.payload);
 		})
 		.then(rep)
 		.catch(rep);
@@ -40,9 +47,11 @@ module.exports = function (server, conf) {
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			if(req.params.name){
-				return server.methods.clusterprovider.getDocumentAttachment(doc, req.params.name)
+				return server.methods.clusterprovider.getDocumentAttachment(doc, req.params.name);
+			}else{
+				return doc;
 			}
-			return doc;
+			
 		})
 		.then(rep)
 		.catch(rep);

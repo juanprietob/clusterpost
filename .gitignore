@@ -4,3 +4,5 @@ conf.my.*.json
 server/all.log
 
 *.gz
+
+server/all.log

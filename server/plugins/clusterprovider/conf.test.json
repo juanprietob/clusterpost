@@ -4,7 +4,7 @@
 	},
 	"dataproviders" : {
 		"clusterjobs" : {
-			"hostname": "http://localhost:5984/",
+			"hostname": "http://localhost:5984",
 			"database": "clusterjobs",
 			"username": "",
 			"password": ""

@@ -2,6 +2,7 @@ var request = require('request');
 var _ = require('underscore');
 var Promise = require('bluebird');
 var Stream = require('stream');
+var Boom = require('Boom');
 
 module.exports = function (server, conf) {
 
@@ -58,8 +59,6 @@ module.exports = function (server, conf) {
 			uri: getCouchDBServer() + "/" + id
 		}
 
-		console.log(options);
-
 		return new Promise(function(resolve, reject){
 			request(options, function(err, res, body){
 				if(err) reject(err);
@@ -74,7 +73,7 @@ module.exports = function (server, conf) {
 	    options: {}
 	});
 
-	const addDocumentAttachment = function(doc, name, data){
+	const addDocumentAttachment = function(doc, name, stream){
 
 		
 		return new Promise(function(resolve, reject){
@@ -82,15 +81,6 @@ module.exports = function (server, conf) {
 			var options = {
 				uri: getCouchDBServer() + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
 				method: 'PUT'
-			}
-
-			var stream;
-			if(data.pipe){
-				stream = data;
-			}else{
-				stream = new Stream.Readable;
-				stream.push(data);
-				stream.push(0);
 			}
 
 			stream.pipe(request(options, function(err, res, body){
@@ -107,17 +97,18 @@ module.exports = function (server, conf) {
 	});
 
 	const getDocumentAttachment = function(doc, name){
-		
 		return new Promise(function(resolve, reject){
 
 			var options = {
-				uri: getCouchDBServer() + "/" + doc._id + "/" + name
+				uri: getCouchDBServer() + "/" + doc._id + "/" + name,
+				encoding: null
 			}
 			request(options, function(err, res, body){
 				if(err) reject(err);
 				resolve(body);
 			});
 		});
+		
 	}
 
 	server.method({
