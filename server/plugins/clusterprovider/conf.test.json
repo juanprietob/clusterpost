@@ -8,6 +8,12 @@
 			"database": "clusterjobs",
 			"username": "",
 			"password": ""
+		},
+		"COUCHDB" : {
+			"hostname": "http://localhost:5984",
+			"database": "spine",
+			"username": "",
+			"password": ""
 		}
 	},
 	"executionservers" : {

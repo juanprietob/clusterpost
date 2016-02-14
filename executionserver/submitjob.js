@@ -56,13 +56,26 @@ request(options, function(err, res, body){
     const submitJob = function(subdoc){
         return executionmethods.getAllDocumentInputs(subdoc, cwd)
             .bind({})
-            .then(function(inputs){
-                this.downloadstatus = inputs;
-                return clusterengine.submitJob(subdoc, cwd);
+            .then(function(downloadstatus){
+                this.downloadstatus = downloadstatus;
+                var isago = true;
+                for(var i = 0; i < downloadstatus.length; i++){
+                    if(!downloadstatus[i].status){
+                        isago = false;
+                    }
+                }
+                if(isago){
+                    return clusterengine.submitJob(subdoc, cwd);
+                }
+                return {
+                    status: "FAIL",
+                    error: 'Unable to retrieve all the input data'
+                }
+                
             })
             .then(function(jobstatus){
-                doc.jobstatus = jobstatus;
-                _.extend(doc.jobstatus, this);
+                subdoc.jobstatus = jobstatus;
+                _.extend(subdoc.jobstatus, this);
                 return executionmethods.uploadDocumentDataProvider(subdoc);
             });
     }
