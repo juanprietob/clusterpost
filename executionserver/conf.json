@@ -1,9 +1,6 @@
 {
 	"dataprovider":{
-		"hostname": "http://localhost:5984/",
-		"database": "clusterjobs",
-		"username": "",
-		"password": ""
+		"hostname": "http://localhost:8180/dataprovider"
 	},
 	"engine" : "unix", 
 	"storagedir" : "/Users/prieto/NetBeansProjects/clusterpost_storage"

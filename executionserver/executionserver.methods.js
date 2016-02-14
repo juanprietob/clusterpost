@@ -45,31 +45,23 @@ module.exports = function (conf) {
 			_attachments: Joi.optional()
 	    });
 
-	handler.getCouchDBServer = function(){
+	handler.getDataProvider = function(){
 
 		var couchserver = conf.dataprovider;
-		var url = couchserver.hostname + "/" + couchserver.database;
+		var url = couchserver.hostname;
 		return url;
 
 	}
 
 
-	handler.uploadDocumentsDataProvider = function(docs){
-		
-		var alldocs = {};
-
-		if(_.isArray(docs)){
-			alldocs["docs"] = docs;
-		}else if(_.isObject(docs)){
-			alldocs["docs"] = [docs];
-		}
+	handler.uploadDocumentDataProvider = function(doc){
 
         return new Promise(function(resolve, reject){
         	try{
         		var options = { 
-	                uri: handler.getCouchDBServer() + "/_bulk_docs",
-	                method: 'POST', 
-	                json : alldocs
+	                uri: handler.getDataProvider(),
+	                method: 'PUT', 
+	                json : doc
 	            };
 	            
 	            request(options, function(err, res, body){
@@ -88,7 +80,7 @@ module.exports = function (conf) {
 		return new Promise(function(resolve, reject){
 			try{
 				var options = {
-					uri: handler.getCouchDBServer() + "/" + id
+					uri: handler.getDataProvider() + "/" + id
 				}
 				request(options, function(err, res, body){
 					if(err) resolve(err);
@@ -103,14 +95,13 @@ module.exports = function (conf) {
 
 	handler.addDocumentAttachment = function(doc, name, stream){
 		Joi.assert(doc._id, Joi.string().alphanum());
-		Joi.assert(doc._rev, Joi.string());
 		Joi.assert(name, Joi.string());
 		
 		return new Promise(function(resolve, reject){
 			try{
 
 				var options = {
-					uri: handler.getCouchDBServer() + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
+					uri: handler.getDataProvider() + "/" + doc._id + "/" + name,
 					method: 'PUT',
 					headers: {
 						"Content-Type": "application/octet-stream"
@@ -135,7 +126,7 @@ module.exports = function (conf) {
 
 			try{
 				var options = {
-					uri: handler.getCouchDBServer() + "/" + doc._id + "/" + input.name
+					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name
 				}
 
 				var filepath = path.join(cwd, input.name);

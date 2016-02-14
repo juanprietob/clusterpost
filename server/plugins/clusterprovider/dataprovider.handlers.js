@@ -29,6 +29,12 @@ module.exports = function (server, conf) {
 		
 	}
 
+	handler.updateJob = function(req, rep){
+		server.methods.clusterprovider.uploadDocumentsDataProvider(req.payload)
+		.then(rep)
+		.catch(rep);
+	}
+
 	/*
 	*/
 	handler.addData = function(req, rep){

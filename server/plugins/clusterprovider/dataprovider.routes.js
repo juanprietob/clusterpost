@@ -18,6 +18,33 @@ module.exports = function (server, conf) {
       	name: Joi.string()
 	});
 
+	var Job = Joi.object().keys({
+			type: Joi.string().required(),
+			executable: Joi.string().required(),
+			executionserver: Joi.string().required(),
+			parameters: Joi.array().items(parameter).min(1),
+			userEmail: Joi.string().required(), 
+			inputs: Joi.array().items(input).min(1),
+			outputs: Joi.array().items(output).min(1)
+        });
+
+	var JobUpdate = Joi.object().keys({
+			_id: Joi.string().alphanum().required(),
+			_rev: Joi.optional(),
+			type: Joi.string().required(),
+			userEmail: Joi.string().email().required(),
+			timestamp: Joi.date().required(),
+			executable: Joi.string().required(),
+			executionserver: Joi.string().required(),
+			parameters: Joi.array().items(parameter).min(1),
+			jobstatus: Joi.optional(),
+			inputs: Joi.optional(),
+			outputs: Joi.optional(),
+			_attachments: Joi.optional()
+	    });
+
+			
+
 	server.route({
 		path: '/dataprovider',
 		method: 'POST',
@@ -25,21 +52,30 @@ module.exports = function (server, conf) {
 			handler: handlers.createJob,
 			validate: {
 				query: false,
-		        payload: Joi.object().keys({
-		          type: Joi.string().required(),
-		          executable: Joi.string().required(),
-		          executionserver: Joi.string().required(),
-		          parameters: Joi.array().items(parameter).min(1),
-		          userEmail: Joi.string().required(), 
-		          inputs: Joi.array().items(input).min(1),
-		          outputs: Joi.array().items(output).min(1)
-		        }),
+		        payload: Job,
 		        params: false
 			},
 			payload:{
 				output: 'data'
 			},
 			description: 'This route will be used to post job documents to the couch database.'
+		}
+	});
+
+	server.route({
+		path: '/dataprovider',
+		method: 'PUT',
+		config: {
+			handler: handlers.updateJob,
+			validate: {
+				query: false,
+		        payload: JobUpdate,
+		        params: false
+			},
+			payload:{
+				output: 'data'
+			},
+			description: 'This route will be used to update a job document in the couch database.'
 		}
 	});
 
@@ -74,7 +110,8 @@ module.exports = function (server, conf) {
 			  	query: false,
 			    params: {
 			    	id: Joi.string().alphanum().required()
-			    }
+			    }, 
+			    payload: false
 			},
 			description: 'Get the job document posted to the database'
 	    }

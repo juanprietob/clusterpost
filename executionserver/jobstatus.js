@@ -44,7 +44,7 @@ const allUpload = function(allupload){
         return docupdated;
     })
     .then(function(doc){
-        return executionmethods.uploadDocumentsDataProvider(doc)
+        return executionmethods.uploadDocumentDataProvider(doc)
         .then(function(){
             return doc.jobstatus;
         });
@@ -60,7 +60,7 @@ executionmethods.getDocument(jobid)
                 if(status.status === 'DONE'){
                     doc.jobstatus.status = "UPLOADING";
                     //Set the new status
-                    return executionmethods.uploadDocumentsDataProvider(doc)
+                    return executionmethods.uploadDocumentDataProvider(doc)
                         .then(function(){
                             return executionmethods.getDocument(jobid)
                         })

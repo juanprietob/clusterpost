@@ -40,7 +40,7 @@ var conf = getConfigFile("./");
 var executionmethods = require('./executionserver.methods')(conf);
 
 var options = {
-  uri: executionmethods.getCouchDBServer() + "/" + jobid
+  uri: executionmethods.getDataProvider() + "/" + jobid
 }
 
 var clusterengine = require("./" + conf.engine)(conf);
@@ -63,7 +63,7 @@ request(options, function(err, res, body){
             .then(function(jobstatus){
                 doc.jobstatus = jobstatus;
                 _.extend(doc.jobstatus, this);
-                return executionmethods.uploadDocumentsDataProvider(subdoc);
+                return executionmethods.uploadDocumentDataProvider(subdoc);
             });
     }
 
