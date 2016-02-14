@@ -6,68 +6,151 @@ module.exports = function (conf) {
 	var _ = require("underscore");
 	var spawn = require('child_process').spawn;
 	var path = require('path');
+	var Joi = require('joi');
+
+	var transferitem = Joi.object().keys({
+		path: Joi.string().required(), 
+		status: Joi.boolean().required()
+	});
+
+	var parameter = Joi.object().keys({
+		flag: Joi.string().allow(''),
+      	name: Joi.string().allow('')
+	});
+
+	var Joijobstatus = Joi.object().keys({
+			jobid: Joi.number().integer().required(),
+			status: Joi.string().required(),
+			downloadstatus: Joi.optional(),
+			uploadstatus: Joi.optional()
+		});
+		
+
+	var Job = Joi.object().keys({
+			_id: Joi.string().alphanum().required(),
+			_rev: Joi.optional(),
+			type: Joi.string().required(),
+			userEmail: Joi.string().email().required(),
+			timestamp: Joi.date().required(),
+			executable: Joi.string().required(),
+			parameters: Joi.array().items(parameter).min(1),
+			jobstatus: Joi.optional(),
+			inputs: Joi.optional(),
+			outputs: Joi.optional(),
+			_attachments: Joi.optional()
+	    });
 
 	var handler = {};
 
-	handler.submitJob = function(doc, cwd){		
+	handler.submitJob = function(doc, cwd){
 
-		var command = doc.executable;
-		var inputs = doc.inputs;
-		var outputs = doc.outputs;
-		var flags = doc.flags;
+		Joi.assert(doc, Job);
 
-		var params = [];
+		return new Promise(function(resolve, reject){
+			var command = doc.executable;
+			var parameters = doc.parameters;
 
-		if(flags){
-			for(var i = 0; i < flags.length; i++){
-				params.push(flags[i]);
-			}
-		}
+			var params = [];
 
-		if(inputs){
-			for(var i = 0; i < inputs.length; i++){
-				var input = inputs[i];
-				if(input.flag){
-					params.push(input.flag);
-				}
-				if(input.name){
-					params.push(input.name);
+			if(parameters){
+				for(var i = 0; i < parameters.length; i++){
+					var param = parameters[i];
+					if(param.flag){
+						params.push(param.flag);
+					}
+					if(param.name){
+						params.push(param.name);
+					}
 				}
 			}
-		}
+			
 
-		if(outputs){
-			for(var i = 0; i < outputs.length; i++){
-				var output = outputs[i];
-				if(output.flag){
-					params.push(output.flag);
-				}
-				if(output.name){
-					params.push(output.name);
-				}
+			try{
+				var out = fs.openSync(path.join(cwd, doc._id + ".out"), 'a');
+		    	var err = fs.openSync(path.join(cwd, doc._id + ".err"), 'a');
+
+				const runcommand = spawn(command, params, {
+					cwd: cwd,
+					detached: true,
+					stdio: [ 'ignore', out, err ]
+				});
+
+				runcommand.unref();
+
+				resolve({
+					jobid : runcommand.pid,
+					status: "RUN"
+				});
+			}catch(e){
+				reject({
+					status: "FAIL",
+					error: e
+				});
 			}
-		}
 
-		const runcommand = spawn(command, params, {
-			cwd: cwd
 		});
+		
+	}
 
-		var alldata = "";
-		runcommand.stdout.on('data', function(data){
-			alldata += data;
-		});
+	handler.getJobStatus = function(doc){
 
-		var allerror = "";
-		runcommand.stderr.on('data', function(data){
-			allerror += data;
-		});
+		Joi.assert(doc.jobstatus, Joijobstatus);
 
-		runcommand.on('close', function(code){
-			fs.writeFile(path.join(cwd, doc._id + ".out"), alldata);
-			fs.writeFile(path.join(cwd, doc._id + ".err"), allerror);
-			fs.writeFile(path.join(cwd, doc._id + ".status"), code);
+		return new Promise(function(resolve, reject){
+
+			try{
+
+				var jobid = doc.jobstatus.jobid;
+				var params = [jobid];
+
+				const ps = spawn('ps', params);
+
+				var allerror = "";
+				ps.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				var alldata = "";
+				ps.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				ps.on('close', function(code){
+					var lines = alldata.split('\n');
+					if(lines.length > 1){
+						if(code && lines[1] === ''){
+							resolve({
+								status: 'DONE'
+							});
+						}else{
+							//replace multiple space by single space and split by space;
+							if(lines[1].indexOf(doc.executable) === -1){
+								resolve({
+									status: 'FAIL',
+									error: 'The jobid does not match the running program'
+								});
+							}
+							var l = lines[1].replace(/\s\s+/g, ' ').split(' ');
+							resolve({
+								status: 'RUN',
+								stat: l[2],
+								time: l[3]
+							});
+						}
+					}else{
+						resolve({
+							status: 'FAIL',
+							error: allerror
+						});
+					}
+					
+				});
+
+			}catch(e){
+				reject(e);
+			}
+			
 		});
-		return true;
 	}
 
 	return handler;

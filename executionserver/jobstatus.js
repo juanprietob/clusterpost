@@ -1,0 +1,84 @@
+var request = require('request');
+var fs = require('fs');
+var _ = require('underscore');
+
+var jobid = undefined;
+for(var i = 0; i < process.argv.length; i++){
+    if(process.argv[i] == "-j"){
+        jobid = process.argv[i+1];
+    }
+}
+
+var help = function(){
+    console.error("help: To execute the program you must specify the job id. ")
+    console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
+    console.error("To configure the couchdb, check conf.*.json")
+}
+
+if(!jobid){
+    help();
+    return 1;
+}
+
+const getConfigFile = function (base_directory) {
+  try {
+    // Try to load the user's personal configuration file
+    return require(base_directory + '/conf.my.json');
+  } catch (e) {
+    // Else, read the default configuration file
+    return require(base_directory + '/conf.json');
+  }
+};
+
+var conf = getConfigFile("./");
+
+var executionmethods = require('./executionserver.methods')(conf);
+
+var clusterengine = require("./" + conf.engine)(conf);
+
+const allUpload = function(allupload){
+    return executionmethods.getDocument(jobid)
+    .then(function(docupdated){
+        docupdated.jobstatus.status = "DONE";
+        docupdated.jobstatus.uploadstatus = allupload;
+        return docupdated;
+    })
+    .then(function(doc){
+        return executionmethods.uploadDocumentsDataProvider(doc)
+        .then(function(){
+            return doc.jobstatus;
+        });
+    });
+}
+
+executionmethods.getDocument(jobid)
+.then(function(doc){
+    if(doc.jobstatus.status !== "DONE" && doc.jobstatus.status !== 'UPLOADING'){
+        return clusterengine.getJobStatus(doc)
+        .then(function(status){
+            if(status.status === 'DONE'){
+                doc.jobstatus.status = "UPLOADING";
+                //Set the new status
+                return executionmethods.uploadDocumentsDataProvider(doc)
+                    .then(function(){
+                        return executionmethods.getDocument(jobid)
+                    })
+                    .then(function(doc){
+                        return executionmethods.setAllDocumentOutputs(doc)
+                    })
+                    .then(allUpload)
+                    .then(function(doc){
+                        return doc;
+                    });
+            }
+            return status;
+        });
+    }else if(doc.jobstatus.status === "UPLOADING"){
+        return executionmethods.checkAllDocumentOutputs(doc)
+        .then(allUpload);
+    }else{
+        return doc.jobstatus;
+    }
+})
+.then(console.log)
+.catch(console.error)
