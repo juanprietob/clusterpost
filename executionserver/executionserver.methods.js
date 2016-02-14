@@ -219,13 +219,16 @@ module.exports = function (conf) {
 	handler.compressdirectory = function(doc, name){
 		return new Promise(function(resolve, reject){
 			var dirname;
-			if(name === "./"){
+			if(name === "cwd"){
 				dirname = path.join(conf.storagedir, doc._id);
 			}else{
 				dirname = path.join(conf.storagedir, doc._id, name);
+				if(dirname.substr(-1) === '/'){
+					dirname = dirname.substr(0, dirname.length - 1);
+				}
 			}
 			
-			var tarname = path.normalize(dirname + ".tar.gz");
+			var tarname = dirname + ".tar.gz";
 
 			try{
 				var read = targz().createReadStream(dirname);

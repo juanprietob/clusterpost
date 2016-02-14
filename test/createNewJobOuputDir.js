@@ -43,7 +43,7 @@ var job = {
         },
         {
             "type": "directory",
-            "name": "./"
+            "name": "cwd"
         }
     ],
     "type": "job",
