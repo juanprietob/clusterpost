@@ -2,7 +2,6 @@ var request = require('request');
 var _ = require('underscore');
 var Promise = require('bluebird');
 var Stream = require('stream');
-var Boom = require('Boom');
 
 module.exports = function (server, conf) {
 
@@ -16,7 +15,7 @@ module.exports = function (server, conf) {
 		}
 
 		if(!couchserver){
-			throw "Server not found in configuration " + servercodename;
+			throw new Error("Server not found in configuration " + servercodename);
 		}
 
 		var url = couchserver.hostname + "/" + couchserver.database;
@@ -24,7 +23,6 @@ module.exports = function (server, conf) {
 		return url;
 
 	}
-
 
 	const uploadDocumentsDataProvider = function(docs){
 		
@@ -59,12 +57,11 @@ module.exports = function (server, conf) {
 	});
 
 	const getDocument = function(id){
-		try{
-			var options = {
-				uri: getCouchDBServer() + "/" + id
-			}
-
-			return new Promise(function(resolve, reject){
+		return new Promise(function(resolve, reject){
+			try{
+				var options = {
+					uri: getCouchDBServer() + "/" + id
+				}
 				request(options, function(err, res, body){
 					if(err) reject(err);
 					var doc = JSON.parse(body);
@@ -73,11 +70,11 @@ module.exports = function (server, conf) {
 					}
 					resolve(doc);
 				});
-			});
-		}catch(e){
-			reject(e);
-		}
-		
+
+			}catch(e){
+				reject(e);
+			}
+		});
 	}
 
 	server.method({
@@ -87,19 +84,21 @@ module.exports = function (server, conf) {
 	});
 
 	const addDocumentAttachment = function(doc, name, stream){
-
-		
 		return new Promise(function(resolve, reject){
 
-			var options = {
-				uri: getCouchDBServer() + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
-				method: 'PUT'
-			}
+			try{
+				var options = {
+					uri: getCouchDBServer() + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
+					method: 'PUT'
+				}
 
-			stream.pipe(request(options, function(err, res, body){
-				if(err) reject(err);
-				resolve(body);
-			}));
+				stream.pipe(request(options, function(err, res, body){
+					if(err) reject(err);
+					resolve(body);
+				}));
+			}catch(e){
+				reject(e);
+			}
 		});
 	}
 
@@ -111,21 +110,26 @@ module.exports = function (server, conf) {
 
 	const getDocumentAttachment = function(doc, name, remote){
 		return new Promise(function(resolve, reject){
-			var uri;
-			if(remote){
-				uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;
-			}else{
-				uri = getCouchDBServer() + "/" + doc._id + "/" + name;
-			}
+			try{
+				var uri;
+				if(remote){
+					uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;
+				}else{
+					uri = getCouchDBServer() + "/" + doc._id + "/" + name;
+				}
 
-			var options = {
-				uri: uri,
-				encoding: null
+				var options = {
+					uri: uri,
+					encoding: null
+				}
+				request(options, function(err, res, body){
+					if(err) reject(err);
+					resolve(body);
+				});
+			}catch(e){
+				reject(e);
 			}
-			request(options, function(err, res, body){
-				if(err) reject(err);
-				resolve(body);
-			});
+			
 		});
 		
 	}

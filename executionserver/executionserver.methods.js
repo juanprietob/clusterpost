@@ -129,10 +129,14 @@ module.exports = function (conf) {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name
 				}
 
+				console.log(options);
+
 				var filepath = path.join(cwd, input.name);
 
 				var writestream = fs.createWriteStream(filepath);
-				request(options).pipe(writestream);
+				request(options, function(err, res, body){
+					console.log(err);
+				}).pipe(writestream);
 
 				writestream.on('close', function(err){
 					if(err){

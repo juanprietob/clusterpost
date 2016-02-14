@@ -25,14 +25,18 @@ module.exports = function (server, conf) {
 			}
 		})
 		.then(rep)
-		.catch(rep);
+		.catch(function(e){
+			rep(Boom.badRequest(e));
+		});
 		
 	}
 
 	handler.updateJob = function(req, rep){
 		server.methods.clusterprovider.uploadDocumentsDataProvider(req.payload)
 		.then(rep)
-		.catch(rep);
+		.catch(function(e){
+			rep(Boom.badRequest(e));
+		});
 	}
 
 	/*
@@ -43,7 +47,9 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.addDocumentAttachment(doc, req.params.name, req.payload);
 		})
 		.then(rep)
-		.catch(rep);
+		.catch(function(e){
+			rep(Boom.badData(e));
+		});
 	}
 
 	/*
@@ -64,7 +70,9 @@ module.exports = function (server, conf) {
 			
 		})
 		.then(rep)
-		.catch(rep);
+		.catch(function(e){
+			rep(Boom.notFound(e));
+		});
 		
 	}
 

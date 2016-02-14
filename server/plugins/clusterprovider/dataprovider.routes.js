@@ -15,7 +15,11 @@ module.exports = function (server, conf) {
 	});
 
 	var input = Joi.object().keys({
-      	name: Joi.string()
+      	name: Joi.string(),
+      	remote : Joi.object().keys({
+      		serverCodename: Joi.string(),
+      		uri: Joi.string()
+      	}).optional()
 	});
 
 	var Job = Joi.object().keys({

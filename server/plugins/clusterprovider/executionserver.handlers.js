@@ -43,7 +43,9 @@ module.exports = function (server, conf) {
 					rep(alldata);
 				}
 			});
-		}).catch(rep);
+		}).catch(function(e){
+			rep(Boom.badRequest(e));
+		});
 	}
 
 	handler.killJob = function(req, rep){
@@ -74,7 +76,9 @@ module.exports = function (server, conf) {
 				}
 			});
 
-		}).catch(rep);
+		}).catch(function(e){
+			rep(Boom.badRequest(e));
+		});
 	}
 
 	handler.jobStatus = function(req, rep){
@@ -105,7 +109,9 @@ module.exports = function (server, conf) {
 				rep(alldata);
 			});
 		})
-		.catch(rep)
+		.catch(function(e){
+			rep(Boom.badRequest(e));
+		})
 		
 	}
 
