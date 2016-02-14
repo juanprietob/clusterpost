@@ -8,43 +8,13 @@ module.exports = function (conf) {
 	var path = require('path');
 	var Joi = require('joi');
 
-	var transferitem = Joi.object().keys({
-		path: Joi.string().required(), 
-		status: Joi.boolean().required()
-	});
-
-	var parameter = Joi.object().keys({
-		flag: Joi.string().allow(''),
-      	name: Joi.string().allow('')
-	});
-
-	var Joijobstatus = Joi.object().keys({
-			jobid: Joi.number().integer().required(),
-			status: Joi.string().required(),
-			downloadstatus: Joi.optional(),
-			uploadstatus: Joi.optional()
-		});
-		
-
-	var Job = Joi.object().keys({
-			_id: Joi.string().alphanum().required(),
-			_rev: Joi.optional(),
-			type: Joi.string().required(),
-			userEmail: Joi.string().email().required(),
-			timestamp: Joi.date().required(),
-			executable: Joi.string().required(),
-			parameters: Joi.array().items(parameter).min(1),
-			jobstatus: Joi.optional(),
-			inputs: Joi.optional(),
-			outputs: Joi.optional(),
-			_attachments: Joi.optional()
-	    });
+	var executionmethods = require('./executionserver.methods')(conf);
 
 	var handler = {};
 
 	handler.submitJob = function(doc, cwd){
 
-		Joi.assert(doc, Job);
+		Joi.assert(doc, executionmethods.Job);
 
 		return new Promise(function(resolve, reject){
 			var command = doc.executable;
@@ -94,7 +64,7 @@ module.exports = function (conf) {
 
 	handler.getJobStatus = function(doc){
 
-		Joi.assert(doc.jobstatus, Joijobstatus);
+		Joi.assert(doc.jobstatus, executionmethods.Joijobstatus);
 
 		return new Promise(function(resolve, reject){
 

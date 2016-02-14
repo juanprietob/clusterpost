@@ -12,6 +12,39 @@ module.exports = function (conf) {
 
 	var handler = {};
 
+	var transferitem = Joi.object().keys({
+		path: Joi.string().required(), 
+		status: Joi.boolean().required()
+	});
+
+	var parameter = Joi.object().keys({
+		flag: Joi.string().allow(''),
+      	name: Joi.string().allow('')
+	});
+
+	handler.Joijobstatus = Joi.object().keys({
+			jobid: Joi.number().integer().required(),
+			status: Joi.string().required(),
+			downloadstatus: Joi.optional(),
+			uploadstatus: Joi.optional()
+		});
+		
+
+	handler.Job = Joi.object().keys({
+			_id: Joi.string().alphanum().required(),
+			_rev: Joi.optional(),
+			type: Joi.string().required(),
+			userEmail: Joi.string().email().required(),
+			timestamp: Joi.date().required(),
+			executable: Joi.string().required(),
+			executionserver: Joi.string().required(),
+			parameters: Joi.array().items(parameter).min(1),
+			jobstatus: Joi.optional(),
+			inputs: Joi.optional(),
+			outputs: Joi.optional(),
+			_attachments: Joi.optional()
+	    });
+
 	handler.getCouchDBServer = function(){
 
 		var couchserver = conf.dataprovider;
