@@ -15,6 +15,10 @@ module.exports = function (server, conf) {
 			couchserver = conf.dataproviders[conf.default.dataprovider];
 		}
 
+		if(!couchserver){
+			throw "Server not found in configuration " + servercodename;
+		}
+
 		var url = couchserver.hostname + "/" + couchserver.database;
 
 		return url;
@@ -105,11 +109,17 @@ module.exports = function (server, conf) {
 	    options: {}
 	});
 
-	const getDocumentAttachment = function(doc, name){
+	const getDocumentAttachment = function(doc, name, remote){
 		return new Promise(function(resolve, reject){
+			var uri;
+			if(remote){
+				uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;
+			}else{
+				uri = getCouchDBServer() + "/" + doc._id + "/" + name;
+			}
 
 			var options = {
-				uri: getCouchDBServer() + "/" + doc._id + "/" + name,
+				uri: uri,
 				encoding: null
 			}
 			request(options, function(err, res, body){

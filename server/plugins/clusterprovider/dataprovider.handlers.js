@@ -53,7 +53,11 @@ module.exports = function (server, conf) {
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			if(req.params.name){
-				return server.methods.clusterprovider.getDocumentAttachment(doc, req.params.name);
+				var name = req.params.name;
+				var input = _.find(doc.inputs, function(input){
+					return input.name === name;
+				});
+				return server.methods.clusterprovider.getDocumentAttachment(doc, req.params.name, input.remote);
 			}else{
 				return doc;
 			}
