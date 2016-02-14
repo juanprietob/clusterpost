@@ -17,12 +17,10 @@ module.exports = function (conf) {
 		Joi.assert(doc, executionmethods.Job);
 
 		return new Promise(function(resolve, reject){
-			var command = doc.executable;
+			var command = 'bsub';
 			var parameters = doc.parameters;
 
 			var params = [];
-
-			var bsub = 'bsub';
 
 			if(doc.jobparameters){
 				params = doc.jobparameters;
@@ -40,7 +38,7 @@ module.exports = function (conf) {
 			params.push(doc.userEmail);
 
 
-			params.push(command);
+			params.push(doc.executable);
 			if(parameters){
 				for(var i = 0; i < parameters.length; i++){
 					var param = parameters[i];
