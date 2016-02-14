@@ -123,5 +123,51 @@ module.exports = function (conf) {
 		});
 	}
 
+	handler.killJob = function(doc){
+
+		Joi.assert(doc.jobstatus, executionmethods.Joijobstatus);
+
+		return new Promise(function(resolve, reject){
+
+			try{
+
+				var jobid = doc.jobstatus.jobid;
+				var params = [jobid];
+
+				const kill = spawn('kill', params);
+
+				var allerror = "";
+				kill.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				var alldata = "";
+				kill.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				kill.on('close', function(code){
+
+					if(code){
+						resolve({
+							status: 'KILL',
+							error: allerror
+						});
+					}
+					resolve({
+						status: 'KILL',
+						stat: code
+					});
+				});
+
+
+			}catch(e){
+				reject(e);
+			}
+			
+		});
+
+	}
+
 	return handler;
 }

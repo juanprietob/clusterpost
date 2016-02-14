@@ -25,7 +25,23 @@ module.exports = function (server, conf) {
 	      	query: false,
 	      	payload: false
 	      },
-	      description: 'Submit a job to a cluster'
+	      description: 'Start job execution'
+	    }
+	});
+
+	server.route({
+		method: 'DELETE',
+		path: "/executionserver/{id}",
+		config: {
+	      handler: handlers.killJob,
+	      validate: {
+	      	params: {
+	      		id: Joi.string().alphanum().required()
+	      	},
+	      	query: false,
+	      	payload: false
+	      },
+	      description: 'Kill a running job'
 	    }
 	});
 

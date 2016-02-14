@@ -46,6 +46,37 @@ module.exports = function (server, conf) {
 		}).catch(rep);
 	}
 
+	handler.killJob = function(req, rep){
+		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			var executionserver = conf.executionservers[doc.executionserver];
+			if(!executionserver){
+				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
+			}
+
+			const killjob = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/killjob.js", "-j", req.params.id]);
+
+			var alldata = "";
+			killjob.stdout.on('data', function(data){
+				alldata += data;
+			});
+
+			var allerror = "";
+			killjob.stderr.on('data', function(data){
+				allerror += data;
+			});
+
+			killjob.on('close', function(code){
+				if(code !== 0 || allerror !== ''){
+					rep(allerror);
+				}else{
+					rep(alldata);
+				}
+			});
+
+		}).catch(rep);
+	}
+
 	handler.jobStatus = function(req, rep){
 
 		server.methods.clusterprovider.getDocument(req.params.id)
@@ -55,19 +86,19 @@ module.exports = function (server, conf) {
 				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
 			}
 
-			const submitjob = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobStatus.js", "-j", req.params.id]);
+			const jobstatus = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobStatus.js", "-j", req.params.id]);
 
 			var alldata = "";
-			submitjob.stdout.on('data', function(data){
+			jobstatus.stdout.on('data', function(data){
 				alldata += data;
 			});
 
 			var allerror = "";
-			submitjob.stderr.on('data', function(data){
+			jobstatus.stderr.on('data', function(data){
 				allerror += data;
 			});
 
-			submitjob.on('close', function(code){
+			jobstatus.on('close', function(code){
 				if(allerror !== ""){
 					alldata += allerror;
 				}
