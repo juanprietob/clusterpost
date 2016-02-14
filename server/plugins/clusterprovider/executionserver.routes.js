@@ -23,9 +23,7 @@ module.exports = function (server, conf) {
 	      		id: Joi.string().alphanum().required()
 	      	},
 	      	query: false,
-	      	payload: {
-	      		executionserver: Joi.string().required()
-	      	}
+	      	payload: false
 	      },
 	      description: 'Submit a job to a cluster'
 	    }

@@ -43,21 +43,15 @@ var job = {
         }
     ],
     "type": "job",
-    "userEmail": "juanprietob@gmail.com"
-}
+    "userEmail": "juanprietob@gmail.com",
+    "executionserver" : "testserver"
+};
 
 
 var inputs = [
 	"/Users/prieto/NetBeansProjects/UNC/data/canine/atlas_DD_040_t1w.nrrd",
 	"/Users/prieto/NetBeansProjects/UNC/data/canine/DD_040_seg.nii.gz"
-]
-
-
-var options = {
-	url : "http://localhost:8180/dataprovider",
-	method: "POST",
-	json: job
-}
+];
 
 var uploadfile = function(params){
 
@@ -89,6 +83,12 @@ var uploadfile = function(params){
         }
 
 	});
+}
+
+var options = {
+    url : "http://localhost:8180/dataprovider",
+    method: "POST",
+    json: job
 }
 
 request(options, function(err, res, body){

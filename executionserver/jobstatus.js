@@ -53,31 +53,37 @@ const allUpload = function(allupload){
 
 executionmethods.getDocument(jobid)
 .then(function(doc){
-    if(doc.jobstatus.status !== "DONE" && doc.jobstatus.status !== 'UPLOADING'){
-        return clusterengine.getJobStatus(doc)
-        .then(function(status){
-            if(status.status === 'DONE'){
-                doc.jobstatus.status = "UPLOADING";
-                //Set the new status
-                return executionmethods.uploadDocumentsDataProvider(doc)
-                    .then(function(){
-                        return executionmethods.getDocument(jobid)
-                    })
-                    .then(function(doc){
-                        return executionmethods.setAllDocumentOutputs(doc)
-                    })
-                    .then(allUpload)
-                    .then(function(doc){
-                        return doc;
-                    });
-            }
-            return status;
-        });
-    }else if(doc.jobstatus.status === "UPLOADING"){
-        return executionmethods.checkAllDocumentOutputs(doc)
-        .then(allUpload);
+    if(doc.jobstatus){
+        if(doc.jobstatus.status !== "DONE" && doc.jobstatus.status !== 'UPLOADING'){
+            return clusterengine.getJobStatus(doc)
+            .then(function(status){
+                if(status.status === 'DONE'){
+                    doc.jobstatus.status = "UPLOADING";
+                    //Set the new status
+                    return executionmethods.uploadDocumentsDataProvider(doc)
+                        .then(function(){
+                            return executionmethods.getDocument(jobid)
+                        })
+                        .then(function(doc){
+                            return executionmethods.setAllDocumentOutputs(doc)
+                        })
+                        .then(allUpload)
+                        .then(function(doc){
+                            return doc;
+                        });
+                }
+                return status;
+            });
+        }else if(doc.jobstatus.status === "UPLOADING"){
+            return executionmethods.checkAllDocumentOutputs(doc)
+            .then(allUpload);
+        }else{
+            return doc.jobstatus;
+        }
     }else{
-        return doc.jobstatus;
+        return {
+            status: 'READY'
+        }
     }
 })
 .then(console.log)

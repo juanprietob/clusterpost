@@ -28,6 +28,7 @@ module.exports = function (server, conf) {
 		        payload: Joi.object().keys({
 		          type: Joi.string().required(),
 		          executable: Joi.string().required(),
+		          executionserver: Joi.string().required(),
 		          parameters: Joi.array().items(parameter).min(1),
 		          userEmail: Joi.string().required(), 
 		          inputs: Joi.array().items(input).min(1),

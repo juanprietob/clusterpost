@@ -55,16 +55,25 @@ module.exports = function (server, conf) {
 	});
 
 	const getDocument = function(id){
-		var options = {
-			uri: getCouchDBServer() + "/" + id
-		}
+		try{
+			var options = {
+				uri: getCouchDBServer() + "/" + id
+			}
 
-		return new Promise(function(resolve, reject){
-			request(options, function(err, res, body){
-				if(err) reject(err);
-				resolve(JSON.parse(body));
+			return new Promise(function(resolve, reject){
+				request(options, function(err, res, body){
+					if(err) reject(err);
+					var doc = JSON.parse(body);
+					if(doc.error){
+						reject(doc);
+					}
+					resolve(doc);
+				});
 			});
-		});
+		}catch(e){
+			reject(e);
+		}
+		
 	}
 
 	server.method({
