@@ -66,17 +66,15 @@ module.exports = function (conf) {
 
 				"sample: Job <898104> is submitted to default queue <day>"
 				runcommand.on('close', function(code){
-					if(allerror || code){
+					if(code){
 						resolve({
 							status: 'FAIL',
-							error: allerror
+							error: allerror + alldata
 						});
 					}
 
-					var ind = alldata.indexOf('<');
-					var jobid = alldata.substr(ind + 1, alldata.indexOf('>') - 1);
-
-					console.log(jobid);
+					var ind = alldata.indexOf('<') + 1;
+                    var jobid = alldata.substr(ind, alldata.indexOf('>') - ind);
 
 					resolve({
 						jobid : Number.parseInt(jobid),
