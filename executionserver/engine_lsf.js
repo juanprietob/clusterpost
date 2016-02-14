@@ -64,13 +64,22 @@ module.exports = function (conf) {
 					alldata += data;
 				});
 
+				"sample: Job <898104> is submitted to default queue <day>"
 				runcommand.on('close', function(code){
-					console.error(allerror);
-					console.log(alldata);
-					console.log(code);
+					if(allerror || code){
+						resolve({
+							status: 'FAIL',
+							error: allerror
+						});
+					}
+
+					var ind = alldata.lastIndexOf('Job <');
+					var jobid = alldata.substr(ind, alldata.indexOf('>'));
+
+					console.log(jobid);
 
 					resolve({
-						jobid : 1234,
+						jobid : Number.parseInt(jobid),
 						status: 'RUN'
 					});
 				});
@@ -109,14 +118,30 @@ module.exports = function (conf) {
 					alldata += data;
 				});
 
+				"sample success: 898104  jprieto DONE  day        killdevil-l donor_pool2 *gmail.com Feb 14 11:16"
+				"sample fail: Job <8981> is not found"
+
 				ps.on('close', function(code){
-					console.error(allerror);
-					console.log(alldata);
-					console.log(code);
+
+					if(alldata && alldata.indexOf('DONE') || alldata.indexOf('EXIT')){
+						resolve({
+							status: 'DONE',
+							stat: alldata
+						});
+					}
+
+					if(code || allerror){
+						resolve({
+							status: 'RUN',
+							stat: allerror
+						});						
+					}
 
 					resolve({
-						status: 'DONE'
-					});
+						status: 'RUN',
+						stat: alldata
+					});	
+					
 				});
 
 			}catch(e){
@@ -137,7 +162,7 @@ module.exports = function (conf) {
 				var jobid = doc.jobstatus.jobid;
 				var params = ["-J", doc.userEmail, jobid];
 
-				const kill = spawn('kill', params);
+				const kill = spawn('bkill', params);
 
 				var allerror = "";
 				kill.stderr.on('data', function(data){
@@ -150,12 +175,9 @@ module.exports = function (conf) {
 				});
 
 				kill.on('close', function(code){
-					console.error(allerror);
-					console.log(alldata);
-					console.log(code);
 					resolve({
 						status: 'KILL',
-						stat: code
+						stat: allerror + alldata
 					})
 				});
 

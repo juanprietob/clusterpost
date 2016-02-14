@@ -52,7 +52,7 @@ module.exports = function (conf) {
 					status: "RUN"
 				});
 			}catch(e){
-				reject({
+				resolve({
 					status: "FAIL",
 					error: e
 				});
