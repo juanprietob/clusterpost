@@ -73,7 +73,7 @@ module.exports = function (conf) {
 						});
 					}
 
-					var ind = alldata.lastIndexOf('Job <');
+					var ind = alldata.indexOf('<');
 					var jobid = alldata.substr(ind, alldata.indexOf('>'));
 
 					console.log(jobid);
