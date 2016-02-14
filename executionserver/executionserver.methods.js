@@ -93,7 +93,7 @@ module.exports = function (conf) {
 		});
 	}
 
-	handler.addDocumentAttachment = function(doc, name, stream){
+	handler.addDocumentAttachment = function(doc, name, path){
 		Joi.assert(doc._id, Joi.string().alphanum());
 		Joi.assert(name, Joi.string());
 		
@@ -108,10 +108,22 @@ module.exports = function (conf) {
 					}
 				}
 
-				stream.pipe(request(options, function(err, res, body){
-					if(err) resolve(err);
-					resolve(JSON.parse(body));
-				}));
+				try{
+					var fstat = fs.statSync(path);
+					if(fstat){
+						var stream = fs.createReadStream(path);
+
+						stream.pipe(request(options, function(err, res, body){
+							if(err) resolve(err);
+							resolve(JSON.parse(body));
+						}));
+					}
+				}catch(e){
+					resolve({
+						"error" : e
+					});
+				}
+				
 			}catch(e){
 				reject(e);
 			}
@@ -241,7 +253,7 @@ module.exports = function (conf) {
 		return handler.compressdirectory(doc, name)
 		.then(function(compressedpath){
 			var compressedname = path.basename(compressedpath);
-			return handler.addDocumentAttachment(doc, compressedname, fs.createReadStream(compressedpath))
+			return handler.addDocumentAttachment(doc, compressedname, compressedpath)
 		});
 	}
 
@@ -255,7 +267,7 @@ module.exports = function (conf) {
 		if(output.type === 'file'){
 			return getlatestdoc
 			.then(function(latestdoc){
-				return handler.addDocumentAttachment(latestdoc, output.name, fs.createReadStream(path.join(cwd, output.name)));
+				return handler.addDocumentAttachment(latestdoc, output.name, path.join(cwd, output.name));
 			});
 			
 		}else if(output.type === 'directory'){

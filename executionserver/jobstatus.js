@@ -39,8 +39,18 @@ var clusterengine = require("./" + conf.engine)(conf);
 const allUpload = function(allupload){
     return executionmethods.getDocument(jobid)
     .then(function(docupdated){
-        docupdated.jobstatus.status = "DONE";
+
         docupdated.jobstatus.uploadstatus = allupload;
+        var alluploadstatus = true;
+        for(var i = 0; i < allupload.length; i++){
+            if(!allupload[i].ok){
+                alluploadstatus = false;
+            }
+        }
+        if(alluploadstatus){
+            docupdated.jobstatus.status = "DONE";
+        }
+        
         return docupdated;
     })
     .then(function(doc){
