@@ -115,6 +115,10 @@ module.exports = function (conf) {
 					console.error(allerror);
 					console.log(alldata);
 					console.log(code);
+
+					resolve({
+						status: 'DONE'
+					});
 				});
 
 			}catch(e){
@@ -151,6 +155,10 @@ module.exports = function (conf) {
 					console.error(allerror);
 					console.log(alldata);
 					console.log(code);
+					resolve({
+						status: 'KILL',
+						stat: code
+					})
 				});
 
 
