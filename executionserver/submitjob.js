@@ -80,7 +80,7 @@ request(options, function(err, res, body){
             });
     }
 
-    if(doc.jobstatus){
+    if(doc.jobstatus && doc.jobstatus.status !== 'FAIL'){
         clusterengine.getJobStatus(doc)
         .then(function(status){
             if(status.status === doc.jobstatus.status){

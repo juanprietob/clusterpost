@@ -89,7 +89,10 @@ module.exports = function (server, conf) {
 			try{
 				var options = {
 					uri: getCouchDBServer() + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
-					method: 'PUT'
+					method: 'PUT',
+					headers: {
+						"Content-type" : "application/octet-stream"
+					}
 				}
 
 				stream.pipe(request(options, function(err, res, body){

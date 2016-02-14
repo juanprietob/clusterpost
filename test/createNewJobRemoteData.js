@@ -32,7 +32,7 @@ var job = {
             "name": "DD_040_seg.nii.gz",
             "remote" : {
                 "serverCodename" : "COUCHDB",
-                "uri" : "52f388e8f3e8045a9f6260e86c0edee0/52f388e8f3e8045a9f6260e86c0edee0.nii.gz"
+                "uri" : "52f388e8f3e8045a9f6260e86c0f6c4a/52f388e8f3e8045a9f6260e86c0f6c4a.nii.gz"
             }
         }
     ],

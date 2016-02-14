@@ -166,9 +166,27 @@ module.exports = function (conf) {
 	handler.getAllDocumentInputs = function(doc, cwd){
 		var inputs = doc.inputs;
 		var alldownloads = [];
+		var downloadstatus = [];
+
+		for(var i = 0; i < inputs.length; i++){
+			downloadstatus.push(false);
+		}
+
+		if(doc.jobstatus && doc.jobstatus.downloadstatus){
+			var ds = doc.jobstatus.downloadstatus;
+			for(var i = 0; i < ds.length; i++){
+				if(ds[i].status){
+					downloadstatus[i] = ds[i];
+				}
+			}
+		}
 		for(var i = 0; i < inputs.length; i++){
 			var input = inputs[i];
-			alldownloads.push(handler.savePromise(doc, cwd, input));
+			if(downloadstatus[i]){
+				alldownloads.push(downloadstatus[i]);
+			}else{
+				alldownloads.push(handler.savePromise(doc, cwd, input));
+			}
 		}
 		return Promise.all(alldownloads);
 	}
