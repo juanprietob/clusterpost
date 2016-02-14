@@ -218,27 +218,25 @@ module.exports = function (conf) {
 
 	handler.compressdirectory = function(doc, name){
 		return new Promise(function(resolve, reject){
-			var dirname = path.join(conf.storagedir, doc._id, name);
-			var tarname = dirname+".tar.gz";
+			var dirname;
+			if(name === "./"){
+				dirname = path.join(conf.storagedir, doc._id);
+			}else{
+				dirname = path.join(conf.storagedir, doc._id, name);
+			}
+			
+			var tarname = path.normalize(dirname + ".tar.gz");
 
 			try{
 				var read = targz().createReadStream(dirname);
 				var write = fs.createWriteStream(tarname);
 				
 				read.pipe(write);
-
-				var allerror = "";
-				write.stderr.on('data', function(data){
-					allerror += data;
-				});
-
-				var alldata = "";
-				write.stdout.on('data', function(data){
-					alldata += data;
-				});
-
-				write.on('close', function(code){
-					if(code) console.error(allerror);
+				
+				write.on('close', function(err){
+					if(err) resolve({
+						"error" : err
+					})
 					resolve(tarname);
 				})
 
@@ -310,8 +308,8 @@ module.exports = function (conf) {
 
         var promparams = [];
 
-        for(var i = 0; i < uploadstatus.length; i++){
-            if(!uploadstatus[i].ok){
+        for(var i = 0; i < outputs.length; i++){
+            if(!uploadstatus || !uploadstatus[i].ok){
                 promparams.push({
 					doc: doc,
 					output: outputs[i],
@@ -321,7 +319,6 @@ module.exports = function (conf) {
             	promparams.push(uploadstatus[i]);
             }
         }
-
         return Promise.map(promparams, checkBeforeUpload, {concurrency: 1})
 	}
 
