@@ -15,7 +15,7 @@
 			"hostname" : "KillDevil.unc.edu", 
 			"user" : "jprieto",
 			"identityfile" : "/path/to/ssh/rsa_key",
-			"sourcedir" : "/path/to/source/dir/in/cluster"
+			"sourcedir" : "/path/to/source/dir/clusterpost/executionserver"
 		}
 	}
 }
