@@ -22,5 +22,6 @@
         }
     ],
     "type": "job",
-    "userEmail": "juanprietob@gmail.com"
+    "userEmail": "juanprietob@gmail.com",
+    "executionserver" : "testserver"
 }
