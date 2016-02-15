@@ -81,16 +81,16 @@ module.exports = function (server, conf) {
 	handler.getUserJobs = function(req, rep){
 
 
-		var email = req.payload.userEmail;
-		var jobstatus = req.payload.jobstatus;
+		var email = req.query.userEmail;
+		var jobstatus = req.query.jobstatus;
 		if(jobstatus){
 			var key = [email, jobstatus];
-			view = '_design/searchuserjob/_view/jobstatus?include_docs=true&key=' + JSON.stringify(key);
+			view = '_design/searchjob/_view/jobstatus?include_docs=true&key=' + JSON.stringify(key);
 		}else{
-			view = '_design/searchuserjob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
+			view = '_design/searchjob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}
 
-		server.methods.getView(view)
+		server.methods.clusterprovider.getView(view)
 		.then(rep)
 		.catch(function(e){
 			rep(Boom.badRequest(e));

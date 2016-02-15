@@ -152,12 +152,13 @@ module.exports = function (server, conf) {
 		return new Promise(function(resolve, reject){
 			try{
 				var options = {
-					uri: getCouchDBServer + "/" + view
+					uri: getCouchDBServer() + "/" + view
 				}
 
 				request(options, function(err, res, body){
 					if(err) reject(err);
-					resolve(body);
+					var docs = JSON.parse(body);
+					resolve(_.pluck(docs.rows, 'doc'));
 				});
 			}catch(e){
 				reject(e);
