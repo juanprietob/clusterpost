@@ -17,12 +17,12 @@ module.exports = function (server, conf) {
 	var input = Joi.object().keys({
       	name: Joi.string(),
       	remote : Joi.object().keys({
-      		serverCodename: Joi.string(),
+      		serverCodename: Joi.string().optional(),
       		uri: Joi.string()
       	}).optional()
 	});
 
-	var Job = Joi.object().keys({
+	var JobPost = Joi.object().keys({
 			type: Joi.string().required(),
 			executable: Joi.string().required(),
 			executionserver: Joi.string().required(),
@@ -32,7 +32,7 @@ module.exports = function (server, conf) {
 			outputs: Joi.array().items(output).min(1)
         });
 
-	var JobUpdate = Joi.object().keys({
+	var Job = Joi.object().keys({
 			_id: Joi.string().alphanum().required(),
 			_rev: Joi.optional(),
 			type: Joi.string().required(),
@@ -56,7 +56,7 @@ module.exports = function (server, conf) {
 			handler: handlers.createJob,
 			validate: {
 				query: false,
-		        payload: Job,
+		        payload: JobPost,
 		        params: false
 			},
 			payload:{
@@ -73,7 +73,7 @@ module.exports = function (server, conf) {
 			handler: handlers.updateJob,
 			validate: {
 				query: false,
-		        payload: JobUpdate,
+		        payload: Job,
 		        params: false
 			},
 			payload:{
@@ -117,7 +117,29 @@ module.exports = function (server, conf) {
 			    }, 
 			    payload: false
 			},
+			response: {
+				schema: Job
+			},
 			description: 'Get the job document posted to the database'
+	    }
+	});
+
+	server.route({
+		method: 'GET',
+		path: "/dataprovider/user",
+		config: {
+			handler: handlers.getUserJobs,
+			validate: {
+			  	query: {
+			  		jobstatus: Joi.string().optional(),
+			  		userEmail: Joi.string().email()
+			  	}, 
+			  	params: false
+			},
+			response: {
+				schema: Joi.array().items(Job).min(0)
+			},
+			description: 'Get the jobs posted to the database for a user.'
 	    }
 	});
 

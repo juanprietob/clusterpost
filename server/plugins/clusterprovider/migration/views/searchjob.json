@@ -1,0 +1,12 @@
+{
+    "_id": "_design/searchjob",
+    "language": "javascript",
+    "views": {
+        "useremail": {
+            "map": "function(doc) {\n\tif(doc.type === 'job'){\n\t\t  emit(doc.userEmail, doc.jobstatus);\n\t}\n}"
+        },
+        "jobstatus": {
+            "map": "function(doc) {\n\tif(doc.type === 'job' && doc.jobstatus && doc.jobstatus.status){\n\t\t  emit([doc.userEmail, doc.jobstatus.status], doc._id);\n\t}\n}"
+        }
+    }
+}

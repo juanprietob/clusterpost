@@ -116,7 +116,12 @@ module.exports = function (server, conf) {
 			try{
 				var uri;
 				if(remote){
-					uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;
+					if(remote.servercodename){
+						uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;
+					}else{
+						uri = remote.uri;
+					}
+					
 				}else{
 					uri = getCouchDBServer() + "/" + doc._id + "/" + name;
 				}
@@ -142,4 +147,27 @@ module.exports = function (server, conf) {
 	    method: getDocumentAttachment,
 	    options: {}
 	});
+
+	const getView = function(view){
+		return new Promise(function(resolve, reject){
+			try{
+				var options = {
+					uri: getCouchDBServer + "/" + view
+				}
+
+				request(options, function(err, res, body){
+					if(err) reject(err);
+					resolve(body);
+				});
+			}catch(e){
+				reject(e);
+			}
+		})
+	}
+
+	server.method({
+	    name: 'clusterprovider.getView',
+	    method: getView,
+	    options: {}
+	});	
 }

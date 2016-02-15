@@ -50,6 +50,13 @@ module.exports = function (server, conf) {
 		path: "/executionserver/{id}",
 		config: {
 	      handler: handlers.jobStatus,
+	      validate:{
+	      	params: {
+	      		id: Joi.string().alphanum().required()
+	      	},
+	      	query: false,
+	      	payload: false
+	      },
 	      description: 'Update job status'
 	    }
 	});
