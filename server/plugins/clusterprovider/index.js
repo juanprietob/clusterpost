@@ -8,6 +8,7 @@ exports.register = function (server, pluginOptions, next) {
   require('./clusterprovider.methods')(server, conf);
   require('./dataprovider.routes')(server, conf);
   require('./executionserver.routes')(server, conf);
+  require('./cronprovider')(server, conf);
 
   return next();
 };

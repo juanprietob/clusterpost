@@ -158,7 +158,7 @@ module.exports = function (server, conf) {
 				request(options, function(err, res, body){
 					if(err) reject(err);
 					var docs = JSON.parse(body);
-					resolve(_.pluck(docs.rows, 'doc'));
+					resolve(docs.rows);
 				});
 			}catch(e){
 				reject(e);

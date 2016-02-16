@@ -85,12 +85,15 @@ module.exports = function (server, conf) {
 		var jobstatus = req.query.jobstatus;
 		if(jobstatus){
 			var key = [email, jobstatus];
-			view = '_design/searchjob/_view/jobstatus?include_docs=true&key=' + JSON.stringify(key);
+			view = '_design/searchjob/_view/useremailjobstatus?include_docs=true&key=' + JSON.stringify(key);
 		}else{
 			view = '_design/searchjob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}
 
-		server.methods.clusterprovider.getView(view)
+		server.methods.clusterprovider.getView(view, true)
+		.then(function(rows){
+			return _.pluck(rows, 'doc');
+		})
 		.then(rep)
 		.catch(function(e){
 			rep(Boom.badRequest(e));

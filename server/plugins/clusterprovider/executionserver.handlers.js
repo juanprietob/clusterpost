@@ -81,34 +81,48 @@ module.exports = function (server, conf) {
 		});
 	}
 
+
+	const jobstatus = function(doc){
+		return new Promise(function(resolve, reject){
+			try{
+				var executionserver = conf.executionservers[doc.executionserver];
+				const jobstatus = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobstatus.js", "-j", doc._id]);
+
+				var alldata = "";
+				jobstatus.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				var allerror = "";
+				jobstatus.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				jobstatus.on('close', function(code){
+					if(allerror !== ""){
+						alldata += allerror;
+					}
+					resolve(alldata);
+				});
+			}catch(e){
+				reject(e);
+			}
+		});
+	}
+
+	server.method({
+	    name: 'executionserver.jobstatus',
+	    method: jobstatus,
+	    options: {}
+	});
+
 	handler.jobStatus = function(req, rep){
 
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
-			var executionserver = conf.executionservers[doc.executionserver];
-			if(!executionserver){
-				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
-			}
-
-			const jobstatus = spawn('ssh', ['-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobstatus.js", "-j", req.params.id]);
-
-			var alldata = "";
-			jobstatus.stdout.on('data', function(data){
-				alldata += data;
-			});
-
-			var allerror = "";
-			jobstatus.stderr.on('data', function(data){
-				allerror += data;
-			});
-
-			jobstatus.on('close', function(code){
-				if(allerror !== ""){
-					alldata += allerror;
-				}
-				rep(alldata);
-			});
+			return server.methods.executionserver.jobstatus(doc);
 		})
+		.then(rep)
 		.catch(function(e){
 			rep(Boom.badRequest(e));
 		})
