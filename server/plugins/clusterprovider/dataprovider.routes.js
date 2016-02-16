@@ -130,10 +130,11 @@ module.exports = function (server, conf) {
 		config: {
 			handler: handlers.getUserJobs,
 			validate: {
-			  	query: {
+			  	query: Joi.object().keys({
+			  		userEmail: Joi.string().email(),
 			  		jobstatus: Joi.string().optional(),
-			  		userEmail: Joi.string().email()
-			  	}, 
+			  		executable: Joi.string().optional()
+			  	}).xor('jobstatus', 'executable'), 
 			  	params: false
 			},
 			response: {
