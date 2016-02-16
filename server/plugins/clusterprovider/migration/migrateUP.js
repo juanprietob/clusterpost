@@ -2,16 +2,15 @@ var fs = require('fs');
 var child_process = require('child_process');
 var request = require('request');
 var Promise = require('bluebird');
-var qs = require('querystring')
+var qs = require('querystring');
+var path = require('path');
 
 var env = process.env.NODE_ENV;
 
 if(!env){
 	console.error("Please set NODE_ENV variable.");
 	return 1;	
-} 
-
-var VIEWSDIR = 'views/';
+}
 
 const getConfigFile = function (env, base_directory) {
   try {
@@ -108,13 +107,15 @@ const updateDocuments = function(db, viewsdir){
 	return Promise.map(fileviews, testView);
 }
 
+var basedir = path.dirname(process.argv[1]);
 var conf = getConfigFile(env, "../");
 var dataprovider = conf.dataproviders[conf.default.dataprovider];
 var clusterdb = dataprovider.hostname + "/" + dataprovider.database;
+var viewsdir = basedir + '/views/';
 
 createDB(clusterdb)
 .then(function(result){
-	return updateDocuments(clusterdb, VIEWSDIR);
+	return updateDocuments(clusterdb, viewsdir);
 })
 .then(console.log)
 .catch(console.error)
