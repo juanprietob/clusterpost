@@ -60,10 +60,18 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 			if(req.params.name){
 				var name = req.params.name;
-				var input = _.find(doc.inputs, function(input){
+				var att = _.find(doc.inputs, function(input){
 					return input.name === name;
 				});
-				return server.methods.clusterprovider.getDocumentAttachment(doc, req.params.name, input.remote);
+				if(!att){
+					att = _.find(doc.outputs, function(output){
+						return output.name === name;
+					});
+				}
+				if(!att){
+					throw "Attachment not found."
+				}
+				return server.methods.clusterprovider.getDocumentAttachment(doc, att.name, att.remote);
 			}else{
 				return doc;
 			}
