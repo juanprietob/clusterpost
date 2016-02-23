@@ -115,9 +115,10 @@ module.exports = function (server, conf) {
 		return new Promise(function(resolve, reject){
 			try{
 				var uri;
+				
 				if(remote){
-					if(remote.servercodename){
-						uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;
+					if(remote.serverCodename){
+						uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;						
 					}else{
 						uri = remote.uri;
 					}

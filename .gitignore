@@ -6,3 +6,4 @@ server/all.log
 *.gz
 
 server/all.log
+conf.my.json
