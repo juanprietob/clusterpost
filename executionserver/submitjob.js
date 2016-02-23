@@ -98,12 +98,16 @@ request(options, function(err, res, body){
             }
             return status;
         })
-        .then(console.log)
+        .then(function(s){
+            console.log(JSON.stringify(s));
+        })
         .catch(console.error);
 
     }else{
         submitJob(doc)
-        .then(console.log)
+        .then(function(s){
+            console.log(JSON.stringify(s));
+        })
         .catch(console.error);
     }
     
