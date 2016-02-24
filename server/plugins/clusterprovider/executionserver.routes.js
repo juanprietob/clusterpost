@@ -9,6 +9,12 @@ module.exports = function (server, conf) {
 		path: "/executionserver",
 		config: {
 	      handler: handlers.getExecutionServers,
+	      response: {
+	      	schema: Joi.array().items(Joi.object().keys({
+	      		name: Joi.string(),
+	      		queues: Joi.array().items(Joi.string()).optional()
+	      	}))
+	      },
 	      description: 'Get execution servers code names'
 	    }
 	});

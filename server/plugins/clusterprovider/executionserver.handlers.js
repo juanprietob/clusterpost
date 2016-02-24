@@ -11,7 +11,17 @@ module.exports = function (server, conf) {
 	var handler = {};
 
 	handler.getExecutionServers = function(req, rep){
-		rep(_.keys(conf.executionservers));
+		var executionservers = [];
+		_.each(conf.executionservers, function(es, key){
+			var obj = {
+				name: key
+			};
+			if(es.queues){
+				obj.queues = es.queues;
+			}
+			executionservers.push(obj);
+		});
+		rep(executionservers);
 	}
 	/*
 	*/

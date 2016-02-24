@@ -24,10 +24,11 @@ module.exports = function (server, conf) {
 
 	var JobPost = Joi.object().keys({
 			type: Joi.string().required(),
-			executable: Joi.string().required(),
+			userEmail: Joi.string().required(),			
 			executionserver: Joi.string().required(),
+			jobparameters: Joi.array().items(parameter).optional(),
+			executable: Joi.string().required(),			
 			parameters: Joi.array().items(parameter).min(1),
-			userEmail: Joi.string().required(), 
 			inputs: Joi.array().items(input).min(1),
 			outputs: Joi.array().items(output).min(1)
         });
@@ -40,6 +41,7 @@ module.exports = function (server, conf) {
 			timestamp: Joi.date().required(),
 			executable: Joi.string().required(),
 			executionserver: Joi.string().required(),
+			jobparameters: Joi.optional(),
 			parameters: Joi.array().items(parameter).min(1),
 			jobstatus: Joi.optional(),
 			inputs: Joi.optional(),
@@ -131,10 +133,10 @@ module.exports = function (server, conf) {
 			handler: handlers.getUserJobs,
 			validate: {
 			  	query: Joi.object().keys({
-			  		userEmail: Joi.string().email(),
+			  		userEmail: Joi.string().email().required(),
 			  		jobstatus: Joi.string().optional(),
 			  		executable: Joi.string().optional()
-			  	}).xor('jobstatus', 'executable'), 
+			  	}), 
 			  	params: false
 			},
 			response: {
