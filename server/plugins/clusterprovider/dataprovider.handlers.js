@@ -71,7 +71,11 @@ module.exports = function (server, conf) {
 				if(!att){
 					throw "Attachment not found."
 				}
-				return server.methods.clusterprovider.getDocumentAttachment(doc, att.name, att.remote);
+				var name = att.name;
+				if(att.type === 'directory'){
+					name += ".tar.gz";
+				}
+				return server.methods.clusterprovider.getDocumentAttachment(doc, name, att.remote);
 			}else{
 				return doc;
 			}
