@@ -5,6 +5,7 @@
 		"vision": {},
 		"inert": {},
 		"lout": {},
+		"h2o2": {},
 		"./plugins/clusterprovider": {"env": "test"}
 	}
 }

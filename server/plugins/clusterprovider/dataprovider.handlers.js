@@ -75,13 +75,12 @@ module.exports = function (server, conf) {
 				if(att.type === 'directory'){
 					name += ".tar.gz";
 				}
-				return server.methods.clusterprovider.getDocumentAttachment(doc, name, att.remote);
+				rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name, att.remote));
 			}else{
-				return doc;
+				rep(doc);
 			}
 			
 		})
-		.then(rep)
 		.catch(function(e){
 			rep(Boom.notFound(e));
 		});

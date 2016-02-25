@@ -111,26 +111,34 @@ module.exports = function (server, conf) {
 	    options: {}
 	});
 
+	const getDocumentURIAttachment = function(doc, name, remote){
+		var uri;
+		if(remote){
+			if(remote.serverCodename){
+				uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;						
+			}else{
+				uri = remote.uri;
+			}
+			
+		}else{
+			uri = getCouchDBServer() + "/" + doc._id + "/" + name;
+		}
+		return {
+			uri: uri
+		};
+	}
+
+	server.method({
+	    name: 'clusterprovider.getDocumentURIAttachment',
+	    method: getDocumentURIAttachment,
+	    options: {}
+	});
+
+
 	const getDocumentAttachment = function(doc, name, remote){
 		return new Promise(function(resolve, reject){
 			try{
-				var uri;
-				
-				if(remote){
-					if(remote.serverCodename){
-						uri = getCouchDBServer(remote.serverCodename) + "/" + remote.uri;						
-					}else{
-						uri = remote.uri;
-					}
-					
-				}else{
-					uri = getCouchDBServer() + "/" + doc._id + "/" + name;
-				}
-
-				var options = {
-					uri: uri,
-					encoding: null
-				}
+				var options = server.methods.clusterprovider.getDocumentURIAttachment(doc, name, remote);
 				request(options, function(err, res, body){
 					if(err) reject(err);
 					resolve(body);
