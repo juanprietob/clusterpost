@@ -72,7 +72,7 @@ module.exports = function (server, conf) {
 					throw "Attachment not found."
 				}
 				var name = att.name;
-				if(att.type === 'directory'){
+				if(att.type === 'directory' && name.indexOf(".tar.gz") === -1){
 					name += ".tar.gz";
 				}
 				rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name, att.remote));

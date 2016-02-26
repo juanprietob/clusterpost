@@ -128,23 +128,6 @@ module.exports = function (server, conf) {
 
 	server.route({
 		method: 'GET',
-		path: "/dataprovider/massivedownload",
-		config: {
-			handler: handlers.getJob,
-			validate: {
-			  	query: false,
-			    params: Joi.array().items(), 
-			    payload: false
-			},
-			response: {
-				schema: Job
-			},
-			description: 'Get the job document posted to the database'
-	    }
-	});
-
-	server.route({
-		method: 'GET',
 		path: "/dataprovider/user",
 		config: {
 			handler: handlers.getUserJobs,
