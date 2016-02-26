@@ -15,6 +15,9 @@ module.exports = function (server, conf) {
 		
 		var job = req.payload;
 		job.timestamp = new Date();
+		job.jobstatus = {
+			status: 'CREATE'
+		};		
 
 		server.methods.clusterprovider.uploadDocumentsDataProvider(job)
 		.then(function(res){

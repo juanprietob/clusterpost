@@ -33,19 +33,28 @@ module.exports = function (server, conf) {
 			outputs: Joi.array().items(output).min(1)
         });
 
+	var Joijobstatus = Joi.object().keys({
+			status: Joi.string().valid('CREATE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
+			jobid: Joi.number().optional(),
+			stat: Joi.optional(),
+			error: Joi.optional(),
+			downloadstatus: Joi.array().items(Joi.object()).optional(),
+			uploadstatus: Joi.array().items(Joi.object()).optional()
+		});
+
 	var Job = Joi.object().keys({
 			_id: Joi.string().alphanum().required(),
-			_rev: Joi.optional(),
+			_rev: Joi.string().required(),
 			type: Joi.string().required(),
 			userEmail: Joi.string().email().required(),
 			timestamp: Joi.date().required(),
+			jobstatus: Joijobstatus.required(),
 			executable: Joi.string().required(),
 			executionserver: Joi.string().required(),
 			jobparameters: Joi.optional(),
-			parameters: Joi.array().items(parameter).min(1),
-			jobstatus: Joi.optional(),
-			inputs: Joi.optional(),
-			outputs: Joi.optional(),
+			parameters: Joi.array().items(parameter).min(1),			
+			inputs: Joi.array().items(input).min(1),
+			outputs: Joi.array().items(output).min(1),
 			_attachments: Joi.optional()
 	    });
 

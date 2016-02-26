@@ -42,10 +42,14 @@ module.exports = function (server, conf) {
             };
             
             request(options, function(err, res, body){
-                if(err) reject({"id" : "uploadDocumentsDataProvider", "message" : err.message});
-                if(body.error) reject(body.error);
 
-                resolve(body);
+                if(err){
+                	reject({"id" : "uploadDocumentsDataProvider", "message" : err.message});
+                }else if(body.error){
+                	reject(body.error);
+                }else{
+                	resolve(body);
+                }
             });
         });
 	}
@@ -63,12 +67,16 @@ module.exports = function (server, conf) {
 					uri: getCouchDBServer() + "/" + id
 				}
 				request(options, function(err, res, body){
-					if(err) reject(err);
-					var doc = JSON.parse(body);
-					if(doc.error){
-						reject(doc);
+					if(err){
+						reject(err);
+					}else{
+						var doc = JSON.parse(body);
+						if(doc.error){
+							reject(doc);
+						}else{
+							resolve(doc);
+						}
 					}
-					resolve(doc);
 				});
 
 			}catch(e){
@@ -96,8 +104,11 @@ module.exports = function (server, conf) {
 				}
 
 				stream.pipe(request(options, function(err, res, body){
-					if(err) reject(err);
-					resolve(body);
+					if(err){
+						reject(err);
+					}else{
+						resolve(body);
+					}
 				}));
 			}catch(e){
 				reject(e);
@@ -140,8 +151,11 @@ module.exports = function (server, conf) {
 			try{
 				var options = server.methods.clusterprovider.getDocumentURIAttachment(doc, name, remote);
 				request(options, function(err, res, body){
-					if(err) reject(err);
-					resolve(body);
+					if(err){
+						reject(err);
+					}else{
+						resolve(body);
+					}
 				});
 			}catch(e){
 				reject(e);
@@ -164,10 +178,13 @@ module.exports = function (server, conf) {
 					uri: getCouchDBServer() + "/" + view
 				}
 
-				request(options, function(err, res, body){
-					if(err) reject(err);
-					var docs = JSON.parse(body);
-					resolve(docs.rows);
+				request(options, function(err, res, body){					
+					if(err){						
+						reject(err);
+					}else{
+						var docs = JSON.parse(body);
+						resolve(docs.rows);
+					}					
 				});
 			}catch(e){
 				reject(e);
