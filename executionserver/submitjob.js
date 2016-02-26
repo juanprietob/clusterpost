@@ -54,6 +54,7 @@ request(options, function(err, res, body){
     var cwd = executionmethods.createDirectoryCWD(doc);
 
     const submitJob = function(subdoc){
+        
         return executionmethods.getAllDocumentInputs(subdoc, cwd)
             .bind({})
             .then(function(downloadstatus){
@@ -68,7 +69,7 @@ request(options, function(err, res, body){
                     return clusterengine.submitJob(subdoc, cwd);
                 }
                 return {
-                    status: "FAIL",
+                    status: "DOWNLOADING",
                     error: 'Unable to retrieve all the input data'
                 }
                 
@@ -76,39 +77,37 @@ request(options, function(err, res, body){
             .then(function(jobstatus){
                 subdoc.jobstatus = jobstatus;
                 _.extend(subdoc.jobstatus, this);
-                return executionmethods.uploadDocumentDataProvider(subdoc);
+                executionmethods.uploadDocumentDataProvider(subdoc)
+                .then(function(){
+                    return jobstatus;
+                });
+            }, function(e){
+                executionmethods.uploadDocumentDataProvider(subdoc);
             });
+
     }
 
-    if(doc.jobstatus && doc.jobstatus.status !== 'FAIL'){
-        clusterengine.getJobStatus(doc)
+    var sjprom;
+    
+    if (doc.jobstatus.status === 'CREATE'){
+        sjprom = submitJob(doc);        
+    } else {
+        sjprom = clusterengine.getJobStatus(doc)
         .then(function(status){
-            if(status.status === doc.jobstatus.status){
-                return doc.jobstatus;
-            }else{
-                return status;
-            }
-        })
-        .then(function(status){
-            if(status.status !== 'RUN' && force){
+            if(status.status !== 'RUN' && force || status.status === 'DOWNLOADING' ){
                 if(doc.jobstatus.uploadstatus){
                     delete doc.jobstatus.uploadstatus;
                 }
                 return submitJob(doc);
             }
             return status;
-        })
-        .then(function(s){
-            console.log(JSON.stringify(s));
-        })
-        .catch(console.error);
-
-    }else{
-        submitJob(doc)
-        .then(function(s){
-            console.log(JSON.stringify(s));
-        })
-        .catch(console.error);
+        });
     }
+
+    sjprom
+    .then(function(s){
+        console.log(JSON.stringify(s));
+    })
+    .catch(console.error);
     
 });

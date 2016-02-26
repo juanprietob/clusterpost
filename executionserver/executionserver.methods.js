@@ -23,25 +23,26 @@ module.exports = function (conf) {
 	});
 
 	handler.Joijobstatus = Joi.object().keys({
-			jobid: Joi.number().integer().required(),
 			status: Joi.string().required(),
-			downloadstatus: Joi.optional(),
-			uploadstatus: Joi.optional()
+			jobid: Joi.string().valid('CREATE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
+			error: Joi.optional()
+			downloadstatus: Joi.object().optional(),
+			uploadstatus: Joi.object().optional()
 		});
-		
 
 	handler.Job = Joi.object().keys({
 			_id: Joi.string().alphanum().required(),
-			_rev: Joi.optional(),
+			_rev: Joi.string().alphanum().required(),
 			type: Joi.string().required(),
 			userEmail: Joi.string().email().required(),
 			timestamp: Joi.date().required(),
+			jobstatus: Joijobstatus.required(),
 			executable: Joi.string().required(),
 			executionserver: Joi.string().required(),
-			parameters: Joi.array().items(parameter).min(1),
-			jobstatus: Joi.optional(),
-			inputs: Joi.optional(),
-			outputs: Joi.optional(),
+			jobparameters: Joi.optional(),
+			parameters: Joi.array().items(parameter).min(1),			
+			inputs: Joi.array().items(input).min(1),
+			outputs: Joi.array().items(output).min(1),
 			_attachments: Joi.optional()
 	    });
 
@@ -161,11 +162,12 @@ module.exports = function (conf) {
 							"status" : false,
 							"err": err
 						});
-					} 
-					resolve({
-						"path" : filepath,
-						"status" : true
-					});
+					}else{
+						resolve({
+							"path" : filepath,
+							"status" : true
+						});
+					}
 				});
 			}catch(e){
 				reject(e);
