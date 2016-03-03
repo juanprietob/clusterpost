@@ -22,6 +22,19 @@ module.exports = function (conf) {
       	name: Joi.string().allow('')
 	});
 
+	var output = Joi.object().keys({
+		type: Joi.string().valid('file', 'directory'), 
+      	name: Joi.string()
+	});
+
+	var input = Joi.object().keys({
+      	name: Joi.string(),
+      	remote : Joi.object().keys({
+      		serverCodename: Joi.string().optional(),
+      		uri: Joi.string()
+      	}).optional()
+	});
+
 	handler.Joijobstatus = Joi.object().keys({
 			status: Joi.string().required(),
 			jobid: Joi.string().valid('CREATE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
