@@ -81,8 +81,6 @@ request(options, function(err, res, body){
                 .then(function(){
                     return jobstatus;
                 });
-            }, function(e){
-                executionmethods.uploadDocumentDataProvider(subdoc);
             });
 
     }

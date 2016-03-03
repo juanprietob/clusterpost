@@ -64,7 +64,7 @@ module.exports = function (conf) {
 					alldata += data;
 				});
 
-				"sample: Job <898104> is submitted to default queue <day>"
+				//"sample: Job <898104> is submitted to default queue <day>"
 				runcommand.on('close', function(code){
 					if(code){
 						resolve({
