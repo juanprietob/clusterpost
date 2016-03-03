@@ -38,9 +38,10 @@ module.exports = function (conf) {
 	handler.Joijobstatus = Joi.object().keys({
 			status: Joi.string().valid('CREATE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
 			jobid: Joi.number().optional(),
+			stat: Joi.optional(),
 			error: Joi.optional(),
-			downloadstatus: Joi.object().optional(),
-			uploadstatus: Joi.object().optional()
+			downloadstatus: Joi.array().items(Joi.object()).optional(),
+			uploadstatus: Joi.array().items(Joi.object()).optional()
 		});
 
 	handler.Job = Joi.object().keys({
