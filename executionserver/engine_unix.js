@@ -65,6 +65,7 @@ module.exports = function (conf) {
 	handler.getJobStatus = function(doc){
 
 		Joi.assert(doc.jobstatus, executionmethods.Joijobstatus);
+		Joi.assert(doc.jobstatus.jobid, Joi.number().required(), "Please execute the job first.");		
 
 		return new Promise(function(resolve, reject){
 
@@ -92,14 +93,14 @@ module.exports = function (conf) {
 							resolve({
 								status: 'DONE'
 							});
-						}else{
+						}else if(lines[1].indexOf(doc.executable) === -1){
 							//replace multiple space by single space and split by space;
-							if(lines[1].indexOf(doc.executable) === -1){
-								resolve({
-									status: 'FAIL',
-									error: 'The jobid does not match the running program'
-								});
-							}
+							
+							resolve({
+								status: 'FAIL',
+								error: 'The jobid does not match the running program'
+							});
+						}else{
 							var l = lines[1].replace(/\s\s+/g, ' ').split(' ');
 							resolve({
 								status: 'RUN',
