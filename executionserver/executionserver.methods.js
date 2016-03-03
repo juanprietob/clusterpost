@@ -45,7 +45,7 @@ module.exports = function (conf) {
 
 	handler.Job = Joi.object().keys({
 			_id: Joi.string().alphanum().required(),
-			_rev: Joi.string().alphanum().required(),
+			_rev: Joi.string().required(),
 			type: Joi.string().required(),
 			userEmail: Joi.string().email().required(),
 			timestamp: Joi.date().required(),
