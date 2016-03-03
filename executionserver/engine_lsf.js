@@ -116,8 +116,8 @@ module.exports = function (conf) {
 					alldata += data;
 				});
 
-				"sample success: 898104  jprieto DONE  day        killdevil-l donor_pool2 *gmail.com Feb 14 11:16"
-				"sample fail: Job <8981> is not found"
+				//"sample success: 898104  jprieto DONE  day        killdevil-l donor_pool2 *gmail.com Feb 14 11:16"
+				//"sample fail: Job <8981> is not found"
 
 				ps.on('close', function(code){
 
