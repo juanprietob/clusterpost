@@ -36,7 +36,7 @@ module.exports = function (conf) {
 			type: Joi.string().required(),
 			userEmail: Joi.string().email().required(),
 			timestamp: Joi.date().required(),
-			jobstatus: Joijobstatus.required(),
+			jobstatus: handler.Joijobstatus.required(),
 			executable: Joi.string().required(),
 			executionserver: Joi.string().required(),
 			jobparameters: Joi.optional(),
