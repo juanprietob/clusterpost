@@ -77,7 +77,7 @@ request(options, function(err, res, body){
             .then(function(jobstatus){
                 subdoc.jobstatus = jobstatus;
                 _.extend(subdoc.jobstatus, this);
-                executionmethods.uploadDocumentDataProvider(subdoc)
+                return executionmethods.uploadDocumentDataProvider(subdoc)
                 .then(function(){
                     return jobstatus;
                 });
