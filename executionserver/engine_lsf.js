@@ -121,12 +121,12 @@ module.exports = function (conf) {
 
 				ps.on('close', function(code){
 
-					if(alldata && (alldata.indexOf('DONE') || allerror && allerror.indexOf('is not found'))){
+					if(alldata && alldata.indexOf('DONE') !== -1 || allerror && allerror.indexOf('is not found') !== -1){
 						resolve({
 							status: 'DONE',
 							stat: alldata
 						});
-					}else if(alldata && alldata.indexOf('EXIT')){
+					}else if(alldata && alldata.indexOf('EXIT') !== -1){
 						resolve({
 							status: 'EXIT',
 							stat: alldata
