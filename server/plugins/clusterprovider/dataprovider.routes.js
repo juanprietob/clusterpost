@@ -108,7 +108,7 @@ module.exports = function (server, conf) {
 		        payload: true
 		    },
 		    payload: {
-	        	maxBytes: 100 * 1024 * 1024,
+	        	maxBytes: 1024 * 1024 * 1024,
 	    		output: 'stream'
 	        },
 		    description: 'Add attachment data'
