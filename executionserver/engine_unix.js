@@ -45,14 +45,28 @@ module.exports = function (conf) {
 					stdio: [ 'ignore', out, err ]
 				});
 
+				runcommand.on('error', function (err) {
+				    reject({
+						status: "FAIL",
+						error: err
+					});
+				});
+
 				runcommand.unref();
 
-				resolve({
-					jobid : runcommand.pid,
-					status: "RUN"
-				});
+				if(runcommand.pid){
+					resolve({
+						jobid : runcommand.pid,
+						status: "RUN"
+					});
+				}else{
+					reject({						
+						status: "FAIL", 
+						error: "nopid"
+					});
+				}
 			}catch(e){
-				resolve({
+				reject({
 					status: "FAIL",
 					error: e
 				});
@@ -64,12 +78,12 @@ module.exports = function (conf) {
 
 	handler.getJobStatus = function(doc){
 
-		Joi.assert(doc.jobstatus, executionmethods.Joijobstatus);
-		Joi.assert(doc.jobstatus.jobid, Joi.number().required(), "Please execute the job first.");		
-
 		return new Promise(function(resolve, reject){
 
 			try{
+
+				Joi.assert(doc.jobstatus, executionmethods.Joijobstatus);
+				Joi.assert(doc.jobstatus.jobid, Joi.number().required(), "Please execute the job first.");		
 
 				var jobid = doc.jobstatus.jobid;
 				var params = [jobid];

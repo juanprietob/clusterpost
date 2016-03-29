@@ -98,7 +98,9 @@ module.exports = function (conf) {
 					uri: handler.getDataProvider() + "/" + id
 				}
 				request(options, function(err, res, body){
-					if(err) resolve(err);
+					if(err){
+						reject(err);
+					} 
 					resolve(JSON.parse(body));
 				});
 			}catch(e){
@@ -129,12 +131,15 @@ module.exports = function (conf) {
 						var stream = fs.createReadStream(path);
 
 						stream.pipe(request(options, function(err, res, body){
-							if(err) resolve(err);
-							resolve(JSON.parse(body));
+							if(err){
+								reject(err);
+							}else{
+								resolve(JSON.parse(body));
+							}
 						}));
 					}
 				}catch(e){
-					resolve({
+					reject({
 						"error" : e
 					});
 				}
@@ -151,6 +156,13 @@ module.exports = function (conf) {
 
 		return new Promise(function(resolve, reject){
 
+			if(!doc._attachments[input.name]){
+				reject({					
+					"status" : false,
+					"error": "Document is missing attachment" + input.name
+				});
+			}
+
 			try{
 				var options = {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name
@@ -159,22 +171,15 @@ module.exports = function (conf) {
 				var filepath = path.join(cwd, input.name);
 
 				var writestream = fs.createWriteStream(filepath);
-				request(options, function(err, res, body){
-					if(err || res.statusCode !== 200){
-						resolve({
-							"path" : filepath,
-							"status" : false,
-							"err": body
-						});
-					}
-				}).pipe(writestream);
 
-				writestream.on('close', function(err){
+				request(options).pipe(writestream);
+
+				writestream.on('finish', function(err){					
 					if(err){
-						resolve({
+						reject({
 							"path" : filepath,
 							"status" : false,
-							"err": err
+							"error": err
 						});
 					}else{
 						resolve({
@@ -183,12 +188,11 @@ module.exports = function (conf) {
 						});
 					}
 				});
+
 			}catch(e){
 				reject(e);
 			}
-
 		});
-		
 	}
 
 	handler.getAllDocumentInputs = function(doc, cwd){
@@ -212,10 +216,13 @@ module.exports = function (conf) {
 			var input = inputs[i];
 			if(downloadstatus[i]){
 				alldownloads.push(downloadstatus[i]);
-			}else{
-				alldownloads.push(handler.savePromise(doc, cwd, input));
+			}else{				
+				alldownloads.push(handler.savePromise(doc, cwd, input)
+					.catch(function(e){
+						return e;
+					}));
 			}
-		}
+		}		
 		return Promise.all(alldownloads);
 	}
 

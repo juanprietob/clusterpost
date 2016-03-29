@@ -57,7 +57,7 @@ request(options, function(err, res, body){
         
         return executionmethods.getAllDocumentInputs(subdoc, cwd)
             .bind({})
-            .then(function(downloadstatus){
+            .then(function(downloadstatus){                
                 this.downloadstatus = downloadstatus;
                 var isago = true;
                 for(var i = 0; i < downloadstatus.length; i++){
@@ -65,8 +65,11 @@ request(options, function(err, res, body){
                         isago = false;
                     }
                 }
-                if(isago){
-                    return clusterengine.submitJob(subdoc, cwd);
+                if(isago){                    
+                    return clusterengine.submitJob(subdoc, cwd)
+                    .catch(function(e){
+                        return e;
+                    });
                 }
                 return {
                     status: "DOWNLOADING",
@@ -74,11 +77,11 @@ request(options, function(err, res, body){
                 }
                 
             })
-            .then(function(jobstatus){
+            .then(function(jobstatus){                
                 subdoc.jobstatus = jobstatus;
-                _.extend(subdoc.jobstatus, this);
+                _.extend(subdoc.jobstatus, this);                
                 return executionmethods.uploadDocumentDataProvider(subdoc)
-                .then(function(){
+                .then(function(res){                    
                     return jobstatus;
                 });
             });
@@ -87,18 +90,21 @@ request(options, function(err, res, body){
 
     var sjprom;
     
-    if (doc.jobstatus.status === 'CREATE'){
+    if (doc.jobstatus.status === 'CREATE' || doc.jobstatus.status === 'DOWNLOADING' || doc.jobstatus.status === 'FAIL'){
         sjprom = submitJob(doc);        
     } else {
         sjprom = clusterengine.getJobStatus(doc)
         .then(function(status){
-            if(status.status !== 'RUN' && force || status.status === 'DOWNLOADING' ){
+            if(status.status !== 'RUN' && force){
                 if(doc.jobstatus.uploadstatus){
                     delete doc.jobstatus.uploadstatus;
                 }
                 return submitJob(doc);
             }
             return status;
+        })
+        .catch(function(e){
+            return e;
         });
     }
 
