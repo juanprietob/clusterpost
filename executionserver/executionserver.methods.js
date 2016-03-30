@@ -130,7 +130,7 @@ module.exports = function (conf) {
 					var fstat = fs.statSync(path);
 					if(fstat){
 						var stream = fs.createReadStream(path);						
-						console.log(options);
+						
 						stream.pipe(request(options, function(err, res, body){
 							if(err){								
 								reject(err);
