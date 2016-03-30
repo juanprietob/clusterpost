@@ -80,10 +80,7 @@ request(options, function(err, res, body){
             .then(function(jobstatus){                
                 subdoc.jobstatus = jobstatus;
                 _.extend(subdoc.jobstatus, this);                
-                return executionmethods.uploadDocumentDataProvider(subdoc)
-                .then(function(res){                    
-                    return jobstatus;
-                });
+                return executionmethods.uploadDocumentDataProvider(subdoc);
             });
 
     }
@@ -101,7 +98,8 @@ request(options, function(err, res, body){
                 }
                 return submitJob(doc);
             }
-            return status;
+            doc.jobstatus = status;
+            return executionmethods.uploadDocumentDataProvider(doc);
         })
         .catch(function(e){
             return e;
@@ -109,9 +107,7 @@ request(options, function(err, res, body){
     }
 
     sjprom
-    .then(function(s){
-        console.log(JSON.stringify(s));
-    })
+    .then(console.log)
     .catch(console.error);
     
 });

@@ -179,7 +179,7 @@ module.exports = function (conf) {
 					resolve({
 						status: 'KILL',
 						stat: allerror + alldata
-					})
+					});
 				});
 
 

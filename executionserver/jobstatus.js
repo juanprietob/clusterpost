@@ -54,10 +54,7 @@ const allUpload = function(allupload){
         return docupdated;
     })
     .then(function(doc){
-        return executionmethods.uploadDocumentDataProvider(doc)
-        .then(function(){
-            return doc.jobstatus;
-        });
+        return executionmethods.uploadDocumentDataProvider(doc);
     });
 }
 
@@ -74,16 +71,15 @@ executionmethods.getDocument(jobid)
                 //Set the new status
                 return executionmethods.uploadDocumentDataProvider(doc)
                     .then(function(res){
+                        //update revision
                         doc._rev = res.rev;
                         return doc;
                     })
                     .then(function(doc){
+                        //upload all outputs
                         return executionmethods.setAllDocumentOutputs(doc)
                     })
-                    .then(allUpload)
-                    .then(function(doc){
-                        return doc;
-                    });
+                    .then(allUpload);
             }
             return status;
         });
