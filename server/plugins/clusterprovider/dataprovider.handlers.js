@@ -109,7 +109,7 @@ module.exports = function (server, conf) {
 			view = '_design/searchjob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}
 
-		server.methods.clusterprovider.getView(view, true)
+		server.methods.clusterprovider.getView(view)
 		.then(function(rows){
 			return _.pluck(rows, 'doc');
 		})

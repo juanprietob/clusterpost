@@ -8,7 +8,7 @@ module.exports = function (server, conf) {
 	var jobId = crontab.scheduleJob("0 0 * * *", function(){
 
 		var view = "_design/searchjob/_view/jobstatus?key=" + JSON.stringify('RUN');
-	    server.methods.clusterprovider.getView(view, false)
+	    server.methods.clusterprovider.getView(view)
 	    .then(function(docs){
 	    	var docs = _.pluck(docs, "value");
 	    	return Promise.map(docs, server.methods.executionserver.jobstatus);
