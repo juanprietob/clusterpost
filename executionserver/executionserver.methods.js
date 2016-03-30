@@ -118,7 +118,7 @@ module.exports = function (conf) {
 			try{
 
 				var options = {
-					uri: handler.getDataProvider() + "/" + doc._id + "/" + name,
+					uri: handler.getDataProvider() + "/" + doc._id + "/" + encodeURIComponent(name),
 					method: 'PUT',
 					headers: {
 						"Content-Type": "application/octet-stream"
@@ -126,14 +126,15 @@ module.exports = function (conf) {
 				}
 
 				try{
+
 					var fstat = fs.statSync(path);
 					if(fstat){
-						var stream = fs.createReadStream(path);
-
+						var stream = fs.createReadStream(path);						
+						console.log(options);
 						stream.pipe(request(options, function(err, res, body){
-							if(err){
+							if(err){								
 								reject(err);
-							}else{
+							}else{								
 								resolve(JSON.parse(body));
 							}
 						}));
