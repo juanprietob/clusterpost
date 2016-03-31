@@ -30,9 +30,9 @@ module.exports = function (conf) {
 			params.push("-cwd");
 			params.push(cwd);
 			params.push("-e");
-			params.push(path.join(cwd, doc._id + ".err"));
+			params.push(path.join(cwd, "stderr.err"));
 			params.push("-o");
-			params.push(path.join(cwd, doc._id + ".out"));
+			params.push(path.join(cwd, "stdout.out"));
 			params.push("-u");
 			params.push(doc.userEmail);
 			params.push("-J");

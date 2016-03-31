@@ -37,8 +37,8 @@ module.exports = function (conf) {
 			
 
 			try{
-				var out = fs.openSync(path.join(cwd, doc._id + ".out"), 'a');
-		    	var err = fs.openSync(path.join(cwd, doc._id + ".err"), 'a');
+				var out = fs.openSync(path.join(cwd, "stdout.out"), 'a');
+		    	var err = fs.openSync(path.join(cwd, "stderr.err"), 'a');
 
 				const runcommand = spawn(command, params, {
 					cwd: cwd,

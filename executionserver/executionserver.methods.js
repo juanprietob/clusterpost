@@ -247,18 +247,6 @@ module.exports = function (conf) {
 				return handler.addDocumentAttachment(latestdoc, output.name, path.join(cwd, output.name));
 			});
 			
-		}else if(output.type === 'STDOUT'){
-			return getlatestdoc
-			.then(function(latestdoc){
-				var outname = doc._id + ".out";
-				return handler.addDocumentAttachment(latestdoc, outname, path.join(cwd, outname));
-			});			
-		}else if(output.type === 'STDERR'){
-			return getlatestdoc
-			.then(function(latestdoc){
-				var outname = doc._id + ".err";
-				return handler.addDocumentAttachment(latestdoc, outname, path.join(cwd, outname));
-			});			
 		}else if(output.type === 'directory'){
 			return getlatestdoc
 			.then(function(latestdoc){
