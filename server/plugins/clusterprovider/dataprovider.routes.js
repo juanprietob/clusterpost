@@ -4,61 +4,7 @@ module.exports = function (server, conf) {
 	var handlers = require('./dataprovider.handlers')(server, conf);
 	var Joi = require('joi');
 
-	var parameter = Joi.object().keys({
-		flag: Joi.string().allow(''),
-      	name: Joi.string().allow('')
-	});
-
-	var output = Joi.object().keys({
-		type: Joi.string().valid('file', 'directory', 'STDOUT', 'STDERR'), 
-      	name: Joi.string()
-	});
-
-	var input = Joi.object().keys({
-      	name: Joi.string(),
-      	remote : Joi.object().keys({
-      		serverCodename: Joi.string().optional(),
-      		uri: Joi.string()
-      	}).optional()
-	});
-
-	var JobPost = Joi.object().keys({
-			type: Joi.string().required(),
-			userEmail: Joi.string().required(),			
-			executionserver: Joi.string().required(),
-			jobparameters: Joi.array().items(parameter).optional(),
-			executable: Joi.string().required(),			
-			parameters: Joi.array().items(parameter).min(1),
-			inputs: Joi.array().items(input).min(1),
-			outputs: Joi.array().items(output).min(1)
-        });
-
-	var Joijobstatus = Joi.object().keys({
-			status: Joi.string().valid('CREATE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
-			jobid: Joi.number().optional(),
-			stat: Joi.optional(),
-			error: Joi.optional(),
-			downloadstatus: Joi.array().items(Joi.object()).optional(),
-			uploadstatus: Joi.array().items(Joi.object()).optional()
-		});
-
-	var Job = Joi.object().keys({
-			_id: Joi.string().alphanum().required(),
-			_rev: Joi.string().required(),
-			type: Joi.string().required(),
-			userEmail: Joi.string().email().required(),
-			timestamp: Joi.date().required(),
-			jobstatus: Joijobstatus.required(),
-			executable: Joi.string().required(),
-			executionserver: Joi.string().required(),
-			jobparameters: Joi.optional(),
-			parameters: Joi.array().items(parameter).min(1),			
-			inputs: Joi.array().items(input).min(1),
-			outputs: Joi.array().items(output).min(1),
-			_attachments: Joi.optional()
-	    });
-
-			
+	var joijob = require('./joi.job')();
 
 	server.route({
 		path: '/dataprovider',
@@ -67,7 +13,7 @@ module.exports = function (server, conf) {
 			handler: handlers.createJob,
 			validate: {
 				query: false,
-		        payload: JobPost,
+		        payload: joijob.jobpost,
 		        params: false
 			},
 			payload:{
@@ -84,7 +30,7 @@ module.exports = function (server, conf) {
 			handler: handlers.updateJob,
 			validate: {
 				query: false,
-		        payload: Job,
+		        payload: joijob.job,
 		        params: false
 			},
 			payload:{
@@ -129,7 +75,7 @@ module.exports = function (server, conf) {
 			    payload: false
 			},
 			response: {
-				schema: Job
+				schema: joijob.job
 			},
 			description: 'Get the job document posted to the database'
 	    }
@@ -149,7 +95,7 @@ module.exports = function (server, conf) {
 			  	params: false
 			},
 			response: {
-				schema: Joi.array().items(Job).min(0)
+				schema: Joi.array().items(joijob.job).min(0)
 			},
 			description: 'Get the jobs posted to the database for a user.'
 	    }
