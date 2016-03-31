@@ -9,7 +9,7 @@ module.exports = function (conf) {
 	var Joi = require('joi');
 
 	var executionmethods = require('./executionserver.methods')(conf);
-	var joijob = require('./joi.job')();
+	var joijob = require('./joi.job')(Joi);
 
 	var handler = {};
 
