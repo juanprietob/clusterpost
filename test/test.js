@@ -4,16 +4,17 @@ var fs = require('fs');
 var Promise = require('bluebird');
 var path = require('path');
 
-
-const Code = require('code');   // assertion library
 const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
+const joijob = require("./joi.job")();
 
 
 var inputs = [
 	"./data/gravitational-waves-simulation.jpg"
 ];
+
+
 
 var createDocument = function(job){
 
@@ -49,6 +50,24 @@ var getDocument = function(id){
                 reject(err);
             }else{
                 resolve(JSON.parse(body));
+            }
+        });
+    });
+}
+
+var getDocumentAttachment = function(id, name){
+
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : "http://localhost:8180/dataprovider/" + id + "/" + name,
+            method: "GET"
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
             }
         });
     });
@@ -126,6 +145,26 @@ var updateJobStatus = function(jobid){
     });
 }
 
+var updateJobStatusRec = function(jobid){
+    var joijobstatus = Joi.object().keys({
+        jobid: Joi.number(),
+        status: Joi.string().valid('DONE'),
+        downloadstatus: Joi.array().items(Joi.object().keys({
+            path: Joi.string(),
+            status: Joi.boolean().valid(true)
+        })), 
+        uploadstatus: Joi.array().items(joiokres)
+    });
+
+    return updateJobStatus(jobid)
+    .then(function(jobstatus){
+        Joi.assert(jobstatus, joijobstatus);
+        return jobstatus;
+    })
+    .catch(function(e){
+        return updateJobStatusRec(jobid);
+    });
+}
 
 var job = {
         "executable": "cksum",
@@ -142,12 +181,12 @@ var job = {
         ],
         "outputs": [
             {
-                "type": "STDOUT",
-                "name": "*.out"
+                "type": "file",
+                "name": "stdout.out"
             },
             {
-                "type": "STDERR",
-                "name": "*.err"
+                "type": "file",
+                "name": "stderr.err"
             }
         ],
         "type": "job",
@@ -157,30 +196,31 @@ var job = {
 
 var jobid;
 
+var joiokres = Joi.object().keys({
+                ok: Joi.boolean().valid(true),
+                id: Joi.string(),
+                rev: Joi.string()
+            });
+
 lab.experiment("Test clusterpost", function(){
     lab.test('returns true when document is created', function(){
 
         return createDocument(job)
         .then(function(res){            
+            Joi.assert(res, joiokres);
             jobid = res.id;
             console.info("JOBID:", jobid);
-            Code.expect(res.ok).to.equal(true);
         });
     });
 
     lab.test('returns true when document is fetched', function(){
         
         return getDocument(jobid)
-        .then(function(jobdb){            
-            Code.expect(jobdb.jobstatus).to.deep.equal({
-                status: "CREATE"
-            });
-            delete jobdb.jobstatus;
-            Code.expect(jobdb.timestamp).to.be.a.string();
-            delete jobdb.timestamp;
-            delete jobdb._id;
-            delete jobdb._rev;
-            Code.expect(job).to.deep.equal(jobdb);
+        .then(function(job){
+            Joi.assert(job, joijob.job);
+            Joi.assert(job.jobstatus, Joi.object().keys({
+                status: Joi.string().valid("CREATE")
+            }))
         });        
     });
 
@@ -190,64 +230,39 @@ lab.experiment("Test clusterpost", function(){
             return uploadfile(jobid, filename);
         }, {concurrency: 1})
         .then(function(allupload){
-            for(var i = 0; i < allupload.length; i++){
-                Code.expect(allupload[i].ok).to.equal(true);
-            }
+            var joiupload = Joi.array().items(joiokres).min(1);
+            Joi.assert(allupload, joiupload);
         });
     });
 
 
     lab.test('returns true when job is executed', function(){
-
-        var joijobstatus = Joi.object().keys({
-            jobid: Joi.number(),
-            status: Joi.string().valid('RUN'),
-            downloadstatus: Joi.array().items(Joi.object().keys({
-                path: Joi.string(),
-                status: Joi.boolean().valid(true)
-            }))
-
-        })
-        
         return executeJob(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, joijobstatus);            
-        });
-    });
-
-    lab.test('returns true when job is executed', function(){
-
-        var joijobstatus = Joi.object().keys({
-            jobid: Joi.number(),
-            status: Joi.string().valid('RUN'),
-            downloadstatus: Joi.array().items(Joi.object().keys({
-                path: Joi.string(),
-                status: Joi.boolean().valid(true)
-            }))
-
-        })
-        
-        return executeJob(jobid)
-        .then(function(jobstatus){
-            Joi.assert(jobstatus, joijobstatus);            
+            Joi.assert(jobstatus, joijob.jobstatus);
         });
     });
 
     lab.test('returns true when jobstatus is updated', function(){
-
-        var joijobstatus = Joi.object().keys({
-            jobid: Joi.number(),
-            status: Joi.string().valid('RUN'),
-            downloadstatus: Joi.array().items(Joi.object().keys({
-                path: Joi.string(),
-                status: Joi.boolean().valid(true)
-            }))
-
-        })
-        
         return updateJobStatus(jobid)
         .then(function(jobstatus){
-            console.log(jobstatus);
+            Joi.assert(jobstatus, joijob.jobstatus);
+        });
+    });
+
+    lab.test('returns true until jobstatus is DONE', function(){
+        
+        return updateJobStatusRec(jobid)
+        .then(function(jobstatus){
+            Joi.assert(jobstatus, joijob.jobstatus);
+        });
+    });
+
+    lab.test('returns true if get attachment output stream is valid', function(){
+        return getDocumentAttachment(jobid, "stdout.out")
+        .then(function(stdout){
+            var value = "774035995 70572 gravitational-waves-simulation.jpg\n";
+            Joi.assert(stdout, Joi.string().valid(value));
         });
     });
 });

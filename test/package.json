@@ -17,7 +17,6 @@
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
   "devDependencies": {
-    "code": "^2.1.1",
     "joi": "^8.0.5",
     "lab": "^10.3.0"
   }
