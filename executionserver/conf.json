@@ -3,5 +3,5 @@
 		"hostname": "http://localhost:8180/dataprovider"
 	},
 	"engine" : "engine_unix", 
-	"storagedir" : "/Users/prieto/NetBeansProjects/clusterpost_storage"
+	"storagedir" : "./clusterpost_storage"
 }
