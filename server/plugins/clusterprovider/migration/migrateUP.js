@@ -72,7 +72,7 @@ const updateDocuments = function(db, viewsdir){
 					}
 
 					request(options, function(err, res, body){
-						var couchdesigndoc = body;
+						var couchdesigndoc = JSON.parse(body);
 
 				  		if(JSON.stringify(designdoc.views) !== JSON.stringify(couchdesigndoc.views)){
 
@@ -81,7 +81,7 @@ const updateDocuments = function(db, viewsdir){
 				  				designdoc._rev = couchdesigndoc._rev;
 				  				uri += "?rev="+designdoc._rev;
 				  			}
-					  		
+					  		console.log(couchdesigndoc);
 					  		var options = {
 								uri :  uri,
 								method : 'PUT',
