@@ -3,17 +3,22 @@
   "version": "1.0.0",
   "description": "Test the API of clusterpost",
   "main": "test.js",
-  "dependencies" : {
+  "dependencies": {
     "bluebird": "^3.3.0",
     "request": "^2.69.0",
     "underscore": "^1.8.3"
-    },
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "lab -m 0 test.js"
   },
   "keywords": [
     "test"
   ],
   "author": "juanprietob@gmail.com",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "code": "^2.1.1",
+    "joi": "^8.0.5",
+    "lab": "^10.3.0"
+  }
 }

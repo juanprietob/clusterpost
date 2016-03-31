@@ -49,8 +49,8 @@ var job = {
 
 
 var inputs = [
-	"/Users/prieto/NetBeansProjects/UNC/data/canine/atlas_DD_040_t1w.nrrd",
-	"/Users/prieto/NetBeansProjects/UNC/data/canine/DD_040_seg.nii.gz"
+	"/tools/atlas/canine/legMuscle/atlas_image/atlas_DD_040_t1w.nrrd",
+	"/tools/atlas/canine/legMuscle/atlas_image/segmentation/DD_040_seg.nii.gz"
 ];
 
 var uploadfile = function(params){
