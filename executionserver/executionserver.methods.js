@@ -62,6 +62,39 @@ module.exports = function (conf) {
 		});
 	}
 
+	const getAllFiles = function(dir, files){		
+		fs.readdirSync(dir).forEach(function(file) {	 
+        	var current = path.join(dir, file);       	
+			var stat = fs.statSync(current);
+			if (stat && stat.isDirectory()) {
+				getAllFiles(current, files);
+			}else {
+			    files.push(current);
+			}
+        });
+	}	
+
+	handler.addDocumentDirectoryAttachment = function(doc, cwd, dir){
+		var allfiles = [];
+		getAllFiles(path.join(cwd, dir), allfiles);
+
+		return Promise.map(allfiles, function(file){
+			var name = file.substr(cwd.length + 1);			
+			return handler.addDocumentAttachment(doc, name, file);
+		}, {concurrency: 1})
+		.then(function(status){
+			var ok = true;
+			_.each(status, function(s){
+				ok = ok&&s.ok;
+			});
+			return {
+				name: dir,
+				status: status,
+				ok: ok
+			}
+		});
+	}
+
 	handler.addDocumentAttachment = function(doc, name, path){
 		Joi.assert(doc._id, Joi.string().alphanum());
 		Joi.assert(name, Joi.string());
@@ -247,10 +280,15 @@ module.exports = function (conf) {
 				return handler.addDocumentAttachment(latestdoc, output.name, path.join(cwd, output.name));
 			});
 			
-		}else if(output.type === 'directory'){
+		}else if(output.type === 'tar.gz'){
 			return getlatestdoc
 			.then(function(latestdoc){
 				return handler.compressAndAddAttachment(latestdoc, cwd, output.name);
+			});
+		}else if(output.type === 'directory'){
+			return getlatestdoc
+			.then(function(latestdoc){
+				return handler.addDocumentDirectoryAttachment(latestdoc, cwd, output.name);
 			});
 		}else{
 			throw "Upload handler for " + output.type + "not available";
@@ -288,7 +326,7 @@ module.exports = function (conf) {
         var promparams = [];
 
         for(var i = 0; i < outputs.length; i++){
-            if(!uploadstatus || !uploadstatus[i].ok){
+            if(!uploadstatus || !uploadstatus[i] || !uploadstatus[i].ok){
                 promparams.push({
 					doc: doc,
 					output: outputs[i],

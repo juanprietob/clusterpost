@@ -170,7 +170,7 @@ var updateJobStatusRec = function(jobid){
             path: Joi.string(),
             status: Joi.boolean().valid(true)
         })), 
-        uploadstatus: Joi.array().items(joiokres)
+        uploadstatus: Joi.array().items(Joi.object())
     });
 
     return new Promise(function(resolve, reject){
@@ -202,6 +202,14 @@ var job = {
             }
         ],
         "outputs": [
+            {
+                "type": "directory",
+                "name": "./"
+            },            
+            {
+                "type": "tar.gz",
+                "name": "./"
+            },
             {
                 "type": "file",
                 "name": "stdout.out"

@@ -8,7 +8,7 @@ module.exports = function (Joi) {
 	});
 
 	joijob.output = Joi.object().keys({
-		type: Joi.string().valid('file', 'directory'), 
+		type: Joi.string().valid('file', 'directory', 'tar.gz'), 
       	name: Joi.string()
 	});
 
