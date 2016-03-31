@@ -62,23 +62,28 @@ module.exports = function (server, conf) {
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			if(req.params.name){
+
 				var name = req.params.name;
-				var att = _.find(doc.inputs, function(input){
-					return input.name === name;
-				});
-				if(!att){
-					att = _.find(doc.outputs, function(output){
-						return output.name === name;
+				if(doc._attachments && doc._attachments[name]){
+					rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name));
+				}else{
+					var att = _.find(doc.inputs, function(input){
+						return input.name === name;
 					});
+					if(!att){
+						att = _.find(doc.outputs, function(output){
+							return output.name === name;
+						});
+					}
+					if(!att){
+						throw "Attachment not found."
+					}					
+					if(att.type === 'tar.gz'){
+						name += ".tar.gz";
+					}
+					rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name, att.remote));
 				}
-				if(!att){
-					throw "Attachment not found."
-				}
-				var name = att.name;
-				if(att.type === 'directory' && name.indexOf(".tar.gz") === -1){
-					name += ".tar.gz";
-				}
-				rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name, att.remote));
+				
 			}else{
 				rep(doc);
 			}
