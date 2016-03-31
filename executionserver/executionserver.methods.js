@@ -12,54 +12,6 @@ module.exports = function (conf) {
 
 	var handler = {};
 
-	var transferitem = Joi.object().keys({
-		path: Joi.string().required(), 
-		status: Joi.boolean().required()
-	});
-
-	var parameter = Joi.object().keys({
-		flag: Joi.string().allow(''),
-      	name: Joi.string().allow('')
-	});
-
-	var output = Joi.object().keys({
-		type: Joi.string().valid('file', 'directory', 'STDOUT', 'STDERR'), 
-      	name: Joi.string()
-	});
-
-	var input = Joi.object().keys({
-      	name: Joi.string(),
-      	remote : Joi.object().keys({
-      		serverCodename: Joi.string().optional(),
-      		uri: Joi.string()
-      	}).optional()
-	});
-
-	handler.Joijobstatus = Joi.object().keys({
-			status: Joi.string().valid('CREATE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
-			jobid: Joi.number().optional(),
-			stat: Joi.optional(),
-			error: Joi.optional(),
-			downloadstatus: Joi.array().items(Joi.object()).optional(),
-			uploadstatus: Joi.array().items(Joi.object()).optional()
-		});
-
-	handler.Job = Joi.object().keys({
-			_id: Joi.string().alphanum().required(),
-			_rev: Joi.string().required(),
-			type: Joi.string().required(),
-			userEmail: Joi.string().email().required(),
-			timestamp: Joi.date().required(),
-			jobstatus: handler.Joijobstatus.required(),
-			executable: Joi.string().required(),
-			executionserver: Joi.string().required(),
-			jobparameters: Joi.optional(),
-			parameters: Joi.array().items(parameter).min(1),			
-			inputs: Joi.array().items(input).min(1),
-			outputs: Joi.array().items(output).min(1),
-			_attachments: Joi.optional()
-	    });
-
 	handler.getDataProvider = function(){
 
 		var couchserver = conf.dataprovider;
