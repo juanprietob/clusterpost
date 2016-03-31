@@ -55,7 +55,7 @@ module.exports = function (server, conf) {
 				var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
 			    server.methods.clusterprovider.getView(view)
 			    .then(function(docs){				    	
-			    	rep(_.pluck(docs, "value"));
+			    	rep(_.pluck(docs, "value")[0]);
 			    })
 			    .catch(function(e){
 			    	rep(Boom.badRequest(e));
@@ -94,7 +94,7 @@ module.exports = function (server, conf) {
 				var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
 			    server.methods.clusterprovider.getView(view)
 			    .then(function(docs){				    	
-			    	rep(_.pluck(docs, "value"));
+			    	rep(_.pluck(docs, "value")[0]);
 			    })
 			    .catch(function(e){
 			    	rep(Boom.badRequest(e));
@@ -130,7 +130,7 @@ module.exports = function (server, conf) {
 					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
 				    server.methods.clusterprovider.getView(view)
 				    .then(function(docs){				    	
-				    	resolve(_.pluck(docs, "value"));
+				    	resolve(_.pluck(docs, "value")[0]);
 				    })
 				    .catch(reject);
 				});
