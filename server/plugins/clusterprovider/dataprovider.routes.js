@@ -10,7 +10,7 @@ module.exports = function (server, conf) {
 	});
 
 	var output = Joi.object().keys({
-		type: Joi.string().valid('file', 'directory'), 
+		type: Joi.string().valid('file', 'directory', 'STDOUT', 'STDERR'), 
       	name: Joi.string()
 	});
 
