@@ -7,7 +7,7 @@ var path = require('path');
 const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
-const joijob = require("./joi.job")();
+const joijob = require("./joi.job")(Joi);
 
 
 var inputs = [
@@ -173,14 +173,19 @@ var updateJobStatusRec = function(jobid){
         uploadstatus: Joi.array().items(joiokres)
     });
 
-    return updateJobStatus(jobid)
-    .then(function(jobstatus){
-        Joi.assert(jobstatus, joijobstatus);
-        return jobstatus;
+    return new Promise(function(resolve, reject){
+        setTimeout(resolve, 5000);
     })
-    .catch(function(e){
-        return updateJobStatusRec(jobid);
-    });
+    .then(function(){
+        return updateJobStatus(jobid)
+        .then(function(jobstatus){
+            Joi.assert(jobstatus, joijobstatus);
+            return jobstatus;
+        })
+        .catch(function(e){
+            return updateJobStatusRec(jobid);
+        });
+    })
 }
 
 var job = {
@@ -283,11 +288,14 @@ lab.experiment("Test clusterpost", function(){
         });
     });
 
-    lab.test('returns true if get attachment output stream is valid', function(){
-        return getDocumentAttachment(jobid, "stdout.out")
+    lab.test('returns true if get attachment output stream is valid', function(done){
+        getDocumentAttachment(jobid, "stdout.out")
         .then(function(stdout){
-            var value = "774035995 70572 gravitational-waves-simulation.jpg\n";
-            Joi.assert(stdout, Joi.string().valid(value));
+            var value = "774035995 70572 gravitational-waves-simulation.jpg";
+            if(stdout.indexOf(value) === -1){
+                done("Output validation not found: " + value);
+            }
+            done();
         });
     });
 });

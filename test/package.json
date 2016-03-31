@@ -9,7 +9,7 @@
     "underscore": "^1.8.3"
   },
   "scripts": {
-    "test": "lab -t 100 -v -m 10000 test.js"
+    "test": "lab -v -m 60000 test.js"
   },
   "keywords": [
     "test"
