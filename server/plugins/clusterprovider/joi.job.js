@@ -1,6 +1,4 @@
-module.exports = function () {
-	
-	var Joi = require('joi');
+module.exports = function (Joi) {
 
 	var joijob = {};
 

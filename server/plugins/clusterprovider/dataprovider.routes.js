@@ -4,7 +4,7 @@ module.exports = function (server, conf) {
 	var handlers = require('./dataprovider.handlers')(server, conf);
 	var Joi = require('joi');
 
-	var joijob = require('./joi.job')();
+	var joijob = require('./joi.job')(Joi);
 
 	server.route({
 		path: '/dataprovider',
