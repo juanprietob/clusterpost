@@ -14,7 +14,24 @@ var inputs = [
 	"./data/gravitational-waves-simulation.jpg"
 ];
 
+var getExecutionServers = function(){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : "http://localhost:8180/executionserver",
+            method: "GET"
+        }
 
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(JSON.parse(body));
+            }
+        });
+
+
+    });
+}
 
 var createDocument = function(job){
 
@@ -190,8 +207,7 @@ var job = {
             }
         ],
         "type": "job",
-        "userEmail": "juanprietob@gmail.com",
-        "executionserver" : "testserver"
+        "userEmail": "juanprietob@gmail.com"
     };
 
 var jobid;
@@ -203,6 +219,15 @@ var joiokres = Joi.object().keys({
             });
 
 lab.experiment("Test clusterpost", function(){
+    lab.test('returns true when executionservers are fetched', function(){
+
+        return getExecutionServers()
+        .then(function(res){
+            job.executionserver = res[0].name;
+        });
+    });
+
+
     lab.test('returns true when document is created', function(){
 
         return createDocument(job)
