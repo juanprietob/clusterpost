@@ -91,6 +91,38 @@ module.exports = function (server, conf) {
 	    options: {}
 	});
 
+	const deleteDocument = function(id, rev){
+		return new Promise(function(resolve, reject){
+			try{
+				var options = {
+					uri: getCouchDBServer() + "/" + id + "?rev=" + rev,
+					method: 'DELETE'
+				}				
+				request(options, function(err, res, body){
+					if(err){
+						reject(err);
+					}else{
+						var doc = JSON.parse(body);
+						if(doc.error){
+							reject(doc);
+						}else{
+							resolve(doc);
+						}
+					}
+				});
+
+			}catch(e){
+				reject(e);
+			}
+		});
+	}
+
+	server.method({
+	    name: 'clusterprovider.deleteDocument',
+	    method: deleteDocument,
+	    options: {}
+	});
+
 	const addDocumentAttachment = function(doc, name, stream){
 		return new Promise(function(resolve, reject){
 

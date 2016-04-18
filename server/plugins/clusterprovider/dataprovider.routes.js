@@ -24,6 +24,25 @@ module.exports = function (server, conf) {
 	});
 
 	server.route({
+		path: '/dataprovider/{id}',
+		method: 'DELETE',
+		config: {
+			handler: handlers.deleteJob,
+			validate: {
+			  	query: false,
+			    params: {
+			    	id: Joi.string().alphanum().required()
+			    }, 
+			    payload: false
+			},
+			payload:{
+				output: 'data'
+			},
+			description: 'This route will be used to delete job documents from the database'
+		}
+	});
+
+	server.route({
 		path: '/dataprovider',
 		method: 'PUT',
 		config: {

@@ -34,6 +34,8 @@ module.exports = function (server, conf) {
 		
 	}
 
+	/*
+	*/
 	handler.updateJob = function(req, rep){
 		server.methods.clusterprovider.uploadDocumentsDataProvider(req.payload)
 		.then(rep)
@@ -93,6 +95,18 @@ module.exports = function (server, conf) {
 			rep(Boom.notFound(e));
 		});
 		
+	}
+
+	handler.deleteJob = function(req, rep){
+
+		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.deleteDocument(doc._id, doc._rev);
+		})
+		.then(rep)
+		.catch(function(e){
+			rep(Boom.badData(e));
+		});
 	}
 
 	/*
