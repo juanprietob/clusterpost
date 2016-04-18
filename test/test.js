@@ -9,6 +9,24 @@ const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 const joijob = require("./joi.job")(Joi);
 
+const getConfigFile = function (env, base_directory) {
+  try {
+    // Try to load the user's personal configuration file
+    return require(base_directory + '/conf.my.' + env + '.json');
+  } catch (e) {
+    // Else, read the default configuration file
+    return require(base_directory + '/conf.' + env + '.json');
+  }
+};
+
+var env = process.env.NODE_ENV;
+if(!env) throw "Please set NODE_ENV variable.";
+
+var conf = getConfigFile(env, "./")
+
+var getClusterPostServer = function(){
+    return conf.uri 
+}
 
 var inputs = [
 	"./data/gravitational-waves-simulation.jpg"
@@ -17,7 +35,7 @@ var inputs = [
 var getExecutionServers = function(){
     return new Promise(function(resolve, reject){
         var options = {
-            url : "http://localhost:8180/executionserver",
+            url : getClusterPostServer() + "/executionserver",
             method: "GET"
         }
 
@@ -37,7 +55,7 @@ var createDocument = function(job){
 
     return new Promise(function(resolve, reject){
         var options = {
-            url : "http://localhost:8180/dataprovider",
+            url : getClusterPostServer() + "/dataprovider",
             method: "POST",
             json: job
         }
@@ -58,7 +76,7 @@ var getDocument = function(id){
 
     return new Promise(function(resolve, reject){
         var options = {
-            url : "http://localhost:8180/dataprovider/" + id,
+            url : getClusterPostServer() + "/dataprovider/" + id,
             method: "GET"
         }
 
@@ -76,7 +94,7 @@ var getDocumentAttachment = function(id, name){
 
     return new Promise(function(resolve, reject){
         var options = {
-            url : "http://localhost:8180/dataprovider/" + id + "/" + name,
+            url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
             method: "GET"
         }
 
@@ -96,7 +114,7 @@ var uploadfile = function(jobid, filename){
 
         try{
             var options = {
-                url : "http://localhost:8180/dataprovider/" + jobid + "/" + path.basename(filename),
+                url : getClusterPostServer() + "/dataprovider/" + jobid + "/" + path.basename(filename),
                 method: "PUT",
                 headers:{
                     "Content-Type": "application/octet-stream"
@@ -124,7 +142,7 @@ var executeJob = function(jobid){
     return new Promise(function(resolve, reject){
         try{
             var options = {
-                url : "http://localhost:8180/executionserver/" + jobid,
+                url : getClusterPostServer() + "/executionserver/" + jobid,
                 method: "POST"
             }
 
@@ -145,7 +163,7 @@ var updateJobStatus = function(jobid){
     return new Promise(function(resolve, reject){
         try{
             var options = {
-                url : "http://localhost:8180/executionserver/" + jobid,
+                url : getClusterPostServer() + "/executionserver/" + jobid,
                 method: "GET"
             }
 
@@ -186,6 +204,23 @@ var updateJobStatusRec = function(jobid){
             return updateJobStatusRec(jobid);
         });
     })
+}
+
+var deleteJob = function(jobid){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : getClusterPostServer() + "/dataprovider/" + jobid,
+            method: "DELETE"
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(JSON.parse(body));
+            }
+        });
+    });
 }
 
 var job = {
@@ -304,6 +339,13 @@ lab.experiment("Test clusterpost", function(){
                 done("Output validation not found: " + value);
             }
             done();
+        });
+    });
+
+    lab.test('returns true if the document is deleted', function(){
+        return deleteJob(jobid)
+        .then(function(res){
+            Joi.assert(res, joiokres);
         });
     });
 });
