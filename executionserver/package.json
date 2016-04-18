@@ -16,8 +16,8 @@
   "dependencies": {
     "bluebird": "^3.3.0",
     "joi": "^7.3.0",
+    "node-targz": "0.0.3",
     "request": "^2.69.0",
-    "tar.gz": "^1.0.3",
     "underscore": "^1.8.3"
   }
 }

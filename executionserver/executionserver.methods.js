@@ -6,7 +6,7 @@ module.exports = function (conf) {
 	var Promise = require('bluebird');
 	var _ = require("underscore");
 	var path = require("path");
-	var targz = require('tar.gz');
+	var tarGzip = require('node-targz');
 	var Joi = require('joi');
 
 
@@ -240,17 +240,13 @@ module.exports = function (conf) {
 			var tarname = dirname + ".tar.gz";
 
 			try{
-				var read = targz().createReadStream(dirname);
-				var write = fs.createWriteStream(tarname);
-				
-				read.pipe(write);
-				
-				write.on('close', function(err){
-					if(err) resolve({
-						"error" : err
-					})
+
+				tarGzip.compress({
+				    source: dirname,
+				    destination: tarname
+				}, function(){
 					resolve(tarname);
-				})
+				});
 
 			}catch(e){
 				reject(e);
