@@ -9,6 +9,11 @@ module.exports = function (conf) {
 	var tarGzip = require('node-targz');
 	var Joi = require('joi');
 
+	var agentOptions = {};
+
+	if(conf.tls && conf.tls.cert){
+	    agentOptions.ca = fs.readFileSync(conf.tls.cert);
+	}
 
 	var handler = {};
 
@@ -28,7 +33,8 @@ module.exports = function (conf) {
         		var options = { 
 	                uri: handler.getDataProvider(),
 	                method: 'PUT', 
-	                json : doc
+	                json : doc, 
+	                agentOptions: agentOptions
 	            };
 	            
 	            request(options, function(err, res, body){
@@ -47,7 +53,8 @@ module.exports = function (conf) {
 		return new Promise(function(resolve, reject){
 			try{
 				var options = {
-					uri: handler.getDataProvider() + "/" + id
+					uri: handler.getDataProvider() + "/" + id, 
+	                agentOptions: agentOptions
 				}
 				request(options, function(err, res, body){
 					if(err){
@@ -107,7 +114,8 @@ module.exports = function (conf) {
 					method: 'PUT',
 					headers: {
 						"Content-Type": "application/octet-stream"
-					}
+					}, 
+	                agentOptions: agentOptions
 				}
 
 				try{
@@ -151,7 +159,8 @@ module.exports = function (conf) {
 
 			try{
 				var options = {
-					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name
+					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name, 
+	                agentOptions: agentOptions
 				}
 
 				var filepath = path.join(cwd, input.name);
