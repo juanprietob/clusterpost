@@ -50,16 +50,17 @@ module.exports = function (server, conf) {
 				if(code !== 0 || allerror !== ''){
 					console.error(allerror);
 					console.log(alldata);
+					rep(Boom.badRequest(allerror));
+				}else{
+					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
+				    server.methods.clusterprovider.getView(view)
+				    .then(function(docs){				    	
+				    	rep(_.pluck(docs, "value")[0]);
+				    })
+				    .catch(function(e){
+				    	rep(Boom.badRequest(e));
+				    });
 				}
-
-				var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
-			    server.methods.clusterprovider.getView(view)
-			    .then(function(docs){				    	
-			    	rep(_.pluck(docs, "value")[0]);
-			    })
-			    .catch(function(e){
-			    	rep(Boom.badRequest(e));
-			    });
 			});
 		}).catch(function(e){
 			rep(Boom.badRequest(e));
