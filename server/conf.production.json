@@ -1,6 +1,10 @@
 {
 	"host": "localhost",
 	"port": 8180,
+	"tls" : {
+		"key": "./tls/ca.key.pem",
+		"cert": "./tls/ca.cert.pem"
+	},
 	"plugins": {
 		"vision": {},
 		"inert": {},

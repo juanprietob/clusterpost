@@ -26,9 +26,15 @@ server.method({
 
 var conf = server.methods.getConfigFile(env, "./")
 
+const tls = {
+  key: fs.readFileSync(conf.tls.key),
+  cert: fs.readFileSync(conf.tls.cert)
+};
+
 server.connection({ 
     host: conf.host,
-    port: conf.port
+    port: conf.port,
+    tls: tls
 });
 
 var plugins = [];
