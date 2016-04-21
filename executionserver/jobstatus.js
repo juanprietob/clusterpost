@@ -1,5 +1,4 @@
-var request = require('request');
-var fs = require('fs');
+
 var _ = require('underscore');
 
 var jobid = undefined;

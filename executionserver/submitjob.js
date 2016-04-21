@@ -1,5 +1,5 @@
-var request = require('request');
-var fs = require('fs');
+
+
 var _ = require('underscore');
 
 var jobid = undefined;
@@ -45,12 +45,9 @@ var options = {
 
 var clusterengine = require("./" + conf.engine)(conf);
 
-request(options, function(err, res, body){
-    if(err){
-        console.error(err);
-        return 1;
-    }
-    var doc = JSON.parse(body);
+executionmethods.getDocument(jobid)
+.then(function(doc){    
+    
     var cwd = executionmethods.createDirectoryCWD(doc);
 
     const submitJob = function(subdoc){
@@ -106,8 +103,9 @@ request(options, function(err, res, body){
         });
     }
 
-    sjprom
-    .then(console.log)
-    .catch(console.error);
+    return sjprom;
     
-});
+    
+})
+.then(console.log)
+.catch(console.error);
