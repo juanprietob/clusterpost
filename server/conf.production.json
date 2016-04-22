@@ -10,6 +10,8 @@
 		"inert": {},
 		"lout": {},
 		"h2o2": {},
+		"hapi-auth-jwt": {},
+		"./plugins/clusterauth": {"env": "production"},
 		"./plugins/clusterprovider": {"env": "production"}
 	}
 }

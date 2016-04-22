@@ -1,0 +1,7 @@
+{
+	"privateKey": "generateSomeKey",
+	"saltRounds": 10,
+	"algorithm": { 
+		"algorithm": "HS256"
+	}
+}
