@@ -9,28 +9,49 @@ module.exports = function (server, conf) {
 
 	var handler = {};
 
+	const sign = function(user){
+		var token = {};
+		token.token = jwt.sign(user, conf.privateKey, conf.algorithm );
+		return token;
+	}
+
+	server.method({
+		name: 'jwtauth.sign',
+		method: sign,
+		options: {}
+	})
+
 	handler.validate = function (req, decodedToken, callback) {
-
-
-		return server.methods.clusterprovider.getView('_design/user/_view/info?key=' + JSON.stringify(decodedToken.email))
-		.then(function(info){
-			var info = _.pluck(info, "value");
-
-			if(info.length > 1){
-				throw "More than 1 user with same email found in DB!";
-			}else if(info.length === 0){
-				throw "User not found in DB!";
+		
+		if(decodedToken.executionserver){
+			var exs = server.methods.executionserver.getExecutionServer(decodedToken.executionserver);
+			if(exs){
+				exs.scope = ['executionserver'];
+				callback(undefined, true, exs);
+			}else{
+				callback(Boom.unauthorized(exs));
 			}
+		}else{
+			return server.methods.clusterprovider.getView('_design/user/_view/info?key=' + JSON.stringify(decodedToken.email))
+			.then(function(info){
+				var info = _.pluck(info, "value");
 
-			return info[0];
-			
-		})
-		.then(function(userinfo){
-			callback(undefined, true, userinfo);
-		})
-		.catch(function(err){
-			callback(err, false, undefined);
-		});
+				if(info.length > 1){
+					throw "More than 1 user with same email found in DB!";
+				}else if(info.length === 0){
+					throw "User not found";
+				}
+
+				return info[0];
+				
+			})
+			.then(function(userinfo){
+				callback(undefined, true, userinfo);
+			})
+			.catch(function(err){
+				callback(Boom.unauthorized(err));
+			});
+		}
 	}
 
 	const bcryptHash = function(password){
@@ -71,9 +92,7 @@ module.exports = function (server, conf) {
 			.then(function(res){
 				res = res[0];
 				if(res.ok){
-					return {
-						token: jwt.sign({ email: user.email }, conf.privateKey, conf.algorithm )
-					};
+					return server.methods.jwtauth.sign({ email: user.email });
 				}else{
 					throw Boom.badData(res);
 				}
@@ -98,7 +117,7 @@ module.exports = function (server, conf) {
 			return new Promise(function(resolve, reject){
 				bcrypt.compare(password, hash, function(err, res) {
 					if(res){
-						resolve({ token: jwt.sign({ email: email }, conf.privateKey, conf.algorithm ) });
+						resolve(server.methods.jwtauth.sign({ email: email }));
 					}else{
 						reject(err);
 					}

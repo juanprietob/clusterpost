@@ -69,5 +69,9 @@ server.register(plugins, function(err){
 
     server.start(function () {
         server.log('info', 'Server running at: ' + server.info.uri);
+        server.methods.executionserver.startExecutionServers()
+        .then(function(){
+            console.log("Execution servers started.");
+        });
     });
 });

@@ -4,11 +4,67 @@ var Promise = require('bluebird');
 var Hapi = require('hapi');
 var Boom = require('boom');
 var spawn = require('child_process').spawn;
+var fs = require('fs');
+var os = require('os');
+var path = require('path');
 
 module.exports = function (server, conf) {
 	
 
 	var handler = {};
+
+	const startExecutionServers = function(){
+		return Promise.map(_.keys(conf.executionservers), function(eskey){
+			return new Promise(function(resolve, reject){
+				var token = server.methods.jwtauth.sign({ executionserver: eskey });
+				var filename = path.join(os.tmpdir(), "." + eskey);
+				fs.writeFile(filename, JSON.stringify(token), function(err){
+					if(err){
+						reject(err);
+					}else{
+						resolve(filename);
+					}
+				})
+			})
+			.then(function(filename){
+				return new Promise(function(resolve, reject){
+					var executionserver = conf.executionservers[eskey];
+					var destination = path.join(executionserver.sourcedir, ".token");
+					
+					const scp = spawn('scp', ['-i', executionserver.identityfile, filename, executionserver.user + "@" + executionserver.hostname + ":" + destination ]);
+					var alldata = "";
+					scp.stdout.on('data', function(data){
+						alldata += data;
+					});
+
+					var allerror = "";
+					scp.stderr.on('data', function(data){
+						allerror += data;
+					});
+
+					scp.on('close', function(code){
+						if(code !== 0 || allerror !== ''){
+							reject(allerror);
+						}else{
+							resolve(filename);
+						}
+					});
+				});
+			})
+			.then(function(filename){
+				fs.unlink(filename);
+			})
+			.catch(function(err){
+				console.error(err);
+			});
+		});
+	}
+
+	server.method({
+		name: "executionserver.startExecutionServers",
+		method: startExecutionServers,
+		options: {}
+	});
 
 	handler.getExecutionServers = function(req, rep){
 		var executionservers = [];
@@ -23,6 +79,16 @@ module.exports = function (server, conf) {
 		});
 		rep(executionservers);
 	}
+
+	const getExecutionServer = function(key){
+		return conf.executionservers[key];
+	}
+
+	server.method({
+		name: 'executionserver.getExecutionServer',
+		method: getExecutionServer,
+		options: {}
+	});
 	/*
 	*/
 	handler.submitJob = function(req, rep){

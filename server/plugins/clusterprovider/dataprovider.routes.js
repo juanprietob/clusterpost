@@ -12,7 +12,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['clusterpost', 'executionserver']
             },
 			handler: handlers.createJob,
 			validate: {
@@ -56,7 +56,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['clusterpost', 'executionserver']
             },
 			handler: handlers.updateJob,
 			validate: {
@@ -77,7 +77,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['clusterpost', 'executionserver']
             },
 			handler: handlers.addData,
 	      	validate: {
@@ -103,7 +103,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['clusterpost', 'executionserver']
             },
 			handler: handlers.getJob,
 			validate: {
@@ -150,7 +150,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['clusterpost', 'executionserver']
             },
 			handler: handlers.getJob,
 			validate: {
