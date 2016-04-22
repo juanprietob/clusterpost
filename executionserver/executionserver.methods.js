@@ -8,11 +8,21 @@ module.exports = function (conf) {
 	var path = require("path");
 	var tarGzip = require('node-targz');
 	var Joi = require('joi');
+	var joijob = require('./joi.job')(Joi);
 
 	var agentOptions = {};
 
 	if(conf.tls && conf.tls.cert){
 	    agentOptions.ca = fs.readFileSync(conf.tls.cert);
+	}
+
+	var token;
+
+	try{
+		var tokenfile = path.join(__dirname, ".token");
+		token = "Bearer " + JSON.parse(fs.readFileSync(tokenfile)).token;
+	}catch(e){
+		console.error(e);
 	}
 
 	var handler = {};
@@ -34,7 +44,8 @@ module.exports = function (conf) {
 	                uri: handler.getDataProvider(),
 	                method: 'PUT', 
 	                json : doc, 
-	                agentOptions: agentOptions
+	                agentOptions: agentOptions,
+            		headers: { authorization: token }
 	            };
 	            
 	            request(options, function(err, res, body){
@@ -54,13 +65,17 @@ module.exports = function (conf) {
 			try{
 				var options = {
 					uri: handler.getDataProvider() + "/" + id, 
-	                agentOptions: agentOptions
+	                agentOptions: agentOptions,
+            		headers: { authorization: token }
 				}
 				request(options, function(err, res, body){
 					if(err){
 						reject(err);
-					} 
-					resolve(JSON.parse(body));
+					}else{
+						var job = JSON.parse(body);
+						Joi.assert(job, joijob.job);
+						resolve(job);
+					}
 				});
 			}catch(e){
 				reject(e);
@@ -115,7 +130,8 @@ module.exports = function (conf) {
 					headers: {
 						"Content-Type": "application/octet-stream"
 					}, 
-	                agentOptions: agentOptions
+	                agentOptions: agentOptions,
+            		headers: { authorization: token }
 				}
 
 				try{
@@ -160,7 +176,8 @@ module.exports = function (conf) {
 			try{
 				var options = {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name, 
-	                agentOptions: agentOptions
+	                agentOptions: agentOptions,
+            		headers: { authorization: token }
 				}
 
 				var filepath = path.join(cwd, input.name);

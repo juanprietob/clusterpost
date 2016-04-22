@@ -39,10 +39,6 @@ var conf = getConfigFile("./");
 
 var executionmethods = require('./executionserver.methods')(conf);
 
-var options = {
-  uri: executionmethods.getDataProvider() + "/" + jobid
-}
-
 var clusterengine = require("./" + conf.engine)(conf);
 
 executionmethods.getDocument(jobid)
@@ -50,8 +46,7 @@ executionmethods.getDocument(jobid)
     
     var cwd = executionmethods.createDirectoryCWD(doc);
 
-    const submitJob = function(subdoc){
-        
+    const submitJob = function(subdoc){        
         return executionmethods.getAllDocumentInputs(subdoc, cwd)
             .bind({})
             .then(function(downloadstatus){                
