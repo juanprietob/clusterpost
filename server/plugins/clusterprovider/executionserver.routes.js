@@ -8,14 +8,18 @@ module.exports = function (server, conf) {
 		method: 'GET',
 		path: "/executionserver",
 		config: {
-	      handler: handlers.getExecutionServers,
-	      response: {
-	      	schema: Joi.array().items(Joi.object().keys({
-	      		name: Joi.string(),
-	      		queues: Joi.array().items(Joi.string()).optional()
-	      	}))
-	      },
-	      description: 'Get execution servers code names'
+			auth: {
+				strategy: 'token',
+				scope: ['clusterpost']
+			},
+			handler: handlers.getExecutionServers,
+			response: {
+				schema: Joi.array().items(Joi.object().keys({
+					name: Joi.string(),
+					queues: Joi.array().items(Joi.string()).optional()
+				}))
+			},
+			description: 'Get execution servers code names'
 	    }
 	});
 
@@ -23,48 +27,60 @@ module.exports = function (server, conf) {
 		method: 'POST',
 		path: "/executionserver/{id}",
 		config: {
-	      handler: handlers.submitJob,
-	      validate: {
-	      	params: {
-	      		id: Joi.string().alphanum().required()
-	      	},
-	      	query: false,
-	      	payload: false
-	      },
-	      description: 'Start job execution'
-	    }
+			auth: {
+				strategy: 'token',
+				scope: ['clusterpost']
+			},
+			handler: handlers.submitJob,
+			validate: {
+				params: {
+					id: Joi.string().alphanum().required()
+				},
+				query: false,
+				payload: false
+			},
+			description: 'Start job execution'
+		}
 	});
 
 	server.route({
 		method: 'DELETE',
 		path: "/executionserver/{id}",
 		config: {
-	      handler: handlers.killJob,
-	      validate: {
-	      	params: {
-	      		id: Joi.string().alphanum().required()
-	      	},
-	      	query: false,
-	      	payload: false
-	      },
-	      description: 'Kill a running job'
-	    }
+			auth: {
+				strategy: 'token',
+				scope: ['clusterpost']
+			},
+      handler: handlers.killJob,
+      validate: {
+      	params: {
+      		id: Joi.string().alphanum().required()
+      	},
+      	query: false,
+      	payload: false
+      },
+      description: 'Kill a running job'
+    }
 	});
 
 	server.route({
 		method: 'GET',
 		path: "/executionserver/{id}",
 		config: {
-	      handler: handlers.jobStatus,
-	      validate:{
-	      	params: {
-	      		id: Joi.string().alphanum().required()
-	      	},
-	      	query: false,
-	      	payload: false
-	      },
-	      description: 'Update job status'
-	    }
+			auth: {
+				strategy: 'token',
+				scope: ['clusterpost']
+			},
+      handler: handlers.jobStatus,
+      validate:{
+      	params: {
+      		id: Joi.string().alphanum().required()
+      	},
+      	query: false,
+      	payload: false
+      },
+      description: 'Update job status'
+    }
 	});
 }
 

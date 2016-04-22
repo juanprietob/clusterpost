@@ -10,6 +10,10 @@ module.exports = function (server, conf) {
 		path: '/dataprovider',
 		method: 'POST',
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.createJob,
 			validate: {
 				query: false,
@@ -27,6 +31,10 @@ module.exports = function (server, conf) {
 		path: '/dataprovider/{id}',
 		method: 'DELETE',
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.deleteJob,
 			validate: {
 			  	query: false,
@@ -46,6 +54,10 @@ module.exports = function (server, conf) {
 		path: '/dataprovider',
 		method: 'PUT',
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.updateJob,
 			validate: {
 				query: false,
@@ -63,6 +75,10 @@ module.exports = function (server, conf) {
 		method: 'PUT',
 		path: "/dataprovider/{id}/{name}",
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.addData,
 	      	validate: {
 		      	query: false,
@@ -85,6 +101,10 @@ module.exports = function (server, conf) {
 		method: 'GET',
 		path: "/dataprovider/{id}",
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.getJob,
 			validate: {
 			  	query: false,
@@ -104,6 +124,10 @@ module.exports = function (server, conf) {
 		method: 'GET',
 		path: "/dataprovider/user",
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.getUserJobs,
 			validate: {
 			  	query: Joi.object().keys({
@@ -124,6 +148,10 @@ module.exports = function (server, conf) {
 		method: 'GET',
 		path: "/dataprovider/{id}/{name}",
 		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
 			handler: handlers.getJob,
 			validate: {
 			  	query: false,
