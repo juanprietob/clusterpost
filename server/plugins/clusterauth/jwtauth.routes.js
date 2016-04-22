@@ -23,16 +23,33 @@ module.exports = function (server, conf) {
 
     server.route({
         method: 'POST',
-        path: '/clusterauth/createUser',
+        path: '/clusterauth/user',
         config: {
             auth: false,
+            handler: handlers.createUser,
             validate: {
                 query: false,
                 payload: joiuser,
                 params: false
+            },
+            response: {
+                schema: Joi.object().keys({
+                    token: Joi.string().required()
+                })
             }
-        },
-        handler: handlers.createUser
+        }
+    });
+
+    server.route({
+        method: 'DELETE',
+        path: '/clusterauth/user',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
+            handler: handlers.deleteUser
+        }
     });
 
     server.route({
@@ -44,24 +61,13 @@ module.exports = function (server, conf) {
                 query: false,
                 payload: joilogin,
                 params: false
+            },
+            handler: handlers.login,
+            response: {
+                schema: Joi.object().keys({
+                    token: Joi.string().required()
+                })
             }
-        },
-        handler: handlers.login
-    });
-
-    // With scope requirements
-    server.route({
-        method: 'GET',
-        path: '/withScope',
-        config: {
-            auth: {
-                strategy: 'token',
-                scope: ['a']
-            }
-        },
-        handler: function(req, rep){
-            console.log(req.auth)
-            rep("AUTH token");
         }
     });
 
