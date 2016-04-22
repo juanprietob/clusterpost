@@ -1,3 +1,6 @@
 {
-	"uri": "http://localhost:8180"
+	"uri": "https://localhost:8180", 
+	"tls": {
+		"cert": "./certificate.pem"
+	}
 }

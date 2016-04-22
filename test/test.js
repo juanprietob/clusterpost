@@ -22,7 +22,13 @@ const getConfigFile = function (env, base_directory) {
 var env = process.env.NODE_ENV;
 if(!env) throw "Please set NODE_ENV variable.";
 
-var conf = getConfigFile(env, "./")
+var conf = getConfigFile(env, "./");
+
+var agentOptions = {};
+
+if(conf.tls && conf.tls.cert){
+    agentOptions.ca = fs.readFileSync(conf.tls.cert);
+}
 
 var getClusterPostServer = function(){
     return conf.uri 
@@ -36,7 +42,8 @@ var getExecutionServers = function(){
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/executionserver",
-            method: "GET"
+            method: "GET",
+            agentOptions: agentOptions
         }
 
         request(options, function(err, res, body){
@@ -57,7 +64,8 @@ var createDocument = function(job){
         var options = {
             url : getClusterPostServer() + "/dataprovider",
             method: "POST",
-            json: job
+            json: job,
+            agentOptions: agentOptions
         }
 
         request(options, function(err, res, body){
@@ -77,7 +85,8 @@ var getDocument = function(id){
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + id,
-            method: "GET"
+            method: "GET",
+            agentOptions: agentOptions
         }
 
         request(options, function(err, res, body){
@@ -95,7 +104,8 @@ var getDocumentAttachment = function(id, name){
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
-            method: "GET"
+            method: "GET",
+            agentOptions: agentOptions
         }
 
         request(options, function(err, res, body){
@@ -118,7 +128,8 @@ var uploadfile = function(jobid, filename){
                 method: "PUT",
                 headers:{
                     "Content-Type": "application/octet-stream"
-                }
+                },
+                agentOptions: agentOptions
             }
 
             var stream = fs.createReadStream(filename);
@@ -143,7 +154,8 @@ var executeJob = function(jobid){
         try{
             var options = {
                 url : getClusterPostServer() + "/executionserver/" + jobid,
-                method: "POST"
+                method: "POST",
+                agentOptions: agentOptions
             }
 
             request(options, function(err, res, body){
@@ -164,7 +176,8 @@ var updateJobStatus = function(jobid){
         try{
             var options = {
                 url : getClusterPostServer() + "/executionserver/" + jobid,
-                method: "GET"
+                method: "GET",
+                agentOptions: agentOptions
             }
 
             request(options, function(err, res, body){
@@ -210,7 +223,8 @@ var deleteJob = function(jobid){
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + jobid,
-            method: "DELETE"
+            method: "DELETE",
+            agentOptions: agentOptions
         }
 
         request(options, function(err, res, body){
