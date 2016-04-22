@@ -24,7 +24,16 @@ module.exports = function (conf) {
 			var params = [];
 
 			if(doc.jobparameters){
-				params = doc.jobparameters;
+				for(var i = 0; i < doc.jobparameters.length; i++){
+                                        var param = doc.jobparameters[i];
+                                        if(param.flag){
+                                                params.push(param.flag);
+                                        }
+                                        if(param.name){
+                                                params.push(param.name);
+                                        }
+                                }
+
 			}
 
 			params.push("-cwd");
@@ -38,7 +47,7 @@ module.exports = function (conf) {
 			params.push("-J");
 			params.push(doc.userEmail);
 
-
+			
 			params.push(doc.executable);
 			if(parameters){
 				for(var i = 0; i < parameters.length; i++){
@@ -51,6 +60,8 @@ module.exports = function (conf) {
 					}
 				}
 			}			
+
+			console.log(params);
 
 			try{
 				const runcommand = spawn(command, params);
