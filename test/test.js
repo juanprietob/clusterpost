@@ -37,13 +37,73 @@ var getClusterPostServer = function(){
 var inputs = [
 	"./data/gravitational-waves-simulation.jpg"
 ];
+var jobid;
+var token;
+
+var createUser = function(user){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/clusterauth/user",
+            method: 'POST',
+            json: user,
+            agentOptions: agentOptions
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
+var userLogin = function(user){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/clusterauth/login",
+            method: 'POST',
+            json: user,
+            agentOptions: agentOptions
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
+var deleteUser = function(token){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/clusterauth/user",
+            method: 'DELETE',
+            agentOptions: agentOptions,
+            headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
 
 var getExecutionServers = function(){
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/executionserver",
             method: "GET",
-            agentOptions: agentOptions
+            agentOptions: agentOptions,
+            headers: { authorization: token }
         }
 
         request(options, function(err, res, body){
@@ -65,7 +125,8 @@ var createDocument = function(job){
             url : getClusterPostServer() + "/dataprovider",
             method: "POST",
             json: job,
-            agentOptions: agentOptions
+            agentOptions: agentOptions,
+            headers: { authorization: token }
         }
 
         request(options, function(err, res, body){
@@ -86,7 +147,8 @@ var getDocument = function(id){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + id,
             method: "GET",
-            agentOptions: agentOptions
+            agentOptions: agentOptions,
+            headers: { authorization: token }
         }
 
         request(options, function(err, res, body){
@@ -105,7 +167,8 @@ var getDocumentAttachment = function(id, name){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
             method: "GET",
-            agentOptions: agentOptions
+            agentOptions: agentOptions,
+            headers: { authorization: token }
         }
 
         request(options, function(err, res, body){
@@ -129,7 +192,8 @@ var uploadfile = function(jobid, filename){
                 headers:{
                     "Content-Type": "application/octet-stream"
                 },
-                agentOptions: agentOptions
+                agentOptions: agentOptions,
+                headers: { authorization: token }
             }
 
             var stream = fs.createReadStream(filename);
@@ -155,7 +219,8 @@ var executeJob = function(jobid){
             var options = {
                 url : getClusterPostServer() + "/executionserver/" + jobid,
                 method: "POST",
-                agentOptions: agentOptions
+                agentOptions: agentOptions,
+                headers: { authorization: token }
             }
 
             request(options, function(err, res, body){
@@ -177,7 +242,8 @@ var updateJobStatus = function(jobid){
             var options = {
                 url : getClusterPostServer() + "/executionserver/" + jobid,
                 method: "GET",
-                agentOptions: agentOptions
+                agentOptions: agentOptions,
+                headers: { authorization: token }
             }
 
             request(options, function(err, res, body){
@@ -224,7 +290,8 @@ var deleteJob = function(jobid){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + jobid,
             method: "DELETE",
-            agentOptions: agentOptions
+            agentOptions: agentOptions,
+            headers: { authorization: token }
         }
 
         request(options, function(err, res, body){
@@ -269,10 +336,14 @@ var job = {
             }
         ],
         "type": "job",
-        "userEmail": "juanprietob@gmail.com"
+        "userEmail": "algiedi85@gmail.com"
     };
 
-var jobid;
+var user = {
+    email: "algiedi85@gmail.com",
+    name: "Alpha Capricorni",
+    password: "Some808Password!"
+}
 
 var joiokres = Joi.object().keys({
                 ok: Joi.boolean().valid(true),
@@ -281,6 +352,33 @@ var joiokres = Joi.object().keys({
             });
 
 lab.experiment("Test clusterpost", function(){
+    
+
+    lab.test('returns true when new user is created.', function(){
+
+        return createUser(user)
+        .then(function(res){
+            Joi.assert(res.token, Joi.string().required());
+        });
+        
+    });
+
+    lab.test('returns true when user is login.', function(){
+
+        var user = {
+            email: "algiedi85@gmail.com",
+            password: "Some808Password!"
+        }
+
+        return userLogin(user)
+        .then(function(res){
+            Joi.assert(res.token, Joi.string().required())
+            token = "Bearer " + res.token;
+        });
+        
+    });
+
+
     lab.test('returns true when executionservers are fetched', function(){
 
         return getExecutionServers()
