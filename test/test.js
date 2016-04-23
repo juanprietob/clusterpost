@@ -363,7 +363,7 @@ lab.experiment("Test clusterpost", function(){
         
     });
 
-    lab.test('returns true when user is login.', function(){
+    lab.test('returns true when user is logged in.', function(){
 
         var user = {
             email: "algiedi85@gmail.com",
