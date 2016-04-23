@@ -53,5 +53,11 @@ executionmethods.getDocument(jobid)
         };
     }
 })
-.then(console.log)
-.catch(console.error)
+.then(function(res){
+    console.log(res);
+    process.exit();
+})
+.catch(function(error){
+    console.error(error);
+    process.exit(1);
+});
