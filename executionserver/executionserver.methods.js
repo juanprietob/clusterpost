@@ -367,6 +367,20 @@ module.exports = function (conf) {
         return Promise.map(promparams, checkBeforeUpload, {concurrency: 1})
 	}
 
+	handler.deleteFolderRecursive = function(dir) {
+		if(fs.existsSync(dir)){
+			fs.readdirSync(dir).forEach(function(file) {
+				var currentpath = path.join(dir, file);
+				if(fs.statSync(currentpath).isDirectory()) {
+					deleteFolderRecursive(currentpath);
+				}else{
+					fs.unlinkSync(currentpath);
+				}
+			});
+			fs.rmdirSync(dir);
+	    }
+	}
+
 	return handler;
 
 }

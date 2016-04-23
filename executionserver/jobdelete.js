@@ -1,5 +1,6 @@
 
 var fs = require('fs');
+var path = require('path');
 
 var jobid = undefined;
 for(var i = 0; i < process.argv.length; i++){
@@ -30,22 +31,19 @@ const getConfigFile = function (base_directory) {
 };
 
 var conf = getConfigFile("./");
+
+var executionmethods = require('./executionserver.methods')(conf);
+
 var cwd = path.join(conf.storagedir, jobid);
 
 try{
-    var stats = fs.statSync(cwd);
-    if(stats.isDirectory()){
-        try{
-            fs.unlinkSync(cwd);
-            console.log("Job", jobid, "working directory deleted");
-        }catch(e){
-            console.error(e);
-            process.exit(1);
-        }
+    executionmethods.deleteFolderRecursive(cwd);
+    var compressed = cwd + ".tar.gz";
+    if(fs.statSync(compressed)){
+        fs.unlinkSync(compressed);
     }
-    
+    process.exit();
 }catch(e){
-    console.log("Directory was deleted before.")
+    console.error(e);
+    process.exit(1);
 }
-
-process.exit();
