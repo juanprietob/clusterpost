@@ -48,12 +48,12 @@ const allUpload = function(allupload){
         }
         if(alluploadstatus){
             docupdated.jobstatus.status = "DONE";
+            return executionmethods.uploadDocumentDataProvider(docupdated);
         }
-        
-        return docupdated;
-    })
-    .then(function(doc){
-        return executionmethods.uploadDocumentDataProvider(doc);
+        return executionmethods.uploadDocumentDataProvider(docupdated)
+        .then(function(){
+            throw allupload;
+        })
     });
 }
 

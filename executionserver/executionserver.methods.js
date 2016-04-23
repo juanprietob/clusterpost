@@ -45,7 +45,9 @@ module.exports = function (conf) {
 	                method: 'PUT', 
 	                json : doc, 
 	                agentOptions: agentOptions,
-            		headers: { authorization: token }
+            		headers: { 
+            			"Authorization": token
+            		}
 	            };
 	            
 	            request(options, function(err, res, body){
@@ -66,7 +68,9 @@ module.exports = function (conf) {
 				var options = {
 					uri: handler.getDataProvider() + "/" + id, 
 	                agentOptions: agentOptions,
-            		headers: { authorization: token }
+            		headers: { 
+            			"Authorization": token
+            		}
 				}
 				request(options, function(err, res, body){
 					if(err){
@@ -128,10 +132,10 @@ module.exports = function (conf) {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + encodeURIComponent(name),
 					method: 'PUT',
 					headers: {
-						"Content-Type": "application/octet-stream"
+						"Content-Type": "application/octet-stream",
+						"Authorization": token
 					}, 
-	                agentOptions: agentOptions,
-            		headers: { authorization: token }
+	                agentOptions: agentOptions
 				}
 
 				try{
@@ -141,9 +145,9 @@ module.exports = function (conf) {
 						var stream = fs.createReadStream(path);						
 						
 						stream.pipe(request(options, function(err, res, body){
-							if(err){								
+							if(err){
 								reject(err);
-							}else{								
+							}else{
 								resolve(JSON.parse(body));
 							}
 						}));
@@ -177,7 +181,9 @@ module.exports = function (conf) {
 				var options = {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name, 
 	                agentOptions: agentOptions,
-            		headers: { authorization: token }
+            		headers: { 
+            			"Authorization": token
+            		}
 				}
 
 				var filepath = path.join(cwd, input.name);
