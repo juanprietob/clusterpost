@@ -129,7 +129,10 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			return server.methods.clusterprovider.deleteDocument(doc._id, doc._rev);
+			return server.methods.executionserver.jobdelete(doc)
+			.then(function(){
+				return server.methods.clusterprovider.deleteDocument(doc._id, doc._rev);
+			});
 		})
 		.then(rep)
 		.catch(function(e){
@@ -169,7 +172,7 @@ module.exports = function (server, conf) {
 		})
 		.then(rep)
 		.catch(function(e){
-			rep(Boom.badRequest(e));
+			rep(Boom.wrap(e));
 		})
 	}
 

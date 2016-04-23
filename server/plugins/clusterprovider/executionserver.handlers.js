@@ -235,6 +235,41 @@ module.exports = function (server, conf) {
 		
 	}
 
+	const jobdelete = function(doc){
+		return new Promise(function(resolve, reject){
+			try{
+				var executionserver = conf.executionservers[doc.executionserver];
+				const jobdelete = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobdelete.js", "-j", doc._id]);
+
+				var alldata = "";
+				jobdelete.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				var allerror = "";
+				jobdelete.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				jobdelete.on('close', function(code){
+					if(allerror !== ""){
+						reject(allerror);
+					}else{
+						resolve(alldata);
+					}
+				});
+			}catch(e){
+				reject(e);
+			}
+		});
+	}
+
+	server.method({
+	    name: 'executionserver.jobdelete',
+	    method: jobdelete,
+	    options: {}
+	});
+
 	return handler;
 
 }
