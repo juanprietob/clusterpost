@@ -44,7 +44,7 @@ module.exports = function (server, conf) {
 
 					scp.on('close', function(code){
 						if(code !== 0 || allerror !== ''){
-							reject(allerror);
+							reject(Boom.badImplementation(allerror));
 						}else{
 							resolve(filename);
 						}
@@ -119,7 +119,7 @@ module.exports = function (server, conf) {
 				if(code !== 0 || allerror !== ''){
 					console.error(allerror);
 					console.log(alldata);
-					rep(Boom.badRequest(allerror));
+					rep(Boom.badImplementation(allerror));
 				}else{
 					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
 				    server.methods.clusterprovider.getView(view)
@@ -127,12 +127,12 @@ module.exports = function (server, conf) {
 				    	rep(_.pluck(docs, "value")[0]);
 				    })
 				    .catch(function(e){
-				    	rep(Boom.badRequest(e));
+				    	rep(Boom.badImplementation(e));
 				    });
 				}
 			});
 		}).catch(function(e){
-			rep(Boom.badRequest(e));
+			rep(Boom.badImplementation(e));
 		});
 	}
 
@@ -170,12 +170,12 @@ module.exports = function (server, conf) {
 			    	rep(_.pluck(docs, "value")[0]);
 			    })
 			    .catch(function(e){
-			    	rep(Boom.badRequest(e));
+			    	rep(Boom.badImplementation(e));
 			    });
 			});
 
 		}).catch(function(e){
-			rep(Boom.badRequest(e));
+			rep(Boom.badImplementation(e));
 		});
 	}
 
@@ -253,7 +253,7 @@ module.exports = function (server, conf) {
 
 				jobdelete.on('close', function(code){
 					if(allerror !== ""){
-						reject(allerror);
+						reject(Boom.badImplementation(allerror));
 					}else{
 						resolve(alldata);
 					}
