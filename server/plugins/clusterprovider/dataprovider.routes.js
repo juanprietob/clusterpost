@@ -131,7 +131,7 @@ module.exports = function (server, conf) {
 			handler: handlers.getUserJobs,
 			validate: {
 			  	query: Joi.object().keys({
-			  		userEmail: Joi.string().email().required(),
+			  		userEmail: Joi.string().email().optional(),
 			  		jobstatus: Joi.string().optional(),
 			  		executable: Joi.string().optional()
 			  	}), 

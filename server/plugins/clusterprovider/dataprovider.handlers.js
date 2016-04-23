@@ -37,10 +37,29 @@ module.exports = function (server, conf) {
 	/*
 	*/
 	handler.updateJob = function(req, rep){
-		server.methods.clusterprovider.uploadDocumentsDataProvider(req.payload)
+
+		var job = req.payload;
+		var credentials = req.auth.credentials;
+
+		var prom = [
+			server.methods.clusterprovider.validateJobOwnership(job, credentials),
+			server.methods.clusterprovider.getDocument(job._id)
+			.then(function(doc){
+				return server.methods.clusterprovider.validateJobOwnership(doc, credentials);
+			})
+			.catch(function(e){
+				throw Boom.unauthorized("You are not allowed to update the document, it belongs to someone else");
+			})
+		]
+
+		
+		Promise.all(prom)
+		.then(function(){
+			return server.methods.clusterprovider.uploadDocumentsDataProvider(job);
+		})
 		.then(rep)
 		.catch(function(e){
-			rep(Boom.badRequest(e));
+			rep(Boom.wrap(e));
 		});
 	}
 
@@ -49,11 +68,14 @@ module.exports = function (server, conf) {
 	handler.addData = function(req, rep){
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
 			return server.methods.clusterprovider.addDocumentAttachment(doc, req.params.name, req.payload);
 		})
 		.then(rep)
 		.catch(function(e){
-			rep(Boom.badData(e));
+			rep(Boom.wrap(e));
 		});
 	}
 
@@ -62,6 +84,9 @@ module.exports = function (server, conf) {
 	handler.getJob = function(req, rep){
 		
 		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
 		.then(function(doc){
 			if(req.params.name){
 
@@ -92,7 +117,7 @@ module.exports = function (server, conf) {
 			
 		})
 		.catch(function(e){
-			rep(Boom.notFound(e));
+			rep(Boom.wrap(e));
 		});
 		
 	}
@@ -101,11 +126,14 @@ module.exports = function (server, conf) {
 
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
 			return server.methods.clusterprovider.deleteDocument(doc._id, doc._rev);
 		})
 		.then(rep)
 		.catch(function(e){
-			rep(Boom.badData(e));
+			rep(Boom.wrap(e));
 		});
 	}
 
@@ -113,8 +141,15 @@ module.exports = function (server, conf) {
 	*/
 	handler.getUserJobs = function(req, rep){
 
+		var credentials = req.auth.credentials;
+		var email = credentials.email;
 
-		var email = req.query.userEmail;
+		if(req.query.userEmail && email !== req.query.userEmail && credentials.scope.indexOf('admin') === -1){
+			throw Boom.unauthorized("You are not allowed to view the jobs of other users.");
+		}else if(req.query.userEmail){
+			email = req.query.userEmail;
+		}
+		
 		var jobstatus = req.query.jobstatus;
 		var executable = req.query.executable;
 

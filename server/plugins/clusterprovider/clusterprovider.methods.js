@@ -228,5 +228,21 @@ module.exports = function (server, conf) {
 	    name: 'clusterprovider.getView',
 	    method: getView,
 	    options: {}
-	});	
+	});
+
+	const validateJobOwnership = function(doc, credentials){
+		return new Promise(function(resolve, reject){
+			if(doc.userEmail === credentials.email || credentials.scope.indexOf('admin') || credentials.executionserver === doc.executionserver){
+				resolve(doc);
+			}else{
+				reject(Boom.unauthorized("You are not allowed to access this job document!"));
+			}
+		});
+	}
+
+	server.method({
+	    name: 'clusterprovider.validateJobOwnership',
+	    method: validateJobOwnership,
+	    options: {}
+	});
 }

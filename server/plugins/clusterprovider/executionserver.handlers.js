@@ -95,6 +95,9 @@ module.exports = function (server, conf) {
 
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
 			var executionserver = conf.executionservers[doc.executionserver];
 			if(!executionserver){
 				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
@@ -135,6 +138,9 @@ module.exports = function (server, conf) {
 
 	handler.killJob = function(req, rep){
 		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
 		.then(function(doc){
 			var executionserver = conf.executionservers[doc.executionserver];
 			if(!executionserver){
@@ -216,6 +222,9 @@ module.exports = function (server, conf) {
 	handler.jobStatus = function(req, rep){
 
 		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
 		.then(function(doc){
 			return server.methods.executionserver.jobstatus(doc);
 		})
