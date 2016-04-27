@@ -51,16 +51,16 @@ module.exports = function (server, conf) {
 				strategy: 'token',
 				scope: ['clusterpost']
 			},
-      handler: handlers.killJob,
-      validate: {
-      	params: {
-      		id: Joi.string().alphanum().required()
-      	},
-      	query: false,
-      	payload: false
-      },
-      description: 'Kill a running job'
-    }
+	      handler: handlers.killJob,
+	      validate: {
+	      	params: {
+	      		id: Joi.string().alphanum().required()
+	      	},
+	      	query: false,
+	      	payload: false
+	      },
+	      description: 'Kill a running job'
+	    }
 	});
 
 	server.route({
@@ -71,16 +71,16 @@ module.exports = function (server, conf) {
 				strategy: 'token',
 				scope: ['clusterpost']
 			},
-      handler: handlers.jobStatus,
-      validate:{
-      	params: {
-      		id: Joi.string().alphanum().required()
-      	},
-      	query: false,
-      	payload: false
-      },
-      description: 'Update job status'
-    }
+			handler: handlers.jobStatus,
+			validate:{
+				params: {
+					id: Joi.string().alphanum().required()
+				},
+				query: false,
+				payload: false
+			},
+			description: 'Update job status'
+		}
 	});
 }
 

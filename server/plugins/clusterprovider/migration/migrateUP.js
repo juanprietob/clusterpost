@@ -22,15 +22,6 @@ const getConfigFile = function (env, base_directory) {
   }
 };
 
-const getAllProviders = function(conf){
-	var temp = [];
-	for(var servercodename in conf.couchdblist){
-    	var couchdbparams = conf.couchdblist[servercodename];
-    	temp.push(couchdbparams.couchdb + couchdbparams.database);
-    }
-	return temp;
-}
-
 const createDB = function(name){
 	return new Promise(function(resolve, reject){
 		request.put(name, function(err, res, body){
