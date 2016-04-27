@@ -6,12 +6,24 @@ module.exports = function (server, conf) {
 	const saltRounds = conf.saltRounds;
 	var Boom = require('boom');
 	var _ = require('underscore');
+	var nodemailer = require('nodemailer');
+	
+	var transporter = nodemailer.createTransport(conf.mailer.nodemailer);
+	transporter.verify(function(error, success) {
+		if (error) {
+			console.log(error);
+		}
+	});
 
 	var handler = {};
 
-	const sign = function(user){
+	const sign = function(user, maxAge){
 		var token = {};
-		token.token = jwt.sign(user, conf.privateKey, conf.algorithm );
+		var algo = conf.algorithm;
+		if(maxAge){
+			algo.maxAge = maxAge;
+		}
+		token.token = jwt.sign(user, conf.privateKey, algo );
 		return token;
 	}
 
@@ -130,6 +142,36 @@ module.exports = function (server, conf) {
 		});
 	}
 
+	handler.loginUpdate = function(req, rep){
+
+		var credentials = req.auth.credentials;
+		var email = credentials.email;
+		var password = req.payload.password;
+
+		server.methods.clusterprovider.getDocument(credentials._id)
+		.then(function(user){
+			return bcryptHash(password)
+			.then(function(hash){
+				
+				user.password = hash;
+
+				return server.methods.clusterprovider.uploadDocumentsDataProvider(user)
+				.then(function(res){
+					res = res[0];
+					if(res.ok){
+						return server.methods.jwtauth.sign({ email: user.email });
+					}else{
+						throw Boom.badImplementation(res);
+					}
+				});
+			})
+		})
+		.then(rep)
+		.catch(function(err){
+			rep(Boom.unauthorized(err));
+		});
+	}
+
 	handler.deleteUser = function(req, rep){
 		
 		var credentials = req.auth.credentials;
@@ -140,6 +182,54 @@ module.exports = function (server, conf) {
 			rep(Boom.conflict(err));
 		})
 	}
+
+	handler.resetPassword = function(req, rep){
+		var email = req.payload.email;
+
+		server.methods.clusterprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
+		.then(function(info){
+			var info = _.pluck(info, "value");
+			if(info.length === 0){
+				throw Boom.unauthorized("I don't know who you are, you need to create an account first!");
+			}
+
+			info = info[0];
+
+			var maxAge = (new Date().getTime() + 30 * 60 * 1000)/1000;
+
+			var token = server.methods.jwtauth.sign({ email: email }, maxAge);
+			var link = server.info.uri + "/public/login/reset?token=" + token.token;
+			var html = "Hello " + info.name + ",<br>";
+			html += "Somebody asked me to send you a link to reset your password, hopefully it was you.<br>";
+			html += "Follow this <a href='" + link + "'>link</a> to reset your password.<br>";
+			html += "The link will expire in 30 minutes.<br>";
+			html += "Bye."
+
+			var mailOptions = {
+			    from: conf.mailer.from,
+			    to: email,
+			    subject: 'Password reset', // Subject line
+			    html: html
+			};
+			
+			transporter.sendMail(mailOptions, function(error, info){
+			    if(error){
+			        rep(Boom.badImplementation(error));
+			    }else{
+			    	rep("An email has been sent to recover your password.");
+			    }
+			});
+		})
+		.catch(function(err){
+			rep(Boom.wrap(err));
+		});
+
+		
+
+		
+	}
+
+
 
 	return handler;
 }

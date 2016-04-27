@@ -18,9 +18,12 @@ module.exports = function (server, conf) {
     server.auth.strategy('token', 'jwt', {
         key: conf.privateKey,
         validateFunc: handlers.validate,
-        verifyOptions: { algorithms: [ 'HS256' ] }  // only allow HS256 algorithm
+        verifyOptions: conf.algorithms  // only allow HS256 algorithm
     });
 
+    /*
+    *   Create user in DB. 
+    */
     server.route({
         method: 'POST',
         path: '/clusterauth/user',
@@ -40,6 +43,9 @@ module.exports = function (server, conf) {
         }
     });
 
+    /*
+    *   Delete user from DB
+    */
     server.route({
         method: 'DELETE',
         path: '/clusterauth/user',
@@ -52,6 +58,9 @@ module.exports = function (server, conf) {
         }
     });
 
+    /*
+    * User login
+    */
     server.route({
         method: 'POST',
         path: '/clusterauth/login',
@@ -71,5 +80,44 @@ module.exports = function (server, conf) {
         }
     });
 
+    /*
+    * Update password, user must have a valid jwt token
+    */
+    server.route({
+        method: 'PUT',
+        path: '/clusterauth/login',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
+            validate: {
+                query: false,
+                payload: joilogin,
+                params: false
+            },
+            handler: handlers.loginUpdate,
+            response: {
+                schema: Joi.object().keys({
+                    token: Joi.string().required()
+                })
+            }
+        }
+    });
 
+    server.route({
+        method: 'POST',
+        path: '/clusterauth/reset',
+        config: {
+            auth: false,
+            validate: {
+                query: false,
+                payload: Joi.object().keys({
+                    email: Joi.string().email().required()
+                }),
+                params: false
+            },
+            handler: handlers.resetPassword
+        }
+    });
 }
