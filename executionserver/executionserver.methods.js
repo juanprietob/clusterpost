@@ -372,7 +372,7 @@ module.exports = function (conf) {
 			fs.readdirSync(dir).forEach(function(file) {
 				var currentpath = path.join(dir, file);
 				if(fs.statSync(currentpath).isDirectory()) {
-					deleteFolderRecursive(currentpath);
+					handler.deleteFolderRecursive(currentpath);
 				}else{
 					fs.unlinkSync(currentpath);
 				}
