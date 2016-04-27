@@ -39,7 +39,14 @@ var cwd = path.join(conf.storagedir, jobid);
 try{
     executionmethods.deleteFolderRecursive(cwd);
     var compressed = cwd + ".tar.gz";
-    if(fs.statSync(compressed)){
+    var compressedstat;
+    try{
+        compressedstat = fs.statSync(compressed);
+    }catch(e){
+        //does not exist
+        compressedstat = undefined;
+    }
+    if(compressedstat){
         fs.unlinkSync(compressed);
     }
     process.exit();

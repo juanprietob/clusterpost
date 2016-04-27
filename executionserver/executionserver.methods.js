@@ -368,7 +368,14 @@ module.exports = function (conf) {
 	}
 
 	handler.deleteFolderRecursive = function(dir) {
-		if(fs.existsSync(dir)){
+		var dirstat;
+		try{
+			dirstat = fs.statSync(dir);
+		}catch(e){
+			//does not exist
+			dirstat = undefined;
+		}
+		if(dirstat){
 			fs.readdirSync(dir).forEach(function(file) {
 				var currentpath = path.join(dir, file);
 				if(fs.statSync(currentpath).isDirectory()) {
