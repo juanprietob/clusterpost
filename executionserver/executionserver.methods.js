@@ -170,7 +170,7 @@ module.exports = function (conf) {
 
 		return new Promise(function(resolve, reject){
 
-			if(doc._attachments && !doc._attachments[input.name]){
+			if(!doc._attachments[input.name]){
 				reject({					
 					"status" : false,
 					"error": "Document is missing attachment" + input.name
@@ -237,7 +237,6 @@ module.exports = function (conf) {
 			}else{				
 				alldownloads.push(handler.savePromise(doc, cwd, input)
 					.catch(function(e){
-						console.error(e);
 						return e;
 					}));
 			}
