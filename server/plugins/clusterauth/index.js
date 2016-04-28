@@ -1,13 +1,5 @@
-var jwt = require('jsonwebtoken');
-
-
-var options;
-exports.register = function (server, pluginOptions, next) {
-  options = pluginOptions;
-
-  var conf = server.methods.getConfigFile(options.env, './plugins/clusterauth');
-
-  //require('./clusterprovider.methods')(server, conf);
+exports.register = function (server, conf, next) {
+  
   require('./jwtauth.routes')(server, conf);
 
   return next();

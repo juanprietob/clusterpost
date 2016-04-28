@@ -1,10 +1,4 @@
-
-var options;
-exports.register = function (server, pluginOptions, next) {
-  options = pluginOptions;
-
-  var conf = server.methods.getConfigFile(options.env, './plugins/clusterprovider');
-
+exports.register = function (server, conf, next) {
   require('./clusterprovider.methods')(server, conf);
   require('./dataprovider.routes')(server, conf);
   require('./executionserver.routes')(server, conf);
