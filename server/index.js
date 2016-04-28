@@ -18,7 +18,9 @@ const getConfigFile = function () {
 }
 
 var conf = getConfigFile();
-var server = new Hapi.Server();
+
+exports.server = new Hapi.Server();
+var server = exports.server;
 
 if(conf.tls && conf.tls.key && conf.tls.cert){
     const tls = {
@@ -66,8 +68,5 @@ server.register(plugins, function(err){
     server.methods.executionserver.startExecutionServers()
     .then(function(){
         console.log("Execution servers started.");
-        server.start(function () {
-            server.log('info', 'Server running at: ' + server.info.uri);
-        });
     });
 });
