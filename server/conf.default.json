@@ -1,18 +1,18 @@
 {
 	"host": "localhost",
 	"port": 8180,
-	"tls" : {
-		"key": "./tls/key.pem",
-		"cert": "./tls/certificate.pem"
-	},
 	"plugins": {
 		"vision": {},
 		"inert": {},
 		"lout": {},
 		"h2o2": {},
+		"tls" : {
+			"key": "/path/to/key.pem",
+			"cert": "/path/to/certificate.pem"
+		}
 		"hapi-auth-jwt": {},
-		"./plugins/clusterauth": {
-			"privateKey": "generateSomeKey",
+		"clusterauth": {
+			"privateKey": "SomeRandomKey",
 			"saltRounds": 10,
 			"algorithm": { 
 				"algorithm": "HS256"
@@ -23,17 +23,17 @@
 			"mailer": {
 				"nodemailer": {
 					"host": "smtp.gmail.com",
-				    "secure": true,
+				    "secure": false,
 				    "port": 587,
 				    "auth": {
-				        "user": "user",
+				        "user": "uname",
 				        "pass": "pass"
-				    }	
+				    }
 				},
-				"from": "fullname <replyemail@email>"
+				"from": "Clusterpost <clusterpost@gmail.com>"
 			}
 		},
-		"./plugins/clusterprovider": {
+		"clusterprovider": {
 			"default" : {
 				"dataprovider" : "clusterjobs"
 			},
@@ -49,8 +49,8 @@
 				"testserver" : {
 					"hostname" : "localhost", 
 					"user" : "prieto",
-					"identityfile" : "/Users/prieto/.ssh/id_rsa",
-					"sourcedir" : "/Users/prieto/NetBeansProjects/clusterpost/executionserver"			
+					"identityfile" : "~/.ssh/idfile",
+					"sourcedir" : "./executionserver"			
 				}
 			}
 		}
