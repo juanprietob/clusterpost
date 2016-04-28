@@ -4,16 +4,7 @@ module.exports = function (server, conf) {
     var handlers = require('./jwtauth.handlers')(server, conf);
     var Joi = require('joi');
 
-    var joiuser = Joi.object().keys({
-        name: Joi.string().required(),
-        email: Joi.string().email().required(),
-        password: Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/)
-    });
-
-    var joilogin = Joi.object().keys({
-        email: Joi.string().email().required(),
-        password: Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/)
-    });
+    var clustermodel = require('../clustermodel');
 
     server.auth.strategy('token', 'jwt', {
         key: conf.privateKey,
@@ -32,7 +23,7 @@ module.exports = function (server, conf) {
             handler: handlers.createUser,
             validate: {
                 query: false,
-                payload: joiuser,
+                payload: clustermodel.user,
                 params: false
             },
             response: {
@@ -68,7 +59,7 @@ module.exports = function (server, conf) {
             auth: false,
             validate: {
                 query: false,
-                payload: joilogin,
+                payload: clustermodel.login,
                 params: false
             },
             handler: handlers.login,
@@ -93,7 +84,7 @@ module.exports = function (server, conf) {
             },
             validate: {
                 query: false,
-                payload: joilogin,
+                payload: clustermodel.login,
                 params: false
             },
             handler: handlers.loginUpdate,
