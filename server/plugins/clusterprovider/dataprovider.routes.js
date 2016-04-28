@@ -4,7 +4,7 @@ module.exports = function (server, conf) {
 	var handlers = require('./dataprovider.handlers')(server, conf);
 	var Joi = require('joi');
 
-	var clustermodel = require('../clustermodel');
+	var clustermodel = require('clustermodel');
 
 	server.route({
 		path: '/dataprovider',
