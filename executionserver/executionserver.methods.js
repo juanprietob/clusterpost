@@ -8,7 +8,7 @@ module.exports = function (conf) {
 	var path = require("path");
 	var tarGzip = require('node-targz');
 	var Joi = require('joi');
-	var joijob = require('./joi.job')(Joi);
+	var clustermodel = require('clustermodel');
 
 	var agentOptions = {};
 
@@ -77,7 +77,7 @@ module.exports = function (conf) {
 						reject(err);
 					}else{
 						var job = JSON.parse(body);
-						Joi.assert(job, joijob.job);
+						Joi.assert(job, clustermodel.job);
 						resolve(job);
 					}
 				});

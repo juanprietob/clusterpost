@@ -18,6 +18,7 @@
     "joi": "^7.3.0",
     "node-targz": "0.0.3",
     "request": "^2.69.0",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "clustermodel": "1.0.0"
   }
 }

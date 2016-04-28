@@ -9,13 +9,13 @@ module.exports = function (conf) {
 	var Joi = require('joi');
 
 	var executionmethods = require('./executionserver.methods')(conf);
-	var joijob = require('./joi.job')(Joi);
+	var clustermodel = require('clustermodel');
 
 	var handler = {};
 
 	handler.submitJob = function(doc, cwd){
 
-		Joi.assert(doc, joijob.job);
+		Joi.assert(doc, clustermodel.job);
 
 		return new Promise(function(resolve, reject){
 			var command = 'bsub';
@@ -104,7 +104,7 @@ module.exports = function (conf) {
 
 	handler.getJobStatus = function(doc){
 
-		Joi.assert(doc.jobstatus, joijob.jobstatus);
+		Joi.assert(doc.jobstatus, clustermodel.jobstatus);
 
 		return new Promise(function(resolve, reject){
 
@@ -163,7 +163,7 @@ module.exports = function (conf) {
 
 	handler.killJob = function(doc){
 
-		Joi.assert(doc.jobstatus, joijob.jobstatus);
+		Joi.assert(doc.jobstatus, clustermodel.jobstatus);
 
 		return new Promise(function(resolve, reject){
 

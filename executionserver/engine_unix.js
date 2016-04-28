@@ -9,13 +9,13 @@ module.exports = function (conf) {
 	var Joi = require('joi');
 
 	var executionmethods = require('./executionserver.methods')(conf);
-	var joijob = require('./joi.job')(Joi);
+	var clustermodel = require('clustermodel');
 
 	var handler = {};
 
 	handler.submitJob = function(doc, cwd){
 
-		Joi.assert(doc, joijob.job);
+		Joi.assert(doc, clustermodel.job);
 
 		return new Promise(function(resolve, reject){
 			var command = doc.executable;
@@ -83,7 +83,7 @@ module.exports = function (conf) {
 
 			try{
 
-				Joi.assert(doc.jobstatus, joijob.jobstatus);
+				Joi.assert(doc.jobstatus, clustermodel.jobstatus);
 				Joi.assert(doc.jobstatus.jobid, Joi.number().required(), "Please execute the job first.");		
 
 				var jobid = doc.jobstatus.jobid;
@@ -140,7 +140,7 @@ module.exports = function (conf) {
 
 	handler.killJob = function(doc){
 
-		Joi.assert(doc.jobstatus, joijob.jobstatus);
+		Joi.assert(doc.jobstatus, clustermodel.jobstatus);
 
 		return new Promise(function(resolve, reject){
 
