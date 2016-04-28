@@ -9,9 +9,9 @@
 		"tls" : {
 			"key": "/path/to/key.pem",
 			"cert": "/path/to/certificate.pem"
-		}
+		},
 		"hapi-auth-jwt": {},
-		"clusterauth": {
+		"clusterpost-auth": {
 			"privateKey": "SomeRandomKey",
 			"saltRounds": 10,
 			"algorithm": { 
@@ -33,7 +33,7 @@
 				"from": "Clusterpost <clusterpost@gmail.com>"
 			}
 		},
-		"clusterprovider": {
+		"clusterpost-provider": {
 			"default" : {
 				"dataprovider" : "clusterjobs"
 			},

@@ -1,11 +1,14 @@
 {
-  "name": "clusterpost",
+  "name": "clusterpost-server",
   "version": "1.0.0",
-  "description": "Post jobs to a computing grid and store the results in a couch database local or remote",
+  "description": "REST api to post jobs and data to the server application, run scripts in the executionserver to retrieve the data and submit tasks.",
   "main": "index.js",
   "dependencies": {
     "bcrypt": "^0.8.6",
     "bluebird": "^3.3.0",
+    "clusterpost-auth": "1.0.0",
+    "clusterpost-model": "1.0.0",
+    "clusterpost-provider": "1.0.0",
     "good": "^6.6.0",
     "good-console": "^5.3.1",
     "good-file": "^5.1.2",
@@ -25,11 +28,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
+  },
   "keywords": [
-    "Cluster",
+    "cluster",
     "computing",
-    "provider"
+    "REST"
   ],
   "author": "juanprietob@gmail.com",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/juanprietob/clusterpost/issues"
+  },
+  "homepage": "https://github.com/juanprietob/clusterpost#readme"
 }

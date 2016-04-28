@@ -1,23 +1,25 @@
 {
-  "name": "clusterprovider",
+  "name": "clusterpost-auth",
   "version": "1.0.0",
-  "description": "Setup data and submit jobs to a cluster",
+  "description": "Login and authenticate users for the clusterpost application",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "cluster",
-    "computing"
+    "computing",
+    "login"
   ],
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
   "dependencies": {
-    "request": "^2.69.0",
+    "bcrypt": "^0.8.6",
     "bluebird": "^3.3.0",
     "boom": "^3.1.2",
     "joi": "^7.3.0",
-    "node-crontab": "0.0.8",
+    "jsonwebtoken": "^5.7.0",
+    "nodemailer": "^2.3.2",
     "request": "^2.69.0",
     "underscore": "^1.8.3"
   }
