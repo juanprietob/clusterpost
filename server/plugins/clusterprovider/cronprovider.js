@@ -5,7 +5,7 @@ module.exports = function (server, conf) {
 	var Promise = require('bluebird');
 	
 	var counter = 0;
-	var jobId = crontab.scheduleJob("0 0 * * *", function(){
+	var jobId = crontab.scheduleJob("*/30 * * * *", function(){
 
 		var view = "_design/searchjob/_view/jobstatus?key=" + JSON.stringify('RUN');
 	    server.methods.clusterprovider.getView(view)
@@ -13,8 +13,10 @@ module.exports = function (server, conf) {
 	    	var docs = _.pluck(docs, "value");
 	    	return Promise.map(docs, server.methods.executionserver.jobstatus);
 	    })
-	    .then(function(runningjobstatus){
-	    	console.log(runningjobstatus);
+	    .then(function(jobstatus){
+	    	_.each(jobstatus, function(rjs){
+	    		console.log(rjs);
+	    	});
 	    })
 	    .catch(console.error);
 
