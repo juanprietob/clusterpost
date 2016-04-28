@@ -6,30 +6,26 @@ var env = process.env.NODE_ENV;
 
 if(!env) throw "Please set NODE_ENV variable.";
 
-var server = new Hapi.Server();
 
-const getConfigFile = function (env, base_directory) {
+const getConfigFile = function () {
   try {
     // Try to load the user's personal configuration file
-    return require(base_directory + '/conf.my.' + env + '.json');
+    return require(process.cwd() + '/conf.my.' + env + '.json');
   } catch (e) {
     // Else, read the default configuration file
-    return require(base_directory + '/conf.' + env + '.json');
+    return require(process.cwd() + '/conf.' + env + '.json');
   }
-};
+}
 
-server.method({
-    name: 'getConfigFile',
-    method: getConfigFile,
-    options: {}
-});
+var conf = getConfigFile();
+var server = new Hapi.Server();
 
-var conf = server.methods.getConfigFile(env, "./")
-
-const tls = {
-  key: fs.readFileSync(conf.tls.key),
-  cert: fs.readFileSync(conf.tls.cert)
-};
+if(conf.tls && conf.tls.key && conf.tls.cert){
+    const tls = {
+      key: fs.readFileSync(conf.tls.key),
+      cert: fs.readFileSync(conf.tls.cert)
+    };
+}
 
 server.connection({ 
     host: conf.host,
@@ -67,11 +63,11 @@ server.register(plugins, function(err){
         throw err; // something bad happened loading the plugin
     }
 
-    server.start(function () {
-        server.log('info', 'Server running at: ' + server.info.uri);
-        server.methods.executionserver.startExecutionServers()
-        .then(function(){
-            console.log("Execution servers started.");
+    server.methods.executionserver.startExecutionServers()
+    .then(function(){
+        console.log("Execution servers started.");
+        server.start(function () {
+            server.log('info', 'Server running at: ' + server.info.uri);
         });
     });
 });
