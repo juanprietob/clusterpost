@@ -4,7 +4,7 @@ module.exports = function (server, conf) {
 	var handlers = require('./dataprovider.handlers')(server, conf);
 	var Joi = require('joi');
 
-	var joijob = require('./joi.job')(Joi);
+	var clustermodel = require('../clustermodel');
 
 	server.route({
 		path: '/dataprovider',
@@ -17,7 +17,7 @@ module.exports = function (server, conf) {
 			handler: handlers.createJob,
 			validate: {
 				query: false,
-		        payload: joijob.jobpost,
+		        payload: clustermodel.jobpost,
 		        params: false
 			},
 			payload:{
@@ -61,7 +61,7 @@ module.exports = function (server, conf) {
 			handler: handlers.updateJob,
 			validate: {
 				query: false,
-		        payload: joijob.job,
+		        payload: clustermodel.job,
 		        params: false
 			},
 			payload:{
@@ -114,7 +114,7 @@ module.exports = function (server, conf) {
 			    payload: false
 			},
 			response: {
-				schema: joijob.job
+				schema: clustermodel.job
 			},
 			description: 'Get the job document posted to the database'
 	    }
@@ -138,7 +138,7 @@ module.exports = function (server, conf) {
 			  	params: false
 			},
 			response: {
-				schema: Joi.array().items(joijob.job).min(0)
+				schema: Joi.array().items(clustermodel.job).min(0)
 			},
 			description: 'Get the jobs posted to the database for a user.'
 	    }
