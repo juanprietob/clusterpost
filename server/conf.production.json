@@ -2,8 +2,8 @@
 	"host": "localhost",
 	"port": 8180,
 	"tls" : {
-		"key": "./tls/ca.key.pem",
-		"cert": "./tls/ca.cert.pem"
+		"key": "./tls/key.pem",
+		"cert": "./tls/certificate.pem"
 	},
 	"plugins": {
 		"vision": {},
@@ -11,7 +11,48 @@
 		"lout": {},
 		"h2o2": {},
 		"hapi-auth-jwt": {},
-		"./plugins/clusterauth": {"env": "production"},
-		"./plugins/clusterprovider": {"env": "production"}
+		"./plugins/clusterauth": {
+			"privateKey": "generateSomeKey",
+			"saltRounds": 10,
+			"algorithm": { 
+				"algorithm": "HS256"
+			},
+			"algorithms": { 
+				"algorithms": [ "HS256" ] 
+			},
+			"mailer": {
+				"nodemailer": {
+					"host": "smtp.gmail.com",
+				    "secure": true,
+				    "port": 587,
+				    "auth": {
+				        "user": "user",
+				        "pass": "pass"
+				    }	
+				},
+				"from": "fullname <replyemail@email>"
+			}
+		},
+		"./plugins/clusterprovider": {
+			"default" : {
+				"dataprovider" : "clusterjobs"
+			},
+			"dataproviders" : {
+				"clusterjobs" : {
+					"hostname": "http://localhost:5984",
+					"database": "clusterjobs",
+					"username": "",
+					"password": ""
+				}
+			},
+			"executionservers" : {
+				"testserver" : {
+					"hostname" : "localhost", 
+					"user" : "prieto",
+					"identityfile" : "/Users/prieto/.ssh/id_rsa",
+					"sourcedir" : "/Users/prieto/NetBeansProjects/clusterpost/executionserver"			
+				}
+			}
+		}
 	}
 }
