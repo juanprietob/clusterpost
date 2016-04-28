@@ -4,7 +4,7 @@ module.exports = function (server, conf) {
     var handlers = require('./jwtauth.handlers')(server, conf);
     var Joi = require('joi');
 
-    var clustermodel = require('clustermodel');
+    var clustermodel = require('clusterpost-model');
 
     server.auth.strategy('token', 'jwt', {
         key: conf.privateKey,
