@@ -9,7 +9,7 @@ module.exports = function (conf) {
 	var Joi = require('joi');
 
 	var executionmethods = require('./executionserver.methods')(conf);
-	var clustermodel = require('clustermodel');
+	var clustermodel = require('clusterpost-model');
 
 	var handler = {};
 

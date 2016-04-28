@@ -8,7 +8,7 @@ module.exports = function (conf) {
 	var path = require("path");
 	var tarGzip = require('node-targz');
 	var Joi = require('joi');
-	var clustermodel = require('clustermodel');
+	var clustermodel = require('clusterpost-model');
 
 	var agentOptions = {};
 

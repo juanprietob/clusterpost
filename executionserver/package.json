@@ -19,6 +19,6 @@
     "node-targz": "0.0.3",
     "request": "^2.69.0",
     "underscore": "^1.8.3",
-    "clustermodel": "1.0.0"
+    "clusterpost-model": "1.0.0"
   }
 }
