@@ -7,7 +7,7 @@ var path = require('path');
 const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
-const joijob = require("./joi.job")(Joi);
+const clustermodel = require("clusterpost-model");
 
 const getConfigFile = function (env, base_directory) {
   try {

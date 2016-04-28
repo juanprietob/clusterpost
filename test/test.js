@@ -7,7 +7,7 @@ var path = require('path');
 const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
-const joijob = require("./joi.job")(Joi);
+const clustermodel = require("clusterpost-model");
 
 const getConfigFile = function (env, base_directory) {
   try {
@@ -260,7 +260,7 @@ var updateJobStatus = function(jobid){
 }
 
 var updateJobStatusRec = function(jobid){
-    var joijobstatus = Joi.object().keys({
+    var clustermodelstatus = Joi.object().keys({
         jobid: Joi.number(),
         status: Joi.string().valid('DONE'),
         downloadstatus: Joi.array().items(Joi.object().keys({
@@ -276,7 +276,7 @@ var updateJobStatusRec = function(jobid){
     .then(function(){
         return updateJobStatus(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, joijobstatus);
+            Joi.assert(jobstatus, clustermodelstatus);
             return jobstatus;
         })
         .catch(function(e){
@@ -402,7 +402,7 @@ lab.experiment("Test clusterpost", function(){
         
         return getDocument(jobid)
         .then(function(job){
-            Joi.assert(job, joijob.job);
+            Joi.assert(job, clustermodel.job);
             Joi.assert(job.jobstatus, Joi.object().keys({
                 status: Joi.string().valid("CREATE")
             }))
@@ -424,14 +424,14 @@ lab.experiment("Test clusterpost", function(){
     lab.test('returns true when job is executed', function(){
         return executeJob(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, joijob.jobstatus);
+            Joi.assert(jobstatus, clustermodel.jobstatus);
         });
     });
 
     lab.test('returns true when jobstatus is updated', function(){
         return updateJobStatus(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, joijob.jobstatus);
+            Joi.assert(jobstatus, clustermodel.jobstatus);
         });
     });
 
@@ -439,7 +439,7 @@ lab.experiment("Test clusterpost", function(){
         
         return updateJobStatusRec(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, joijob.jobstatus);
+            Joi.assert(jobstatus, clustermodel.jobstatus);
         });
     });
 
@@ -458,6 +458,18 @@ lab.experiment("Test clusterpost", function(){
         return deleteJob(jobid)
         .then(function(res){
             Joi.assert(res, joiokres);
+        });
+    });
+
+    lab.test('returns true when valid user deletes itself.', function(){
+
+        return deleteUser(token)
+        .then(function(res){
+            Joi.assert(res, Joi.object().keys({ 
+                ok: Joi.boolean(),
+                id: Joi.string(),
+                rev: Joi.string()
+            }));
         });
     });
 });
