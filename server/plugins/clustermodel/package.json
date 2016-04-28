@@ -1,0 +1,15 @@
+{
+  "name": "clustermodel",
+  "version": "1.0.0",
+  "description": "Containt the Joi descriptions of the clusterpost server application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Joi",
+    "clusterpost"
+  ],
+  "author": "juanprietob@gmail.com",
+  "license": "Apache-2.0"
+}
