@@ -25,7 +25,7 @@ exports.jobpost = Joi.object().keys({
 		jobparameters: Joi.array().items(exports.parameter).optional(),
 		executable: Joi.string().required(),			
 		parameters: Joi.array().items(exports.parameter).min(1),
-		inputs: Joi.array().items(exports.input).min(1),
+		inputs: Joi.array().items(exports.input).min(1).optional(),
 		outputs: Joi.array().items(exports.output).min(1)
     });
 
@@ -49,7 +49,7 @@ exports.job = Joi.object().keys({
 		executionserver: Joi.string().required(),
 		jobparameters: Joi.optional(),
 		parameters: Joi.array().items(exports.parameter).min(1),			
-		inputs: Joi.array().items(exports.input).min(1),
+		inputs: Joi.array().items(exports.input).min(1).optional(),
 		outputs: Joi.array().items(exports.output).min(1),
 		_attachments: Joi.optional()
     });

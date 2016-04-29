@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-model",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Containt the Joi descriptions of the clusterpost server application",
   "main": "index.js",
   "scripts": {
