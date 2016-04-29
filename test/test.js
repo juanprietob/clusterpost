@@ -285,6 +285,25 @@ var updateJobStatusRec = function(jobid){
     })
 }
 
+var killJob = function(jobid){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : getClusterPostServer() + "/executionserver/" + jobid,
+            method: "DELETE",
+            agentOptions: agentOptions,
+            headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(JSON.parse(body));
+            }
+        });
+    });
+}
+
 var deleteJob = function(jobid){
     return new Promise(function(resolve, reject){
         var options = {
@@ -351,6 +370,29 @@ var joiokres = Joi.object().keys({
                 rev: Joi.string()
             });
 
+
+var job2 = {
+        "executable": "python",
+        "parameters": [
+            {
+                "flag": "-c",
+                "name": "while True: print '.'"
+            }
+        ],
+        "outputs": [
+            {
+                "type": "file",
+                "name": "stdout.out"
+            },
+            {
+                "type": "file",
+                "name": "stderr.err"
+            }
+        ],
+        "type": "job",
+        "userEmail": "algiedi85@gmail.com"
+    };
+
 lab.experiment("Test clusterpost", function(){
     
 
@@ -384,6 +426,7 @@ lab.experiment("Test clusterpost", function(){
         return getExecutionServers()
         .then(function(res){
             job.executionserver = res[0].name;
+            job2.executionserver = res[0].name;
         });
     });
 
@@ -439,7 +482,7 @@ lab.experiment("Test clusterpost", function(){
         
         return updateJobStatusRec(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, clustermodel.jobstatus);
+            Joi.assert(jobstatus.status, Joi.string().valid("DONE"));
         });
     });
 
@@ -455,6 +498,39 @@ lab.experiment("Test clusterpost", function(){
     });
 
     lab.test('returns true if the document is deleted', function(){
+        return deleteJob(jobid)
+        .then(function(res){
+            Joi.assert(res, joiokres);
+        });
+    });
+
+    lab.test('returns true when second job is created', function(){
+
+        return createDocument(job2)
+        .then(function(res){            
+            Joi.assert(res, joiokres);
+            jobid = res.id;
+            console.info("JOBID:", jobid);
+        });
+    });
+
+    lab.test('returns true when second job is executed', function(){
+        return executeJob(jobid)
+        .then(function(jobstatus){
+            Joi.assert(jobstatus, clustermodel.jobstatus);
+        });
+    });
+
+    lab.test('returns true when second job is killed', function(){
+        return killJob(jobid)
+        .then(function(jobstatus){
+
+            Joi.assert(jobstatus, clustermodel.jobstatus);
+            Joi.assert(jobstatus.status, Joi.string().valid("KILL"));
+        });
+    });
+
+    lab.test('returns true when second job is deleted', function(){
         return deleteJob(jobid)
         .then(function(res){
             Joi.assert(res, joiokres);
