@@ -2,41 +2,12 @@
 var fs = require('fs');
 var path = require('path');
 
-var jobid = undefined;
-for(var i = 0; i < process.argv.length; i++){
-    if(process.argv[i] == "-j"){
-        jobid = process.argv[i+1];
-    }
-}
+module.exports = function(jobid, conf){
 
-var help = function(){
-    console.error("help: To execute the program you must specify the job id. ")
-    console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
-    console.error("To configure data provider check conf.*.json")
-}
+    var executionmethods = require('./executionserver.methods')(conf);
 
-if(!jobid){
-    help();
-    return 1;
-}
-
-const getConfigFile = function (base_directory) {
-  try {
-    // Try to load the user's personal configuration file
-    return require(base_directory + '/conf.my.json');
-  } catch (e) {
-    // Else, read the default configuration file
-    return require(base_directory + '/conf.json');
-  }
-};
-
-var conf = getConfigFile("./");
-
-var executionmethods = require('./executionserver.methods')(conf);
-
-var cwd = path.join(conf.storagedir, jobid);
-
-try{
+    var cwd = path.join(conf.storagedir, jobid);
+    
     executionmethods.deleteFolderRecursive(cwd);
     var compressed = cwd + ".tar.gz";
     var compressedstat;
@@ -49,8 +20,6 @@ try{
     if(compressedstat){
         fs.unlinkSync(compressed);
     }
-    process.exit();
-}catch(e){
-    console.error(e);
-    process.exit(1);
+        
+    
 }

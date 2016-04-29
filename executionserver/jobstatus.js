@@ -1,64 +1,32 @@
 
 var _ = require('underscore');
 
-var jobid = undefined;
-for(var i = 0; i < process.argv.length; i++){
-    if(process.argv[i] == "-j"){
-        jobid = process.argv[i+1];
-    }
-}
+module.exports = function(doc, conf){
+    
+    var executionmethods = require('./executionserver.methods')(conf);
+    var clusterengine = require("./" + conf.engine)(conf);
 
-var help = function(){
-    console.error("help: To execute the program you must specify the job id. ")
-    console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
-    console.error("To configure the couchdb, check conf.*.json")
-}
+    const allUpload = function(allupload){
+        return executionmethods.getDocument(doc._id)
+        .then(function(docupdated){
 
-if(!jobid){
-    help();
-    return 1;
-}
-
-const getConfigFile = function (base_directory) {
-  try {
-    // Try to load the user's personal configuration file
-    return require(base_directory + '/conf.my.json');
-  } catch (e) {
-    // Else, read the default configuration file
-    return require(base_directory + '/conf.json');
-  }
-};
-
-var conf = getConfigFile("./");
-
-var executionmethods = require('./executionserver.methods')(conf);
-
-var clusterengine = require("./" + conf.engine)(conf);
-
-const allUpload = function(allupload){
-    return executionmethods.getDocument(jobid)
-    .then(function(docupdated){
-
-        docupdated.jobstatus.uploadstatus = allupload;
-        var alluploadstatus = true;
-        for(var i = 0; i < allupload.length; i++){
-            if(!allupload[i].ok){
-                alluploadstatus = false;
+            docupdated.jobstatus.uploadstatus = allupload;
+            var alluploadstatus = true;
+            for(var i = 0; i < allupload.length; i++){
+                if(!allupload[i].ok){
+                    alluploadstatus = false;
+                }
             }
-        }
-        if(alluploadstatus){
-            docupdated.jobstatus.status = "DONE";
-            return executionmethods.uploadDocumentDataProvider(docupdated);
-        }
-        return executionmethods.uploadDocumentDataProvider(docupdated)
-        .then(function(){
-            throw allupload;
-        })
-    });
-}
-
-executionmethods.getDocument(jobid)
-.then(function(doc){    
+            if(alluploadstatus){
+                docupdated.jobstatus.status = "DONE";
+                return executionmethods.uploadDocumentDataProvider(docupdated);
+            }
+            return executionmethods.uploadDocumentDataProvider(docupdated)
+            .then(function(){
+                throw allupload;
+            })
+        });
+    }  
     if(doc.jobstatus.status === "UPLOADING" || doc.jobstatus.status === "DONE"){
         return executionmethods.checkAllDocumentOutputs(doc)
         .then(allUpload);
@@ -82,13 +50,5 @@ executionmethods.getDocument(jobid)
             }
             return status;
         });
-    }    
-})
-.then(function(res){
-    console.log(res);
-    process.exit();
-})
-.catch(function(err){
-    console.error(err);
-    process.exit(1);
-});
+    }
+}

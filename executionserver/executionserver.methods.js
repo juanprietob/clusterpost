@@ -214,9 +214,14 @@ module.exports = function (conf) {
 	}
 
 	handler.getAllDocumentInputs = function(doc, cwd){
+
 		var inputs = doc.inputs;
 		var alldownloads = [];
 		var downloadstatus = [];
+
+		if(!inputs){
+			return Promise.all([]);
+		}
 
 		for(var i = 0; i < inputs.length; i++){
 			downloadstatus.push(false);
