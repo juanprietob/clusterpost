@@ -7,14 +7,13 @@ var submit = argv["submit"];
 var jobid = argv["j"];
 var force = argv["f"];
 
-console.log(argv)
-
 var help = function(){
     console.error("help: To execute the program you must specify the job id. ")
     console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
     console.error("To configure the couchdb, check conf.*.json");
     console.error("Options:");
-    console.error("-f  force job submission;");
+    console.error("--submit 		Submit the job.");
+    console.error("-f  		force job submission;");
 }
 
 if(!jobid){
