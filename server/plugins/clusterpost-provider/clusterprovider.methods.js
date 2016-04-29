@@ -2,6 +2,7 @@ var request = require('request');
 var _ = require('underscore');
 var Promise = require('bluebird');
 var Stream = require('stream');
+var Boom = require('boom');
 
 module.exports = function (server, conf) {
 
@@ -72,7 +73,7 @@ module.exports = function (server, conf) {
 					}else{
 						var doc = JSON.parse(body);
 						if(doc.error){
-							reject(doc);
+							reject(Boom.notFound(doc));
 						}else{
 							resolve(doc);
 						}

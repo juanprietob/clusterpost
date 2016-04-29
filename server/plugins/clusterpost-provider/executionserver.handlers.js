@@ -103,7 +103,7 @@ module.exports = function (server, conf) {
 				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
 			}
 
-			const submitjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/submitjob.js", "-j", req.params.id]);
+			const submitjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--submit"]);
 
 			var alldata = "";
 			submitjob.stdout.on('data', function(data){
@@ -147,7 +147,7 @@ module.exports = function (server, conf) {
 				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
 			}
 
-			const killjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/killjob.js", "-j", req.params.id]);
+			const killjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--kill"]);
 
 			var alldata = "";
 			killjob.stdout.on('data', function(data){
@@ -184,7 +184,7 @@ module.exports = function (server, conf) {
 		return new Promise(function(resolve, reject){
 			try{
 				var executionserver = conf.executionservers[doc.executionserver];
-				const jobstatus = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobstatus.js", "-j", doc._id]);
+				const jobstatus = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--status"]);
 
 				var alldata = "";
 				jobstatus.stdout.on('data', function(data){
@@ -239,7 +239,7 @@ module.exports = function (server, conf) {
 		return new Promise(function(resolve, reject){
 			try{
 				var executionserver = conf.executionservers[doc.executionserver];
-				const jobdelete = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/jobdelete.js", "-j", doc._id]);
+				const jobdelete = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--delete"]);
 
 				var alldata = "";
 				jobdelete.stdout.on('data', function(data){
