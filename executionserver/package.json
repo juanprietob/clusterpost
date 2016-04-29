@@ -15,10 +15,19 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bluebird": "^3.3.0",
+    "clusterpost-model": "1.0.0",
     "joi": "^7.3.0",
+    "minimist": "^1.2.0",
     "node-targz": "0.0.3",
     "request": "^2.69.0",
-    "underscore": "^1.8.3",
-    "clusterpost-model": "1.0.0"
-  }
+    "underscore": "^1.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
+  },
+  "bugs": {
+    "url": "https://github.com/juanprietob/clusterpost/issues"
+  },
+  "homepage": "https://github.com/juanprietob/clusterpost#readme"
 }

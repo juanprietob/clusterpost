@@ -2,48 +2,11 @@
 
 var _ = require('underscore');
 
-var jobid = undefined;
-var force = false;
-for(var i = 0; i < process.argv.length; i++){
-    if(process.argv[i] == "-j"){
-        jobid = process.argv[i+1];
-    }else if(process.argv[i] == "-f"){
-        force = true;
-    }
-}
-
-var help = function(){
-    console.error("help: To execute the program you must specify the job id. ")
-    console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
-    console.error("To configure the couchdb, check conf.*.json");
-    console.error("Options:");
-    console.error("-f  force job submission;");
-}
-
-if(!jobid){
-    help();
-    return 1;
-}
-
-const getConfigFile = function (base_directory) {
-  try {
-    // Try to load the user's personal configuration file
-    return require(base_directory + '/conf.my.json');
-  } catch (e) {
-    // Else, read the default configuration file
-    return require(base_directory + '/conf.json');
-  }
-};
-
-var conf = getConfigFile("./");
-
-var executionmethods = require('./executionserver.methods')(conf);
-
-var clusterengine = require("./" + conf.engine)(conf);
-
-executionmethods.getDocument(jobid)
-.then(function(doc){    
+module.exports = function(doc, force, conf){
     
+    var executionmethods = require('./executionserver.methods')(conf);
+    var clusterengine = require("./" + conf.engine)(conf);
+
     var cwd = executionmethods.createDirectoryCWD(doc);
 
     const submitJob = function(subdoc){        
@@ -99,14 +62,4 @@ executionmethods.getDocument(jobid)
     }
 
     return sjprom;
-    
-    
-})
-.then(function(res){
-    console.log(res);
-    process.exit();
-})
-.catch(function(error){
-    console.error(error);
-    process.exit(1);
-});
+}
