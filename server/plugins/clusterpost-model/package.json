@@ -10,6 +10,18 @@
     "Joi",
     "clusterpost"
   ],
+  "dependencies": {
+    "joi": "^7.3.0"
+  },
+  "devDependencies": {},
   "author": "juanprietob@gmail.com",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
+  },
+  "bugs": {
+    "url": "https://github.com/juanprietob/clusterpost/issues"
+  },
+  "homepage": "https://github.com/juanprietob/clusterpost#readme"
 }
