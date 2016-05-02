@@ -1,12 +1,82 @@
-= Generate self signed certificate
+
+= Deploying clusterpost
+
+== Install the server package
+
+1. Install nvm, node and npm
+
+2. Install couchdb
+
+Run migrate up. 
+
+3. Install clusterpost-server as follows
+
+npm install clusterpost-server
+
+=== Configuration
+
+Navigate to the folder node_modules/clusterpost-server
+
+Edit the conf.default.js 
+
+If you want to have encrypted server (recommended)
+
+==== Generate self signed certificate
 
 http://apetec.com/support/GenerateSAN-CSR.htm
 
 openssl s_client -showcerts -connect localhost:8180 </dev/null 2>/dev/null|openssl x509 -outform PEM >mycertfile.pem
 
-
 openssl genrsa -out key.pem 2048
 openssl req -new -key key.pem -out csr.pem
 openssl req -x509 -days 365 -key key.pem -in csr.pem -out certificate.pem
 
+==== Configure the nodemailer provider
+
+This email account will be used to send a token to the user to reset the password. 
+Check nodemailer for possible configurations
+
+==== Generate random key for pasword encryption
+
+An easy way to generate a random key is done by typing the command
+
+openssl genrsa 128
+
+Save this key in your configuration file. This is the key used to encrypt the password and save them in the DB. 
+
+== Install the execution server
+
+npm install clusterpost-execution
+
+=== Configuration
+
+Navigate to the folder ./node_modules/clusterpost-execution and modify the file conf.json
+
+Edit the configuration with a path to store the data in the local machine and the IP of the machine running the clusterpost-server application. 
+
+==== Installing the clusterpost-server application. 
+
+If you configure the clusterpost-server with SSL certificate, you need to copy the certificate to the execution server machine and add it to the configuration. 
+
+
+== FAQ
+
+=== SSH Tunneling
+
+If the machine running clusterpost-server app does not have a public IP address and is not visible from the computing grid, you can create an SSH tunnel. 
+
+ssh username@computinggrid -R 8180:localhost:8180
+
+This will create a reverse tunnel from the machine that will allow communication from the clusterpost-execution to the clusterpost-server
+
+==== Multiple login nodes. 
+
+Frequently, a computing grid will have many login nodes. This poses a problem since the tunnel previously generated will work only on the login node. 
+If the clusterpost-server launches a command in a different login node. There will be a connection error. 
+To solve this issue, forward one port and then create the reverse tunnel as follows. 
+
+1. ssh -T -N -f username@computinggrid -L 2222:localhost:22
+2. ssh -T -N -f username@localhost -R 8180:localhost:8180
+
+This will ensure that we will always be connected to the same login node all the time and we have the tunnel available. 
 
