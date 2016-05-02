@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-execution",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Download data from the data provider to the local disk. Submit tasks to the job manager. Check if the task has finished and upload the results back to the data provider",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bluebird": "^3.3.0",
-    "clusterpost-model": "1.0.1",
+    "clusterpost-model": "1.0.3",
     "joi": "^7.3.0",
     "minimist": "^1.2.0",
     "node-targz": "0.0.3",
