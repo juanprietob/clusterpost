@@ -35,6 +35,33 @@ module.exports = function (server, conf) {
     });
 
     /*
+    *   Get user
+    */
+
+    server.route({
+        method: 'GET',
+        path: '/clusterauth/user',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
+            handler: handlers.getUser,
+            validate: {
+                query: false,
+                payload: false,
+                params: false
+            },
+            response: {
+                schema: Joi.object().keys({
+                    name: Joi.string(),
+                    email: Joi.string()
+                })
+            }
+        }
+    });
+
+    /*
     *   Delete user from DB
     */
     server.route({
@@ -84,7 +111,9 @@ module.exports = function (server, conf) {
             },
             validate: {
                 query: false,
-                payload: clustermodel.login,
+                payload: {
+                    password: clustermodel.password
+                },
                 params: false
             },
             handler: handlers.loginUpdate,

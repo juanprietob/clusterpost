@@ -116,6 +116,14 @@ module.exports = function (server, conf) {
 
 	}
 
+	handler.getUser = function(req, rep){
+		var credentials = req.auth.credentials;
+		rep({
+			name: credentials.name,
+			email: credentials.email
+		});
+	}
+
 	handler.login = function(req, rep){
 		
 		var email = req.payload.email;
@@ -198,7 +206,7 @@ module.exports = function (server, conf) {
 			var maxAge = (new Date().getTime() + 30 * 60 * 1000)/1000;
 
 			var token = server.methods.jwtauth.sign({ email: email }, maxAge);
-			var link = server.info.uri + "/public/login/reset?token=" + token.token;
+			var link = server.info.uri + "/public/#/login/reset?token=" + token.token;
 			var html = "Hello " + info.name + ",<br>";
 			html += "Somebody asked me to send you a link to reset your password, hopefully it was you.<br>";
 			html += "Follow this <a href='" + link + "'>link</a> to reset your password.<br>";
