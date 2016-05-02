@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "REST api to post jobs and data to the server application, run scripts in the executionserver to retrieve the data and submit tasks.",
   "main": "index.js",
   "dependencies": {
