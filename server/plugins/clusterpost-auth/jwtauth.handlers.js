@@ -120,7 +120,8 @@ module.exports = function (server, conf) {
 		var credentials = req.auth.credentials;
 		rep({
 			name: credentials.name,
-			email: credentials.email
+			email: credentials.email, 
+			scope: credentials.scope
 		});
 	}
 

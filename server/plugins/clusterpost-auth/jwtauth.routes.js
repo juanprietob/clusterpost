@@ -55,7 +55,8 @@ module.exports = function (server, conf) {
             response: {
                 schema: Joi.object().keys({
                     name: Joi.string(),
-                    email: Joi.string()
+                    email: Joi.string(), 
+                    scope: Joi.array().items(Joi.string())
                 })
             }
         }
