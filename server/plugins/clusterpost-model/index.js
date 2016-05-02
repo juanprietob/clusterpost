@@ -54,14 +54,15 @@ exports.job = Joi.object().keys({
 		_attachments: Joi.optional()
     });
 
+exports.password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/);
 
 exports.user = Joi.object().keys({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
-    password: Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/)
+    password: exports.password
 });
 
 exports.login = Joi.object().keys({
     email: Joi.string().email().required(),
-    password: Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/)
+    password: exports.password
 });
