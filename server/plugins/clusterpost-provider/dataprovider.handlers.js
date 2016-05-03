@@ -176,5 +176,28 @@ module.exports = function (server, conf) {
 		})
 	}
 
+	/*
+	*/
+
+	handler.getAllJobs = function(req, rep){
+		var executable = req.query.executable;
+
+		if(executable){
+			var key = executable;
+			view = '_design/searchjob/_view/executable?include_docs=true&key=' + JSON.stringify(key);
+		}else{
+			view = '_design/searchjob/_view/executable?include_docs=true';
+		}
+
+		server.methods.clusterprovider.getView(view)
+		.then(function(rows){
+			return _.pluck(rows, 'doc');
+		})
+		.then(rep)
+		.catch(function(e){
+			rep(Boom.wrap(e));
+		});
+	}
+
 	return handler;
 }

@@ -122,6 +122,29 @@ module.exports = function (server, conf) {
 
 	server.route({
 		method: 'GET',
+		path: "/dataprovider",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['admin']
+            },
+			handler: handlers.getAllJobs,
+			validate: {
+			  	query: Joi.object().keys({
+			  		executable: Joi.string().optional()
+			  	}).optional(),
+			    params: false, 
+			    payload: false
+			},
+			response: {
+				schema: Joi.array().items(clustermodel.job).min(0)
+			},
+			description: 'Get all document posted to the database'
+	    }
+	});
+
+	server.route({
+		method: 'GET',
 		path: "/dataprovider/user",
 		config: {
 			auth: {
