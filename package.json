@@ -30,6 +30,9 @@
   },
   "homepage": "https://github.com/juanprietob/clusterpost#readme",
   "dependencies": {
-    "clusterpost-server": "1.0.0"
+    "clusterpost-auth": "file:src/clusterpost-auth",
+    "clusterpost-model": "file:src/clusterpost-model",
+    "clusterpost-provider": "file:src/clusterpost-provider",
+    "clusterpost-server": "file:src/clusterpost-server"
   }
 }
