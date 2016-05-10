@@ -103,7 +103,13 @@ module.exports = function (server, conf) {
 				throw Boom.notFound("The server " + doc.executionserver + " is not configured.");
 			}
 
-			const submitjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--submit"]);
+			var params = ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--submit"];
+
+			if(req.payload.force){
+				params.push("-f");
+			}
+
+			const submitjob = spawn('ssh', params);
 
 			var alldata = "";
 			submitjob.stdout.on('data', function(data){
