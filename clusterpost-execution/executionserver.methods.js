@@ -281,17 +281,26 @@ module.exports = function (conf) {
 			
 			var tarname = dirname + ".tar.gz";
 
+			var dirstat;
 			try{
-
-				tarGzip.compress({
-				    source: dirname,
-				    destination: tarname
-				}, function(){
-					resolve(tarname);
-				});
-
+				dirstat = fs.statSync(dirname);
+				if(dirstat){
+					tarGzip.compress({
+					    source: dirname,
+					    destination: tarname
+					}, function(){
+						resolve(tarname);
+					});
+				}else{
+					reject({
+						"error": "Directory not found: " dirname
+					})
+				}
+				
 			}catch(e){
-				reject(e);
+				reject({
+					"error": e
+				});
 			}
 			
 		});
@@ -304,9 +313,7 @@ module.exports = function (conf) {
 			return handler.addDocumentAttachment(doc, compressedname, compressedpath)
 		})
 		.catch(function(e){
-			return {
-				"error": e
-			};
+			return e;
 		});
 	}
 
