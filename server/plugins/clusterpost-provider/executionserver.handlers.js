@@ -100,7 +100,7 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 			var executionserver = conf.executionservers[doc.executionserver];
 			if(!executionserver){
-				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
+				throw Boom.notFound("The server " + doc.executionserver + " is not configured.");
 			}
 
 			const submitjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--submit"]);
@@ -144,7 +144,7 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 			var executionserver = conf.executionservers[doc.executionserver];
 			if(!executionserver){
-				throw Boom.notFound("The server " + req.payload.executionserver + " is not configured.");
+				throw Boom.notFound("The server " + doc.executionserver + " is not configured.");
 			}
 
 			const killjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--kill"]);
