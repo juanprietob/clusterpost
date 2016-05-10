@@ -293,7 +293,7 @@ module.exports = function (conf) {
 					});
 				}else{
 					reject({
-						"error": "Directory not found: " dirname
+						"error": "Directory not found: " + dirname
 					})
 				}
 				
