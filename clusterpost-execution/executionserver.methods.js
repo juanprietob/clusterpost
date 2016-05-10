@@ -302,6 +302,11 @@ module.exports = function (conf) {
 		.then(function(compressedpath){
 			var compressedname = path.basename(compressedpath);
 			return handler.addDocumentAttachment(doc, compressedname, compressedpath)
+		})
+		.catch(function(e){
+			return {
+				"error": e
+			};
 		});
 	}
 
