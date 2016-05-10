@@ -151,6 +151,10 @@ module.exports = function (conf) {
 								resolve(JSON.parse(body));
 							}
 						}));
+					}else{
+						reject({
+							"error": "File not found: " + path
+						})
 					}
 				}catch(e){
 					reject({
@@ -347,7 +351,10 @@ module.exports = function (conf) {
 
 	const checkBeforeUpload = function(params){
 		if(!params.ok){
-			return uploadAttachment(params);
+			return uploadAttachment(params)
+			.catch(function(e){
+				return e;
+			});
 		}
 		return params;
 	}
