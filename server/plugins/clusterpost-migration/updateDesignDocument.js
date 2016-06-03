@@ -41,7 +41,7 @@ var path = require('path');
 
 
 var basedir = path.dirname(process.argv[1]);
-var conf = getConfigFile(env, basedir + '/..');
+var conf = getConfigFile(env, basedir);
 var dataprovider = conf.dataproviders[conf.default.dataprovider];
 var uri = dataprovider.hostname + "/" + dataprovider.database + "/_design/" + design;
 
