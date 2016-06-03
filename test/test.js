@@ -213,11 +213,14 @@ var uploadfile = function(jobid, filename){
 	});
 }
 
-var executeJob = function(jobid){
+var executeJob = function(jobid, force){
     return new Promise(function(resolve, reject){
         try{
             var options = {
                 url : getClusterPostServer() + "/executionserver/" + jobid,
+                json: {
+                    force: force
+                },
                 method: "POST",
                 agentOptions: agentOptions,
                 headers: { authorization: token }
@@ -227,7 +230,7 @@ var executeJob = function(jobid){
                 if(err){
                     reject(err);
                 }else{
-                    resolve(JSON.parse(body));
+                    resolve(body);
                 }
             });
         }catch(e){
@@ -483,6 +486,13 @@ lab.experiment("Test clusterpost", function(){
         return updateJobStatusRec(jobid)
         .then(function(jobstatus){
             Joi.assert(jobstatus.status, Joi.string().valid("DONE"));
+        });
+    });
+
+    lab.test('returns true when job is executed again with force', function(){
+        return executeJob(jobid, true)
+        .then(function(jobstatus){
+            Joi.assert(jobstatus, clustermodel.jobstatus);
         });
     });
 
