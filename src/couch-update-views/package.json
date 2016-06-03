@@ -1,0 +1,27 @@
+{
+  "name": "couch-update-views",
+  "version": "1.0.0",
+  "description": "Update design views in a couchdb instance from json documents store locally. Update the local json document with the design view in couchdb.",
+  "main": "index.js",
+  "scripts": {
+    "test": "lab -v test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
+  },
+  "keywords": [
+    "couchdb",
+    "design",
+    "view",
+    "update",
+    "version",
+    "deploy"
+  ],
+  "author": "juanprietob@gmail.com",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/juanprietob/clusterpost/issues"
+  },
+  "homepage": "https://github.com/juanprietob/clusterpost#readme"
+}
