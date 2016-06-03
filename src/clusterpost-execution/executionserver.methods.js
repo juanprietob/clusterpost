@@ -151,6 +151,10 @@ module.exports = function (conf) {
 								resolve(JSON.parse(body));
 							}
 						}));
+					}else{
+						reject({
+							"error": "File not found: " + path
+						})
 					}
 				}catch(e){
 					reject({
@@ -277,17 +281,26 @@ module.exports = function (conf) {
 			
 			var tarname = dirname + ".tar.gz";
 
+			var dirstat;
 			try{
-
-				tarGzip.compress({
-				    source: dirname,
-				    destination: tarname
-				}, function(){
-					resolve(tarname);
-				});
-
+				dirstat = fs.statSync(dirname);
+				if(dirstat){
+					tarGzip.compress({
+					    source: dirname,
+					    destination: tarname
+					}, function(){
+						resolve(tarname);
+					});
+				}else{
+					reject({
+						"error": "Directory not found: " + dirname
+					})
+				}
+				
 			}catch(e){
-				reject(e);
+				reject({
+					"error": e
+				});
 			}
 			
 		});
@@ -298,6 +311,9 @@ module.exports = function (conf) {
 		.then(function(compressedpath){
 			var compressedname = path.basename(compressedpath);
 			return handler.addDocumentAttachment(doc, compressedname, compressedpath)
+		})
+		.catch(function(e){
+			return e;
 		});
 	}
 
@@ -347,7 +363,10 @@ module.exports = function (conf) {
 
 	const checkBeforeUpload = function(params){
 		if(!params.ok){
-			return uploadAttachment(params);
+			return uploadAttachment(params)
+			.catch(function(e){
+				return e;
+			});
 		}
 		return params;
 	}

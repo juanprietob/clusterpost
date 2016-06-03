@@ -37,7 +37,9 @@ module.exports = function (server, conf) {
 					id: Joi.string().alphanum().required()
 				},
 				query: false,
-				payload: false
+				payload: Joi.object().keys({
+					force: Joi.boolean()
+				}).optional()
 			},
 			description: 'Start job execution'
 		}

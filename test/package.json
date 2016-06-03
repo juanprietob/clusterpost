@@ -18,6 +18,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "joi": "^8.0.5",
-    "lab": "^10.3.0"
+    "lab": "^10.3.0",
+    "clusterpost-model": "1.0.3"
   }
 }

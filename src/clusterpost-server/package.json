@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-server",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "REST api to post jobs and data to the server application, run scripts in the executionserver to retrieve the data and submit tasks.",
   "main": "index.js",
   "dependencies": {
@@ -8,7 +8,7 @@
     "bluebird": "^3.3.0",
     "clusterpost-auth": "1.0.3",
     "clusterpost-model": "1.0.3",
-    "clusterpost-provider": "1.0.3",
+    "clusterpost-provider": "1.0.4",
     "good": "^6.6.0",
     "good-console": "^5.3.1",
     "good-file": "^5.1.2",

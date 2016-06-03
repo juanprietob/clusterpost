@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-execution",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "description": "Download data from the data provider to the local disk. Submit tasks to the job manager. Check if the task has finished and upload the results back to the data provider",
   "main": "index.js",
   "scripts": {
