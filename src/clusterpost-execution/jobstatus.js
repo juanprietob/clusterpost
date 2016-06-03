@@ -19,6 +19,8 @@ module.exports = function(doc, conf){
             }
             if(alluploadstatus){
                 docupdated.jobstatus.status = "DONE";
+            }else{
+                docupdated.jobstatus.status = "FAIL";
             }
             return executionmethods.uploadDocumentDataProvider(docupdated);
         });
