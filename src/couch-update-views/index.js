@@ -50,5 +50,5 @@ exports.couchUpdateViews = function(){
 
 }
 
-exports.migrateUP = require("./migrateUP");
+exports.migrateUp = require("./migrateUp");
 exports.updateDesignDocument = require("./updateDesignDocument");
