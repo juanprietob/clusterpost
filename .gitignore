@@ -8,3 +8,5 @@ all.log
 server/all.log
 conf.my.json
 .token
+conf.production.json
+conf.test.json
