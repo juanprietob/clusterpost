@@ -78,6 +78,7 @@ exports.migrateUp = function(){
     var clusterjobs = clusterpostProvider.dataproviders[clusterpostProvider.default.dataprovider]
     var couchdb = clusterjobs.hostname + "/" + clusterjobs.database;
 
-    var views = path.join(__dirname, "./views");    
-    require('couch-update-views').couchUpdateViews(couchdb, views);
+    var views = path.join(__dirname, "./views");
+    var cuv = require('couch-update-views');
+    return cuv.migrateUp(couchdb, views);
 }
