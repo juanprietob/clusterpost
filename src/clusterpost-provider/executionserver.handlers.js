@@ -1,7 +1,6 @@
 var request = require('request');
 var _ = require('underscore');
 var Promise = require('bluebird');
-var Hapi = require('hapi');
 var Boom = require('boom');
 var spawn = require('child_process').spawn;
 var fs = require('fs');
