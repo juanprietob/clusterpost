@@ -1,6 +1,6 @@
 {
   "name": "clusterpost",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Suite to run a server, post job documents and run tasks in remote computing grids",
   "main": "index.js",
   "directories": {
