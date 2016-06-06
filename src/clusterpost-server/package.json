@@ -8,7 +8,7 @@
     "bluebird": "^3.3.0",
     "clusterpost-auth": "1.0.3",
     "clusterpost-model": "1.0.3",
-    "clusterpost-provider": "1.0.4",
+    "clusterpost-provider": "1.0.5",
     "good": "^6.6.0",
     "good-console": "^5.3.1",
     "good-file": "^5.1.2",
@@ -23,7 +23,7 @@
     "request": "^2.69.0",
     "underscore": "^1.8.3",
     "vision": "^4.0.1",
-    "couch-update-views": "1.0.0"
+    "couch-update-views": "1.0.1"
   },
   "devDependencies": {},
   "scripts": {
