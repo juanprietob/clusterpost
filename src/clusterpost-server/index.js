@@ -1,6 +1,7 @@
 var Hapi = require('hapi');
 var fs = require('fs');
 var good = require('good');
+var path = require('path');
 
 var env = process.env.NODE_ENV;
 
@@ -70,3 +71,13 @@ server.register(plugins, function(err){
         console.log("Execution servers started.");
     });
 });
+
+
+exports.migrateUp = function(){
+    var clusterpostProvider = conf.plugins["clusterpost-provider"];
+    var clusterjobs = clusterpostProvider.dataproviders[clusterpostProvider.default.dataprovider]
+    var couchdb = clusterjobs.hostname + "/" + clusterjobs.database;
+
+    var views = path.join(__dirname, "./views");    
+    require('couch-update-views').couchUpdateViews(couchdb, views);
+}
