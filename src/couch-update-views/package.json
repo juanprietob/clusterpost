@@ -23,5 +23,11 @@
   "bugs": {
     "url": "https://github.com/juanprietob/clusterpost/issues"
   },
-  "homepage": "https://github.com/juanprietob/clusterpost#readme"
+  "homepage": "https://github.com/juanprietob/clusterpost#readme",
+  "dependencies": {
+    "bluebird": "^3.4.0",
+    "joi": "^9.0.0-3",
+    "lab": "^10.7.1",
+    "request": "^2.72.0"
+  }
 }
