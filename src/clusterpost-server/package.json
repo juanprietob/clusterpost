@@ -22,11 +22,13 @@
     "nodemailer": "^2.3.2",
     "request": "^2.69.0",
     "underscore": "^1.8.3",
-    "vision": "^4.0.1"
+    "vision": "^4.0.1",
+    "couch-update-views": "1.0.0"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node ./checkConfiguration.js"
   },
   "repository": {
     "type": "git",
