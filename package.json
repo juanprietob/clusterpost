@@ -33,6 +33,7 @@
     "clusterpost-auth": "file:src/clusterpost-auth",
     "clusterpost-model": "file:src/clusterpost-model",
     "clusterpost-provider": "file:src/clusterpost-provider",
-    "clusterpost-server": "file:src/clusterpost-server"
+    "clusterpost-server": "file:src/clusterpost-server",
+    "couch-update-views": "file:src/couch-update-views"
   }
 }
