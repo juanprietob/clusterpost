@@ -1,4 +1,5 @@
-= couch-update-views
+# couch-update-views
+
 
 - Do you use git and would like to maintain a copy of your couchdb view's code in your repository?
 - Do you have multiple couchdb to maintain (production, development)?
@@ -7,15 +8,15 @@ couch-update-views allows you to synchronize design views from a local directory
 It will also help you update the JSON document of a view in your local directory with the view's content in the database. 
 
 
-== Installing couch-update-views
+## Installing couch-update-views
 
 ----
-npm install couch-update-views
+	npm install couch-update-views
 ----
 
-== Running couch-update-views: 
+## Running couch-update-views: 
 
-=== Generate a script 
+### Generate a script 
 
 Name your script, ex: couchUpdateViews.js and add the following lines:
 
@@ -35,20 +36,20 @@ You should see the following output:
 	    --couchDB  <url>    CouchDB URL. (required)
 ----
 
-=== Synchronize the DB with the folder content
+### Synchronize the DB with the folder content
 
 ----
-node couchUpdateViews.js --migrate --viewsDir /path/to/views/folder --couchDB http://localhost:5984/dbname
+	node couchUpdateViews.js --migrate --viewsDir /path/to/views/folder --couchDB http://localhost:5984/dbname
 ----
 
 If the dbname does not exist, it will create the db for you and add all the views for you. 
 
-=== Update a view
+### Update a view
 
 Generate your view using couchdb utils. If you are running couchdb locally and using the default port visit:
 
 ----
-http://localhost:5984/_utils/database.html?dbname/_temp_view
+	http://localhost:5984/_utils/database.html?dbname/_temp_view
 ----
 
 - Write the view's code: 
@@ -56,52 +57,53 @@ http://localhost:5984/_utils/database.html?dbname/_temp_view
 In the 'Map Function' box add:
 
 ----
-function(doc){
-	if(doc.type === "user"){
-		emit(doc.email, doc.name);
+	function(doc){
+		if(doc.type === "user"){
+			emit(doc.email, doc.name);
+		}
 	}
-}
 ----
 
 - Save the view using 'Save As...' button
 
 Design document: _design/searchUser
+
 View Name: email
 
 - Update the view's content in your local folder:
 
 ----
-node couchUpdateViews.js --viewsDir /path/to/views/folder --couchDB http://localhost:5984/dbname --update searchUser
+	node couchUpdateViews.js --viewsDir /path/to/views/folder --couchDB http://localhost:5984/dbname --update searchUser
 ----
 
 The output of this command yields a file named 'searchUser.json' located at '--viewsDir' folder. 
 The content of the file should look like:
 
 ----
-{
-    "_id": "_design/searchUser",
-    "language": "javascript",
-    "views": {
-        "email": {
-            "map": "function(doc) {\n\tif(doc.type === \"user\"){\n\t\temit(doc.email, doc.name);\n\t}\n}"
-        }
-    }
-}
+	{
+	    "_id": "_design/searchUser",
+	    "language": "javascript",
+	    "views": {
+	        "email": {
+	            "map": "function(doc) {\n\tif(doc.type === \"user\"){\n\t\temit(doc.email, doc.name);\n\t}\n}"
+	        }
+	    }
+	}
 ----
 
-== Using couch-update-views w/o command line
+## Using couch-update-views w/o command line
 
-=== Synchronize the DB with the folder content
+## Synchronize the DB with the folder content
 
 ----
-var couchUpdateViews = require('couch-update-views');
+	var couchUpdateViews = require('couch-update-views');
 	couchUpdateViews.migrateUP('http://localhost:5984/dbname', '/path/to/views');//DB URL, local folder
 ----
 
-=== Update a view
+### Update a view
 
 ----
-var couchUpdateViews = require('couch-update-views');
+	var couchUpdateViews = require('couch-update-views');
 	couchUpdateViews.updateDesignDocument('http://localhost:5984/dbname', '/path/to/views', 'searchUser');//DB URL, local folder, view name
 ----
 
