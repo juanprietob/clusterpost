@@ -1,6 +1,6 @@
 {
   "name": "couch-update-views",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "Update design views in a couchdb instance from json documents store locally. Update the local json document with the design view in couchdb.",
   "main": "index.js",
   "scripts": {
