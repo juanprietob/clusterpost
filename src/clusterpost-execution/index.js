@@ -48,7 +48,7 @@ var clusterengine = require(path.join(__dirname, conf.engine))(conf);
 
 if(jobdelete){
 	try{
-		require(require(path.join(__dirname, "jobdelete"))(jobid, conf);
+		require(path.join(__dirname, "jobdelete"))(jobid, conf);
 		process.exit();
 	}catch(e){
         console.error(e);
@@ -60,11 +60,11 @@ executionmethods.getDocument(jobid)
 .then(function(doc){ 
 
 	if(submit){
-		return require(require(path.join(__dirname, "jobsubmit"))(doc, force, conf);
+		return require(path.join(__dirname, "jobsubmit"))(doc, force, conf);
 	}else if(status){
-		return require(require(path.join(__dirname, "jobstatus"))(doc, conf);
+		return require(path.join(__dirname, "jobstatus"))(doc, conf);
 	}else if(kill){
-		return require(require(path.join(__dirname, "jobkill"))(doc, conf);
+		return require(path.join(__dirname, "jobkill"))(doc, conf);
 	}
     
     
