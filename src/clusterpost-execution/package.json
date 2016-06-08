@@ -4,7 +4,8 @@
   "description": "Download data from the data provider to the local disk. Submit tasks to the job manager. Check if the task has finished and upload the results back to the data provider",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node postinstall.js"
   },
   "keywords": [
     "Cluster",
