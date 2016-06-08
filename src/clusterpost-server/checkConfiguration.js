@@ -22,6 +22,26 @@ try{
 	fs.writeFileSync(path.join(installdir, 'conf.test.json'), defaultconfig);
 }
 
+try{
+
+	var migrateUp = fs.readFileSync(path.join(cwd, "migrateUp.js.in"));
+	migrateUp.replace("@DIRNAME@", cwd);
+
+	fs.writeFileSync(path.join(installdir, 'migrateUp.js'), migrateUp);
+
+}catch(e){
+
+}
+
+try{
+
+	var index = fs.readFileSync(path.join(cwd, "index.js.in"));
+	fs.writeFileSync(path.join(installdir, 'index.js'), index);
+
+}catch(e){
+
+}
+
 console.log("tls configuration:");
 console.log("\tIf you want to enable https layer for this server application you must either generate a key and certificate or acquire a certificate from a cert authority.");
 console.log("\tIf you don't want to use https remove the field 'tls' from the JSON configuration file(s).");
@@ -50,7 +70,7 @@ console.log("\t\t You must generate a pair of private and public keys and be abl
 console.log("\t\t 'sourcedir' must point to the installation path of the 'clusterpost-executionserver' package.");
 console.log("\t\t To install this package login to your computing grid and run 'npm install clusterpost-executionserver', follow the configuration tutorial for this module.");
 console.log("");
-console.log("To start the server you must generate an index.js file and add:");
+console.log("To start the server you must generate a script file (index.js) file and add:");
 console.log("--------");
 console.log("\trequire('clusterpost-server');");
 console.log("\tclusterpostserver.server.start(function () {");
@@ -61,4 +81,4 @@ console.log("You can also add your own plugins to this Hapi server by adding the
 console.log("Start the server by running:");
 console.log("\tNODE_ENV=<production|test> node index.js");
 console.log("\tThe parameter production or test will read the configuration file you just generated.");
-console.log("Once you have started the server visit http://localhost:8180/docs to check the API documentation for clusterpost");
+console.log("Once you have started the server, visit http://localhost:8180/docs to check the API documentation for clusterpost");
