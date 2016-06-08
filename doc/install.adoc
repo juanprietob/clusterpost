@@ -25,11 +25,18 @@ If you want to have encrypted server (recommended)
 
 http://apetec.com/support/GenerateSAN-CSR.htm
 
-openssl s_client -showcerts -connect localhost:8180 </dev/null 2>/dev/null|openssl x509 -outform PEM >mycertfile.pem
-
+Generate a selfsigned certificate
+----
 openssl genrsa -out key.pem 2048
 openssl req -new -key key.pem -out csr.pem
 openssl req -x509 -days 365 -key key.pem -in csr.pem -out certificate.pem
+----
+
+Get a certificate from a server
+
+----
+openssl s_client -showcerts -connect localhost:8180 </dev/null 2>/dev/null|openssl x509 -outform PEM >mycertfile.pem
+----
 
 ==== Configure the nodemailer provider
 
