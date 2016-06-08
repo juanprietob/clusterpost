@@ -1,6 +1,7 @@
 
 var _ = require('underscore');
 var argv = require('minimist')(process.argv.slice(2));
+var path = require('path');
 
 
 var submit = argv["submit"];
@@ -33,21 +34,21 @@ if(!jobid || !submit && !status && !kill && !jobdelete){
 const getConfigFile = function (base_directory) {
   try {
     // Try to load the user's personal configuration file
-    return require(base_directory + '/conf.my.json');
+    return require(path.join(base_directory, 'conf.my.json'));
   } catch (e) {
     // Else, read the default configuration file
-    return require(base_directory + '/conf.json');
+    return require(path.join(base_directory, 'conf.json'));
   }
 };
 
-var conf = getConfigFile("./");
+var conf = getConfigFile(process.cwd());
 
-var executionmethods = require('./executionserver.methods')(conf);
-var clusterengine = require("./" + conf.engine)(conf);
+var executionmethods = require(path.join(__dirname, 'executionserver.methods'))(conf);
+var clusterengine = require(path.join(__dirname, conf.engine))(conf);
 
 if(jobdelete){
 	try{
-		require("./jobdelete")(jobid, conf);
+		require(require(path.join(__dirname, "jobdelete"))(jobid, conf);
 		process.exit();
 	}catch(e){
         console.error(e);
@@ -59,11 +60,11 @@ executionmethods.getDocument(jobid)
 .then(function(doc){ 
 
 	if(submit){
-		return require("./jobsubmit")(doc, force, conf);
+		return require(require(path.join(__dirname, "jobsubmit"))(doc, force, conf);
 	}else if(status){
-		return require("./jobstatus")(doc, conf);
+		return require(require(path.join(__dirname, "jobstatus"))(doc, conf);
 	}else if(kill){
-		return require("./jobkill")(doc, conf);
+		return require(require(path.join(__dirname, "jobkill"))(doc, conf);
 	}
     
     
