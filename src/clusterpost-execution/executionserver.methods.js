@@ -18,11 +18,8 @@ module.exports = function (conf) {
 
 	var token;
 
-	try{
-		var tokenfile = path.join(process.cwd(), ".token");
-		token = "Bearer " + JSON.parse(fs.readFileSync(tokenfile)).token;
-	}catch(e){
-		console.error(e);
+	if(conf.token){
+		token = "Bearer " + conf.token;
 	}
 
 	var handler = {};

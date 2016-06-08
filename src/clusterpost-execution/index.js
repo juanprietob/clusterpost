@@ -41,7 +41,20 @@ const getConfigFile = function (base_directory) {
   }
 };
 
-var conf = getConfigFile(process.cwd());
+var confpath = __dirname;
+if(module.parent && module.parent.filename){
+    confpath = path.dirname(module.parent.filename);
+}
+
+var conf = getConfigFile(confpath);
+
+try{
+    var tokenfile = path.join(confpath, ".token");
+    _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
+}catch(e){    
+    console.error(e);
+    process.exit(1);
+}
 
 var executionmethods = require(path.join(__dirname, 'executionserver.methods'))(conf);
 var clusterengine = require(path.join(__dirname, conf.engine))(conf);
