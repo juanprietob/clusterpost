@@ -1,14 +1,15 @@
 
 var argv = require('minimist')(process.argv.slice(2));
+var path = require('path');
 
 const run = function(migrate, update, viewsDir, couchDB){
 
     var couchUpdateViews;
 
     if(migrate){
-        couchUpdateViews = require("./migrateUP")(couchDB, viewsDir);    
+        couchUpdateViews = require(path.join(__dirname, "migrateUP"))(couchDB, viewsDir);    
     }else{
-        couchUpdateViews = require("./updateDesignDocument")(couchDB, viewsDir, update);
+        couchUpdateViews = require(path.join(__dirname, "updateDesignDocument"))(couchDB, viewsDir, update);
     }
 
 
@@ -50,5 +51,5 @@ exports.couchUpdateViews = function(){
 
 }
 
-exports.migrateUp = require("./migrateUp");
-exports.updateDesignDocument = require("./updateDesignDocument");
+exports.migrateUp = require(path.join(__dirname, "migrateUp"));
+exports.updateDesignDocument = require(path.join(__dirname, "updateDesignDocument"));
