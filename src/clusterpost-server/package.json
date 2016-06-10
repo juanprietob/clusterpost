@@ -23,7 +23,8 @@
     "request": "^2.69.0",
     "underscore": "^1.8.3",
     "vision": "^4.0.1",
-    "couch-update-views": "1.0.1"
+    "couch-update-views": "1.0.1",
+    "boom": "^3.1.2"
   },
   "devDependencies": {},
   "scripts": {
