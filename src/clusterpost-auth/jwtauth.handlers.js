@@ -85,6 +85,7 @@ module.exports = function (server, conf) {
 
 		server.methods.clusterprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
 		.then(function(info){
+
 			var info = _.pluck(info, "value");
 
 			if(info.length === 0){
@@ -100,7 +101,7 @@ module.exports = function (server, conf) {
 			user.type = 'user';
 			user.scope = ['clusterpost'];
 
-			return server.methods.clusterprovider.uploadDocumentsDataProvider(user)
+			return server.methods.clusterprovider.uploadDocuments(user)
 			.then(function(res){
 				res = res[0];
 				if(res.ok){
@@ -164,7 +165,7 @@ module.exports = function (server, conf) {
 				
 				user.password = hash;
 
-				return server.methods.clusterprovider.uploadDocumentsDataProvider(user)
+				return server.methods.clusterprovider.uploadDocuments(user)
 				.then(function(res){
 					res = res[0];
 					if(res.ok){
@@ -185,7 +186,7 @@ module.exports = function (server, conf) {
 		
 		var credentials = req.auth.credentials;
 
-		server.methods.clusterprovider.deleteDocument(credentials._id, credentials._rev)
+		server.methods.clusterprovider.deleteDocument(credentials)
 		.then(rep)
 		.catch(function(err){
 			rep(Boom.conflict(err));

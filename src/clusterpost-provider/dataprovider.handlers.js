@@ -18,7 +18,7 @@ module.exports = function (server, conf) {
 			status: 'CREATE'
 		};		
 
-		server.methods.clusterprovider.uploadDocumentsDataProvider(job)
+		server.methods.clusterprovider.uploadDocuments(job)
 		.then(function(res){
 			if(res.length === 1){
 				return res[0];
@@ -54,7 +54,7 @@ module.exports = function (server, conf) {
 		
 		Promise.all(prom)
 		.then(function(){
-			return server.methods.clusterprovider.uploadDocumentsDataProvider(job);
+			return server.methods.clusterprovider.uploadDocuments(job);
 		})
 		.then(rep)
 		.catch(function(e){
@@ -66,6 +66,9 @@ module.exports = function (server, conf) {
 	*/
 	handler.addData = function(req, rep){
 		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.isJobDocument(doc);
+		})
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
@@ -91,7 +94,7 @@ module.exports = function (server, conf) {
 
 				var name = req.params.name;
 				if(doc._attachments && doc._attachments[name]){
-					rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name));
+					rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name));
 				}else{
 					var att = _.find(doc.inputs, function(input){
 						return input.name === name;
@@ -107,7 +110,12 @@ module.exports = function (server, conf) {
 					if(att.type === 'tar.gz'){
 						name += ".tar.gz";
 					}
-					rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc, name, att.remote));
+					if(att.remote){
+						rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(att.remote.uri, att.remote.serverCodename));
+					}else{
+						rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name));
+					}
+					
 				}
 				
 			}else{
@@ -125,12 +133,15 @@ module.exports = function (server, conf) {
 
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
+			return server.methods.clusterprovider.isJobDocument(doc);
+		})
+		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
 			return server.methods.executionserver.jobdelete(doc)
 			.then(function(){
-				return server.methods.clusterprovider.deleteDocument(doc._id, doc._rev);
+				return server.methods.clusterprovider.deleteDocument(doc);
 			});
 		})
 		.then(rep)

@@ -34,6 +34,7 @@
     "clusterpost-model": "file:src/clusterpost-model",
     "clusterpost-provider": "file:src/clusterpost-provider",
     "clusterpost-server": "file:src/clusterpost-server",
+    "couch-provider": "file:src/couch-provider",
     "couch-update-views": "file:src/couch-update-views"
   }
 }
