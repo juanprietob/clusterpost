@@ -1,0 +1,27 @@
+{
+  "name": "hapi-jwt-couch",
+  "version": "1.0.0",
+  "description": "Simple user authentication for Hapi server using JWT and storing user data and encrypted passwords in couchdb.",
+  "main": "jwtauth.routes.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
+  },
+  "keywords": [
+    "Hapi",
+    "jwt",
+    "couchdb",
+    "user",
+    "encryption",
+    "password"
+  ],
+  "author": "juanprietob@gmail.com",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/juanprietob/clusterpost/issues"
+  },
+  "homepage": "https://github.com/juanprietob/clusterpost#readme"
+}

@@ -1,0 +1,12 @@
+{
+    "_id": "_design/user",
+    "language": "javascript",
+    "views": {
+        "hash": {
+            "map": "function(doc) {\n\tif(doc.type === \"user\"){\n\t\temit(doc.email, doc.password);\n\t}\n}"
+        },
+        "info": {
+            "map": "function(doc) {\n\tif(doc.type === \"user\"){\n\t\temit(doc.email, {_id: doc._id, _rev: doc._rev, email: doc.email, scope: doc.scope, name: doc.name});\n\t}\n}"
+        }
+    }
+}
