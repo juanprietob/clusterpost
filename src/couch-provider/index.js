@@ -3,7 +3,7 @@ var _ = require('underscore');
 var Promise = require('bluebird');
 var Boom = require('boom');
 
-module.exports = function (server, conf, namespace) {
+module.exports = function (conf, server, namespace) {
 	
 	if(!conf.default && !conf.hostname && !conf.database){
 		var confexample = {
@@ -120,12 +120,12 @@ module.exports = function (server, conf, namespace) {
 		});
 	}
 
-	const addDocumentAttachment = function(doc, name, stream){
+	const addDocumentAttachment = function(doc, name, stream, codename){
 		return new Promise(function(resolve, reject){
 
 			try{
 				var options = {
-					uri: getCouchDBServer() + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
+					uri: getCouchDBServer(codename) + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
 					method: 'PUT',
 					headers: {
 						"Content-type" : "application/octet-stream"
@@ -193,7 +193,7 @@ module.exports = function (server, conf, namespace) {
 		})
 	}
 
-	if(namespace){
+	if(server && namespace){
 
 		server.method({
 		    name: namespace + '.getCouchDBServer',
