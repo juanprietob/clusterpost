@@ -7,7 +7,7 @@ module.exports = function (server, conf) {
 	var Boom = require('boom');
 	var _ = require('underscore');
 	var nodemailer = require('nodemailer');
-	var couchprovider = require('couch-provider')(server, conf.userdb);
+	require('couch-provider')(conf.userdb, server, 'hapijwtcouch');
 	
 	var transporter = nodemailer.createTransport(conf.mailer.nodemailer);
 	transporter.verify(function(error, success) {
@@ -16,11 +16,11 @@ module.exports = function (server, conf) {
 		}
 	});
 
-	couchprovider.getDocument("_design/user")
+	server.methods.hapijwtcouch.getDocument("_design/user")
 	.catch(function(err){
 		var couchUpdateViews = require('couch-update-views');
 		var path = require('path');
-		couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'));
+		couchUpdateViews.migrateUp(server.methods.hapijwtcouch.getCouchDBServer(), path.join(__dirname, 'views'));
 	});
 
 
@@ -45,7 +45,7 @@ module.exports = function (server, conf) {
 
 	handler.validateUser = function(req, decodedToken){
 		
-		return couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(decodedToken.email))
+		return server.methods.hapijwtcouch.getView('_design/user/_view/info?key=' + JSON.stringify(decodedToken.email))
 		.then(function(info){
 			var info = _.pluck(info, "value");
 
@@ -76,7 +76,7 @@ module.exports = function (server, conf) {
 		var email = req.payload.email;
 		var password = req.payload.password;
 
-		couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
+		server.methods.hapijwtcouch.getView('_design/user/_view/info?key=' + JSON.stringify(email))
 		.then(function(info){
 
 			var info = _.pluck(info, "value");
@@ -94,7 +94,7 @@ module.exports = function (server, conf) {
 			user.type = 'user';
 			user.scope = ['clusterpost'];
 
-			return couchprovider.uploadDocuments(user)
+			return server.methods.hapijwtcouch.uploadDocuments(user)
 			.then(function(res){
 				res = res[0];
 				if(res.ok){
@@ -124,7 +124,7 @@ module.exports = function (server, conf) {
 		var email = req.payload.email;
 		var password = req.payload.password;
 
-		couchprovider.getView('_design/user/_view/hash?key=' + JSON.stringify(email))
+		server.methods.hapijwtcouch.getView('_design/user/_view/hash?key=' + JSON.stringify(email))
 		.then(function(hash){
 			return _.pluck(hash, "value")[0];
 		})
@@ -151,14 +151,14 @@ module.exports = function (server, conf) {
 		var email = credentials.email;
 		var password = req.payload.password;
 
-		couchprovider.getDocument(credentials._id)
+		server.methods.hapijwtcouch.getDocument(credentials._id)
 		.then(function(user){
 			return bcryptHash(password)
 			.then(function(hash){
 				
 				user.password = hash;
 
-				return couchprovider.uploadDocuments(user)
+				return server.methods.hapijwtcouch.uploadDocuments(user)
 				.then(function(res){
 					res = res[0];
 					if(res.ok){
@@ -179,7 +179,7 @@ module.exports = function (server, conf) {
 		
 		var credentials = req.auth.credentials;
 
-		couchprovider.deleteDocument(credentials)
+		server.methods.hapijwtcouch.deleteDocument(credentials)
 		.then(rep)
 		.catch(function(err){
 			rep(Boom.conflict(err));
@@ -189,7 +189,7 @@ module.exports = function (server, conf) {
 	handler.resetPassword = function(req, rep){
 		var email = req.payload.email;
 
-		couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
+		server.methods.hapijwtcouch.getView('_design/user/_view/info?key=' + JSON.stringify(email))
 		.then(function(info){
 			var info = _.pluck(info, "value");
 			if(info.length === 0){
