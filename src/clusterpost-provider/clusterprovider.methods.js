@@ -6,7 +6,7 @@ var Boom = require('boom');
 
 module.exports = function (server, conf) {
 	
-	require('couch-provider')(server, conf.dataproviders, 'clusterprovider');
+	require('couch-provider')(conf.dataproviders, server, 'clusterprovider');
 	var clustermodel = require('clusterpost-model');
 	var Joi = require('joi');
 
