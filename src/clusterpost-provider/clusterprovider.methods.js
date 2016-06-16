@@ -8,8 +8,7 @@ module.exports = function (server, conf) {
 	
 	require('couch-provider')(server, conf.dataproviders, 'clusterprovider');
 	var clustermodel = require('clusterpost-model');
-
-	
+	var Joi = require('joi');
 
 	const isJobDocument = function(doc){
 		Joi.assert(doc, clustermodel.job);
