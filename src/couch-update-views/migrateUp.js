@@ -1,5 +1,4 @@
 
-var _ = require('underscore');
 var request = require('request');
 var fs = require('fs');
 var Promise = require('bluebird');
@@ -54,12 +53,14 @@ module.exports = function(dburl, viewsdir){
 
                             if(JSON.stringify(designdoc.views) !== JSON.stringify(couchdesigndoc.views)){
 
+                                console.info("Deploying design document: ", designdoc);
+
                                 var uri = url + "/" + designdoc._id;
                                 if(couchdesigndoc._rev){
                                     designdoc._rev = couchdesigndoc._rev;
                                     uri += "?rev="+designdoc._rev;
                                 }
-                                console.log(couchdesigndoc);
+                                
                                 var options = {
                                     uri :  uri,
                                     method : 'PUT',

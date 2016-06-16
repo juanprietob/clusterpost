@@ -1,5 +1,4 @@
 
-var _ = require('underscore');
 var Promise = require('bluebird');
 var request = require('request');
 var fs = require('fs');

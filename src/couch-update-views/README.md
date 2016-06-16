@@ -97,7 +97,7 @@ The content of the file should look like:
 
 ----
 	var couchUpdateViews = require('couch-update-views');
-	couchUpdateViews.migrateUP('http://localhost:5984/dbname', '/path/to/views');//DB URL, local folder
+	couchUpdateViews.migrateUp('http://localhost:5984/dbname', '/path/to/views');//DB URL, local folder
 ----
 
 ### Update a view
