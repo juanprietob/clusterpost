@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-auth",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Login and authenticate users for the clusterpost application",
   "main": "index.js",
   "scripts": {
@@ -14,14 +14,8 @@
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
   "dependencies": {
-    "bcrypt": "^0.8.6",
-    "bluebird": "^3.3.0",
     "boom": "^3.1.2",
-    "joi": "^7.3.0",
-    "jsonwebtoken": "^5.7.0",
-    "nodemailer": "^2.3.2",
-    "request": "^2.69.0",
-    "underscore": "^1.8.3"
+    "hapi-jwt-couch": "^1.0.0"
   },
   "repository": {
     "type": "git",
