@@ -4,10 +4,8 @@ var Promise = require('bluebird');
 var Boom = require('boom');
 
 module.exports = function (server, conf, namespace) {
-
-	namespace = namespace !== undefined? namespace: "couchprovider";
-
-	if(!conf.default){
+	
+	if(!conf.default && !conf.hostname && !conf.database){
 		var confexample = {
 			"default": "codename",
 			"codename" : {
@@ -15,7 +13,8 @@ module.exports = function (server, conf, namespace) {
 				"database" : "db"
 			}
 		}
-		throw "No default database name, your conf should look like:\n" + JSON.stringify(confexample, null, 2);
+		console.error("No default database name, your conf should look like:", JSON.stringify(confexample, null, 2), "or", JSON.stringify(confexample.codename, null, 2))
+		throw "Bad couchdb configuration";
 	}
 
 	const getCouchDBServer = function(codename){
@@ -23,12 +22,14 @@ module.exports = function (server, conf, namespace) {
 		var couchserver;
 		if(codename){
 			couchserver = conf[codename];
-		}else{
+		}else if(conf.default){
 			couchserver = conf[conf.default];
+		}else if(conf.hostname && conf.database){
+			couchserver = conf;
 		}
 
 		if(!couchserver){
-			throw new Error("Server not found in configuration " + codename);
+			throw Boom.notFound("No couchdb server found in configuration", [codename, conf]);
 		}
 
 		var url = couchserver.hostname + "/" + couchserver.database;
@@ -66,12 +67,7 @@ module.exports = function (server, conf, namespace) {
             });
         });
 	}
-
-	server.method({
-	    name: namespace + '.uploadDocuments',
-	    method: uploadDocuments,
-	    options: {}
-	});
+	
 
 	const getDocument = function(id, codename){
 		return new Promise(function(resolve, reject){
@@ -97,12 +93,6 @@ module.exports = function (server, conf, namespace) {
 			}
 		});
 	}
-
-	server.method({
-	    name: namespace + '.getDocument',
-	    method: getDocument,
-	    options: {}
-	});
 
 	const deleteDocument = function(doc, codename){
 		return new Promise(function(resolve, reject){
@@ -130,12 +120,6 @@ module.exports = function (server, conf, namespace) {
 		});
 	}
 
-	server.method({
-	    name: namespace + '.deleteDocument',
-	    method: deleteDocument,
-	    options: {}
-	});
-
 	const addDocumentAttachment = function(doc, name, stream){
 		return new Promise(function(resolve, reject){
 
@@ -161,11 +145,6 @@ module.exports = function (server, conf, namespace) {
 		});
 	}
 
-	server.method({
-	    name: namespace + '.addDocumentAttachment',
-	    method: addDocumentAttachment,
-	    options: {}
-	});
 
 	const getDocumentURIAttachment = function(uri, codename){
 		return {
@@ -173,17 +152,11 @@ module.exports = function (server, conf, namespace) {
 		};
 	}
 
-	server.method({
-	    name: namespace + '.getDocumentURIAttachment',
-	    method: getDocumentURIAttachment,
-	    options: {}
-	});
-
 
 	const getDocumentAttachment = function(uri, codename){
 		return new Promise(function(resolve, reject){
 			try{
-				var options = server.methods.clusterprovider.getDocumentURIAttachment(uri, codename);
+				var options = getDocumentURIAttachment(uri, codename);
 				request(options, function(err, res, body){
 					if(err){
 						reject(err);
@@ -198,12 +171,6 @@ module.exports = function (server, conf, namespace) {
 		});
 		
 	}
-
-	server.method({
-	    name: namespace + '.getDocumentAttachment',
-	    method: getDocumentAttachment,
-	    options: {}
-	});
 
 	const getView = function(view, codename){
 		return new Promise(function(resolve, reject){
@@ -226,12 +193,68 @@ module.exports = function (server, conf, namespace) {
 		})
 	}
 
-	server.method({
-	    name: namespace + '.getView',
-	    method: getView,
-	    options: {}
-	});
+	if(namespace){
 
-	console.info("Namespace created: ", namespace, "with couchdb server methods", server.methods[namespace], "And config: ", conf);
+		server.method({
+		    name: namespace + '.getCouchDBServer',
+		    method: getCouchDBServer,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.uploadDocuments',
+		    method: uploadDocuments,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.getDocument',
+		    method: getDocument,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.deleteDocument',
+		    method: deleteDocument,
+		    options: {}
+		});
+		
+		server.method({
+		    name: namespace + '.addDocumentAttachment',
+		    method: addDocumentAttachment,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.getDocumentURIAttachment',
+		    method: getDocumentURIAttachment,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.getDocumentAttachment',
+		    method: getDocumentAttachment,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.getView',
+		    method: getView,
+		    options: {}
+		});
+
+		console.info('couch-provider namespace', namespace, 'initialized.');
+	}else{
+		return {
+			getCouchDBServer: getCouchDBServer,
+			uploadDocuments: uploadDocuments,
+			getDocument: getDocument,
+			deleteDocument: deleteDocument,
+			addDocumentAttachment: addDocumentAttachment,
+			getDocumentURIAttachment: getDocumentURIAttachment,
+			getDocumentAttachment: getDocumentAttachment,
+			getView: getView
+		}
+	}
 	
 }
