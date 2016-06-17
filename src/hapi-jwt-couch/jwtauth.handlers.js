@@ -8,11 +8,20 @@ module.exports = function (server, conf) {
 	var _ = require('underscore');
 	var nodemailer = require('nodemailer');
 	require('couch-provider')(conf.userdb, server, 'hapijwtcouch');
-	
-	var transporter = nodemailer.createTransport(conf.mailer.nodemailer);
+
+	var transporter;
+
+	if(conf.mailer.nodemailer === 'nodemailer-stub-transport'){
+		transporter = nodemailer.createTransport(require(conf.mailer.nodemailer)());
+	}else{
+		transporter = nodemailer.createTransport(conf.mailer.nodemailer);
+	}
+
 	transporter.verify(function(error, success) {
 		if (error) {
 			console.log(error);
+		}else{
+			console.log(success);
 		}
 	});
 

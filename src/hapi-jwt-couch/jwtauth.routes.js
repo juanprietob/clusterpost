@@ -166,7 +166,7 @@ module.exports = function (server, conf) {
 
     server.route({
         method: 'POST',
-        path: '/auth/reset',
+        path: '/clusterauth/reset',
         config: {
             auth: false,
             validate: {
