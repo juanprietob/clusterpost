@@ -43,7 +43,7 @@ var token;
 var createUser = function(user){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/user",
+            url: getClusterPostServer() + "/auth/user",
             method: 'POST',
             json: user,
             agentOptions: agentOptions
@@ -62,7 +62,7 @@ var createUser = function(user){
 var userLogin = function(user){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/login",
+            url: getClusterPostServer() + "/auth/login",
             method: 'POST',
             json: user,
             agentOptions: agentOptions
@@ -81,7 +81,7 @@ var userLogin = function(user){
 var deleteUser = function(token){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/user",
+            url: getClusterPostServer() + "/auth/user",
             method: 'DELETE',
             agentOptions: agentOptions,
             headers: { authorization: token }
