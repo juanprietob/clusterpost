@@ -14,9 +14,8 @@ exports.register = function (server, conf, next) {
 
 	conf.validate = validate;
 
-	require('hapi-jwt-couch')(server, conf);
-
-	return next();
+	return require('hapi-jwt-couch').register(server, conf, next);
+	
 };
 
 exports.register.attributes = {
