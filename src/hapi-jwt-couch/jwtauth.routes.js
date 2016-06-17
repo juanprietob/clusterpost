@@ -92,10 +92,7 @@ module.exports = function (server, conf) {
                 params: false
             },
             response: {
-                schema: Joi.object().keys({
-                    email: Joi.string(), 
-                    scope: Joi.array().items(Joi.string())
-                }).unknown()
+                schema: Joi.object()
             },
             description: 'Get user information'
         }

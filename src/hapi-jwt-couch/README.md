@@ -6,9 +6,6 @@ in a couchdb instance.
 This plugin also provides a 'recover my password' option by setting up an email account using nodemailer[https://github.com/nodemailer/nodemailer].
 
 
-
-
-
 ## Usage 
 
 ----
@@ -68,3 +65,44 @@ This plugin also provides a 'recover my password' option by setting up an email 
 	    });
 	});
 ----
+
+## Create your own Hapi plugin and extend hapi-jwt-couch with 
+
+You can extend this plugin by adding your own validation function. You may also change the validation for user, password and login Joi objects. 
+
+The Joi objects shown here for password, user and login are used by default.
+
+----
+
+	exports.register = function (server, conf, next) {
+		
+        conf.password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/);
+	    
+
+	    conf.user = Joi.object().keys({
+	        name: Joi.string().required(),
+	        email: Joi.string().email().required(),
+	        password: password
+	    });
+
+	    conf.login = Joi.object().keys({
+	        email: Joi.string().email().required(),
+	        password: password
+	    });
+
+		const validate = function(req, decodedToken, callback){
+			//validate your decoded token
+		}
+
+		conf.validate = validate;
+
+		return require('hapi-jwt-couch').register(server, conf, next);
+		
+	};
+
+	exports.register.attributes = {
+	  pkg: require('./package.json')
+	};
+
+----
+
