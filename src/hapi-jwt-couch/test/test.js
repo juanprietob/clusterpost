@@ -77,9 +77,9 @@ var deleteUser = function(token){
 lab.experiment("Test clusterpost auth jwt", function(){
 
     var user = {
-        email: "algiedi85@gmail.com",
-        name: "Alpha Capricorni",
-        password: "Some808Password!"
+        email: "hapi.jwt.couch@gmail.com",
+        name: "Hapi jwt",
+        password: "SomePassword90!"
     }
 
     lab.test('returns true when new user is created.', function(){
@@ -92,6 +92,19 @@ lab.experiment("Test clusterpost auth jwt", function(){
     });
 
     lab.test('returns true if same user fails to be created.', function(){
+
+        
+        return createUser(user)
+        .then(function(res){
+            Joi.assert(res.token, Joi.object().keys({ 
+                statusCode: Joi.number().valid(409),
+                error: Joi.string(),
+                message: Joi.string()
+            }));
+        });
+    });
+
+    lab.test('returns true when recovery email is sent.', function(){
 
         
         return createUser(user)
