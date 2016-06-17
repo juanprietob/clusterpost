@@ -1,4 +1,5 @@
 var cuv = require('couch-update-views');
+var Promise = require('bluebird');
 
 var env = process.env.NODE_ENV;
 
@@ -17,13 +18,27 @@ const getConfigFile = function () {
 
 var conf = getConfigFile();
 
-var clusterpostProvider = conf.plugins['clusterpost-provider'];
-var clusterjobs = clusterpostProvider.dataproviders[clusterpostProvider.default.dataprovider]
-var couchdb = clusterjobs.hostname + '/' + clusterjobs.database;
+var couchprovider = conf.plugins['couch-provider'];
 
-var views = path.join(@DIRNAME@, './views');
+//migration of clusterpost-provider
+var views = path.join('./', 'node_modules', 'clusterpost-provider', 'views');
+var allupdate = [];
 
-cuv.migrateUp(couchdb, views)
+Object.keys(couchprovider).forEach(function(key){
+  if(key!=='default' && key!==='namespace'){
+      var couchdb = couchprovider[key].hostname + '/' + couchprovider[key].database;
+
+      allupdate.push(cuv.migrateUp(couchdb, views));
+
+  }
+});
+
+
+//Migration of userdb
+var userdb = var couchprovider = conf.plugins['clusterpost-auth'].userdb;
+allupdate.push(cuv.migrateUp(userdb.hostname + '/' + userdb.database, path.join('./', 'node_modules', 'clusterpost-auth', 'views')));
+
+Promise.all(allupdate)
 .then(function(res){
     console.log(res);
     process.exit(0);
