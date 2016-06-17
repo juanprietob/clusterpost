@@ -7,6 +7,24 @@ var spawn = require('child_process').spawn;
 module.exports = function (server, conf) {
 	
 
+	if(!server.methods.clusterprovider){
+		throw new Error("Have you installed the 'couch-provider' plugin with namespace 'couchprovider'?");
+	}
+
+	server.methods.clusterprovider.getDocument("_design/getJob")
+	.catch(function(err){
+		var couchUpdateViews = require('couch-update-views');
+		var path = require('path');
+		couchUpdateViews.migrateUp(server.methods.clusterprovider.getCouchDBServer(), path.join(__dirname, 'views'));
+	});
+
+	server.methods.clusterprovider.getDocument("_design/searchJob")
+	.catch(function(err){
+		var couchUpdateViews = require('couch-update-views');
+		var path = require('path');
+		couchUpdateViews.migrateUp(server.methods.clusterprovider.getCouchDBServer(), path.join(__dirname, 'views'));
+	});
+
 	var handler = {};
 	/*
 	*/
@@ -168,12 +186,12 @@ module.exports = function (server, conf) {
 
 		if(jobstatus){
 			var key = [email, jobstatus];
-			view = '_design/searchjob/_view/useremailjobstatus?include_docs=true&key=' + JSON.stringify(key);
+			view = '_design/searchJob/_view/useremailjobstatus?include_docs=true&key=' + JSON.stringify(key);
 		}else if(executable){
 			var key = [email, executable];
-			view = '_design/searchjob/_view/useremailexecutable?include_docs=true&key=' + JSON.stringify(key);
+			view = '_design/searchJob/_view/useremailexecutable?include_docs=true&key=' + JSON.stringify(key);
 		}else{
-			view = '_design/searchjob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
+			view = '_design/searchJob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}
 
 		server.methods.clusterprovider.getView(view)
@@ -194,9 +212,9 @@ module.exports = function (server, conf) {
 
 		if(executable){
 			var key = executable;
-			view = '_design/searchjob/_view/executable?include_docs=true&key=' + JSON.stringify(key);
+			view = '_design/searchJob/_view/executable?include_docs=true&key=' + JSON.stringify(key);
 		}else{
-			view = '_design/searchjob/_view/executable?include_docs=true';
+			view = '_design/searchJob/_view/executable?include_docs=true';
 		}
 
 		server.methods.clusterprovider.getView(view)

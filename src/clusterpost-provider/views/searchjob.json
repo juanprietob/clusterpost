@@ -1,5 +1,5 @@
 {
-    "_id": "_design/searchjob",
+    "_id": "_design/searchJob",
     "language": "javascript",
     "views": {
         "useremail": {
