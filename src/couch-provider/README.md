@@ -6,7 +6,7 @@ Upload documents, attachments, retrieve, modify and delete functions are provide
 
 This package can be used as an Hapi plugin. 
 
-It is implemented using bluebird[https://github.com/petkaantonov/bluebird] Promises
+It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Promises
 
 ----
 	npm install couch-provider
@@ -33,7 +33,7 @@ It is implemented using bluebird[https://github.com/petkaantonov/bluebird] Promi
 	//var couchdbconfig = {
 	//	"hostname": "http://localhost:5984",
 	//	"database": "users1",
-	//  "namespace": "yourserverapp"
+	//	"namespace": "yourserverapp"
 	//}
 
 	/*
@@ -41,17 +41,16 @@ It is implemented using bluebird[https://github.com/petkaantonov/bluebird] Promi
 	*	@server Hapi server object
 	*	@couchdbconfig  couchdb configuration object with multiple databases, optionally use only one database
 	*   @namespace      Optional namespace. The methods will be added to the Hapi server. For this example,
-	*					the methods will be made available as server.methods.couchprovider.*
+	*					the methods will be made available as server.methods.yourserverapp.*
+	*					By default the namespace is couchprovider
 	*/
 	var plugin = {};
     plugin.register = require('couch-provider');
     plugin.options = couchdbconfig;
 
-	
-
 	/*
-	*	You can also use couch-provider as
-	*	All methods will be available in couchprovider variable
+	*	You can also use couch-provider as standalone package
+	*	All methods will be available in couchprovider
 	*/
 	//var couchprovider = require('couch-provider').couchProvider;
 ----
