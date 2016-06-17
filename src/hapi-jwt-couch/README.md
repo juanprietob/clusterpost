@@ -1,2 +1,70 @@
 # hapi-jwt-couch
 
+Hapi plugin to validate users using hapi-auth-jwt[https://github.com/ryanfitz/hapi-auth-jwt], storing user information and encrypted passwords 
+in a couchdb instance. 
+
+This plugin also provides a 'recover my password' option by setting up an email account using nodemailer[https://github.com/nodemailer/nodemailer].
+
+
+
+
+
+## Usage 
+
+----
+	const Hapi = require('hapi');
+
+	var hapijwtcouch = {};
+	hapijwtcouch.register = require("../index");
+	hapijwtcouch.options = {
+	        "privateKey": "SomeRandomKey123",
+	        "saltRounds": 10,
+	        "algorithm": { 
+	            "algorithm": "HS256"
+	        },
+	        "algorithms": { 
+	            "algorithms": [ "HS256" ] 
+	        },
+	        "mailer": {
+	            "nodemailer": {
+					host: 'smtp.gmail.com',
+				    port: 465,
+				    secure: true, // use SSL
+				    auth: {
+				        user: 'hapi.jwt.couch@gmail.com',
+				        pass: 'pass'
+				    }
+				},
+				"from": "Hapi jwt couch <hapi.jwt.couch@gmail.com>",
+				"message": "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye."
+	        },
+	        "userdb" : {
+	            "hostname": "http://localhost:5984",
+	            "database": "hapijwtcouch"
+	        }
+	    };
+
+	var hapiauth = {};
+	hapiauth.register = require("hapi-auth-jwt");
+	hapiauth.options = {};
+
+
+	var plugins = [hapiauth, hapijwtcouch];
+
+	var server = new Hapi.Server();
+	server.connection({ 
+	    port: "3000"
+	});
+
+	server.register(plugins, function(err){
+	    if (err) {
+	        throw err; // something bad happened loading the plugin
+	    }
+
+	    server.start(function (err) {
+
+	        console.log("server running", server.info.uri);
+	        
+	    });
+	});
+----

@@ -68,7 +68,8 @@ module.exports = function (server, conf) {
                 schema: Joi.object().keys({
                     token: Joi.string().required()
                 })
-            }
+            },
+            description: 'Create new user, add it to the database with the password encrypted.'
         }
     });
 
@@ -92,11 +93,11 @@ module.exports = function (server, conf) {
             },
             response: {
                 schema: Joi.object().keys({
-                    name: Joi.string(),
                     email: Joi.string(), 
                     scope: Joi.array().items(Joi.string())
-                })
-            }
+                }).unknown()
+            },
+            description: 'Get user information'
         }
     });
 
@@ -111,7 +112,8 @@ module.exports = function (server, conf) {
                 strategy: 'token',
                 scope: ['clusterpost']
             },
-            handler: handlers.deleteUser
+            handler: handlers.deleteUser,
+            description: 'Delete user from the db'
         }
     });
 
@@ -160,13 +162,14 @@ module.exports = function (server, conf) {
                 schema: Joi.object().keys({
                     token: Joi.string().required()
                 })
-            }
+            },
+            description: 'Update user password.'
         }
     });
 
     server.route({
         method: 'POST',
-        path: '/clusterauth/reset',
+        path: '/auth/reset',
         config: {
             auth: false,
             validate: {
@@ -176,7 +179,8 @@ module.exports = function (server, conf) {
                 }),
                 params: false
             },
-            handler: handlers.resetPassword
+            handler: handlers.resetPassword,
+            description: 'Send user an email with a token. The token is valid for 30 min and it can be used to change the password.'
         }
     });
 }
