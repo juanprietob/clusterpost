@@ -35,6 +35,8 @@
     "joi": "^8.4.2",
     "jsonwebtoken": "^7.0.1",
     "nodemailer": "^2.3.2",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "couch-provider": "^1.0.0",
+    "couch-update-views": "^1.1.0"
   }
 }
