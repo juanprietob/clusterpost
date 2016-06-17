@@ -97,14 +97,20 @@ The content of the file should look like:
 
 ----
 	var couchUpdateViews = require('couch-update-views');
-	couchUpdateViews.migrateUp('http://localhost:5984/dbname', '/path/to/views');//DB URL, local folder
+	couchUpdateViews.migrateUp('http://localhost:5984/dbname', '/path/to/views')//DB URL, your local folder with views
+	.then(function(res){
+		console.log(res);//result of the operation
+	});
 ----
 
 ### Update a view
 
 ----
 	var couchUpdateViews = require('couch-update-views');
-	couchUpdateViews.updateDesignDocument('http://localhost:5984/dbname', '/path/to/views', 'searchUser');//DB URL, local folder, view name
+	couchUpdateViews.updateDesignDocument('http://localhost:5984/dbname', '/path/to/views', 'searchUser')//DB URL, local folder, view name
+	.then(function(res){
+		console.log(res);//result of operation
+	});
 ----
 
 
