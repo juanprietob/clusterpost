@@ -1,39 +1,14 @@
 
-var request = require('request');
-var fs = require('fs');
-var Promise = require('bluebird');
-var path = require('path');
-
 const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
-const clustermodel = require("clusterpost-model");
-
-const getConfigFile = function (env, base_directory) {
-  try {
-    // Try to load the user's personal configuration file
-    return require(base_directory + '/conf.my.' + env + '.json');
-  } catch (e) {
-    // Else, read the default configuration file
-    return require(base_directory + '/conf.' + env + '.json');
-  }
-};
-
-
-var env = process.env.NODE_ENV;
-
-if(!env) throw "Please set NODE_ENV variable.";
-
-var conf = getConfigFile(env, process.cwd());
+const request = require('request');
+const Promise = require('bluebird');
 
 var agentOptions = {};
 
-if(conf.tls && conf.tls.cert){
-    agentOptions.ca = fs.readFileSync(conf.tls.cert);
-}
-
 var getClusterPostServer = function(){
-    return conf.uri 
+    return "http://localhost:3000"
 }
 
 var joiokres = Joi.object().keys({
@@ -45,7 +20,7 @@ var joiokres = Joi.object().keys({
 var createUser = function(user){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/user",
+            url: getClusterPostServer() + "/auth/user",
             method: 'POST',
             json: user,
             agentOptions: agentOptions
@@ -64,7 +39,7 @@ var createUser = function(user){
 var userLogin = function(user){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/login",
+            url: getClusterPostServer() + "/auth/login",
             method: 'POST',
             json: user,
             agentOptions: agentOptions
@@ -83,7 +58,7 @@ var userLogin = function(user){
 var deleteUser = function(token){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/user",
+            url: getClusterPostServer() + "/auth/user",
             method: 'DELETE',
             agentOptions: agentOptions,
             headers: { authorization: token }
