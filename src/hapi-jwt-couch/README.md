@@ -9,10 +9,16 @@ This plugin also provides a 'recover my password' option by setting up an email 
 ## Usage 
 
 ----
+	npm install hapi-jwt-couch
+----
+
+### Hapi plugin
+
+----
 	const Hapi = require('hapi');
 
 	var hapijwtcouch = {};
-	hapijwtcouch.register = require("../index");
+	hapijwtcouch.register = require("hapi-jwt-couch");
 	hapijwtcouch.options = {
 	        "privateKey": "SomeRandomKey123",
 	        "saltRounds": 10,
@@ -66,9 +72,10 @@ This plugin also provides a 'recover my password' option by setting up an email 
 	});
 ----
 
-## Create your own Hapi plugin and extend hapi-jwt-couch with 
+## Create your own Hapi plugin and extend it 
 
-You can extend this plugin by adding your own validation function. You may also change the validation for user, password and login Joi objects. 
+You can extend this plugin by adding your own validation function. You may also change the validation for user, password and login Joi objects.
+For the routes 
 
 The Joi objects shown here for password, user and login are used by default.
 
