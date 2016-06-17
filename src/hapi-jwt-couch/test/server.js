@@ -1,7 +1,11 @@
 const Hapi = require('hapi');
 
+var hapiauth = {};
+hapiauth.register = require("hapi-auth-jwt");
+hapiauth.options = {};
+
 var hapijwtcouch = {};
-hapijwtcouch.register = require("../index");
+hapijwtcouch.register = require("../index");//require(hapi-jwt-couch)
 hapijwtcouch.options = {
         "privateKey": "SomeRandomKey123",
         "saltRounds": 10,
@@ -20,11 +24,6 @@ hapijwtcouch.options = {
             "database": "hapijwtcouch"
         }
     };
-
-var hapiauth = {};
-hapiauth.register = require("hapi-auth-jwt");
-hapiauth.options = {};
-
 
 var plugins = [hapiauth, hapijwtcouch];
 
