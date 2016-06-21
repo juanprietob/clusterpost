@@ -21,8 +21,6 @@ module.exports = function (server, conf) {
 	transporter.verify(function(error, success) {
 		if (error) {
 			console.log(error);
-		}else{
-			console.log(success);
 		}
 	});
 
