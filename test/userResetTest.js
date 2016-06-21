@@ -7,7 +7,6 @@ var path = require('path');
 const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
-const joijob = require("./joi.job")(Joi);
 
 const getConfigFile = function (env, base_directory) {
   try {
@@ -45,7 +44,7 @@ var joiokres = Joi.object().keys({
 var resetPassword = function(user){
     return new Promise(function(resolve, reject){
         var options = {
-            url: getClusterPostServer() + "/clusterauth/reset",
+            url: getClusterPostServer() + "/auth/reset",
             method: 'POST',
             json: user,
             agentOptions: agentOptions
