@@ -195,12 +195,12 @@ module.exports = function (server, conf) {
 	}
 
 	handler.resetPassword = function(req, rep){
-		console.log(req.payload);
+		
 		var email = req.payload.email;
 
 		couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
 		.then(function(info){
-			console.log(info)
+			
 			var info = _.pluck(info, "value");
 			if(info.length === 0){
 				throw Boom.unauthorized("I don't know who you are, you need to create an account first!");
@@ -210,14 +210,13 @@ module.exports = function (server, conf) {
 
 			var maxAge = (new Date().getTime() + 30 * 60 * 1000)/1000;
 
-
 			var token = server.methods.jwtauth.sign({ email: info.email }, maxAge);
 			
 			var message = conf.mailer.message;
-
-			message.replace('@USERNAME@', info.name);
-			message.replace('@SERVER@', server.info.uri);
-			message.replace('@TOKEN@', token.token);
+			
+			message = message.replace("@USERNAME@", info.name);
+			message = message.replace("@SERVER@", server.info.uri);
+			message = message.replace("@TOKEN@", token.token);
 
 			var mailOptions = {
 			    from: conf.mailer.from,
