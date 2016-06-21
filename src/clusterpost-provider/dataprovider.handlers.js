@@ -105,7 +105,16 @@ module.exports = function (server, conf) {
 		
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
-			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+			if(req.auth && req.auth.credentials){
+				return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+			}else if(req.query && req.query.token){
+				return server.methods.clusterpostauth.verify(req.query.token)
+				.then(function(credentials){
+					return server.methods.clusterprovider.validateJobOwnership(doc, credentials);
+				});
+			}else{
+				throw Boom.unauthorized('You cannot get this job information!');
+			}
 		})
 		.then(function(doc){
 			if(req.params.name){

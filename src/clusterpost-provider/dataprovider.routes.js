@@ -189,4 +189,28 @@ module.exports = function (server, conf) {
 	    }
 	});
 
+	server.route({
+		method: 'GET',
+		path: "/dataprovider/download/{id}/{name}",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost', 'executionserver']
+            },
+			handler: handlers.getJob,
+			validate: {
+			  	query: Joi.object().keys({
+                    token: Joi.string().required()
+                }),
+			    params: {
+			    	id: Joi.string().alphanum().required(),
+			    	name: Joi.string().required()
+			    },
+			    payload: false
+			},
+			description: 'Get a specific attachment of the document posted to the database, the query parameter token is validated',
+      		cache : { expiresIn: 60 * 30 * 1000 }
+	    }
+	});
+
 }
