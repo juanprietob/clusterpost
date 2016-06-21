@@ -51,7 +51,15 @@ module.exports = function (server, conf) {
 				});
 			})
 			.then(function(filename){
-				fs.unlink(filename);
+				try{
+					var stats = fs.statSync(filename);
+					if(stats){
+						fs.unlink(filename);
+					}
+				}catch(e){
+					console.error(e);
+				}
+				
 			})
 			.catch(function(err){
 				console.error(err);
