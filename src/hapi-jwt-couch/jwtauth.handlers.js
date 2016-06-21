@@ -51,8 +51,23 @@ module.exports = function (server, conf) {
 		options: {}
 	});
 
-	handler.validateUser = function(req, decodedToken){
-		
+	const verify = function(token){
+		try{
+			var decodedToken = jwt.verify(token, conf.privateKey);
+			return validateUser(decodedToken);
+		}catch(e){
+			throw Boom.unauthorized(e);
+		}
+
+	}
+
+	server.method({
+		name: 'jwtauth.verify',
+		method: verify,
+		options: {}
+	});
+
+	const validateUser = function(decodedToken){
 		return couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(decodedToken.email))
 		.then(function(info){
 			var info = _.pluck(info, "value");
@@ -65,6 +80,10 @@ module.exports = function (server, conf) {
 
 			return info[0];
 		});
+	}
+
+	handler.validateUser = function(req, decodedToken){
+		return validateUser(decodedToken);
 	}
 
 	const bcryptHash = function(password){
