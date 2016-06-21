@@ -18,67 +18,90 @@ const getConfigFile = function () {
   }
 }
 
-var conf = getConfigFile();
+const startServer = function(cluster){
 
-exports.server = new Hapi.Server();
-var server = exports.server;
+    var conf = getConfigFile();
+    
+    var server = new Hapi.Server();
 
-if(conf.tls && conf.tls.key && conf.tls.cert){
-    const tls = {
-      key: fs.readFileSync(conf.tls.key),
-      cert: fs.readFileSync(conf.tls.cert)
-    };
-}
-
-server.connection({ 
-    host: conf.host,
-    port: conf.port,
-    tls: tls
-});
-
-var plugins = [];
-
-Object.keys(conf.plugins).forEach(function(pluginName){
-    var plugin = {};
-    plugin.register = require(pluginName);
-    plugin.options = conf.plugins[pluginName];
-    plugins.push(plugin);
-});
-
-plugins.push({
-    register: good,
-    options: {
-        reporters: [
-        {
-            reporter: require('good-console'),
-            events: { log: '*', response: '*' }
-        }, {
-            reporter: require('good-file'),
-            events: { ops: '*' },
-            config: 'all.log'
-        }]
-    }
-});
-
-
-server.register(plugins, function(err){
-    if (err) {
-        throw err; // something bad happened loading the plugin
+    if(conf.tls && conf.tls.key && conf.tls.cert){
+        const tls = {
+          key: fs.readFileSync(conf.tls.key),
+          cert: fs.readFileSync(conf.tls.cert)
+        };
     }
 
-    server.methods.executionserver.startExecutionServers()
-    .then(function(){
-        console.log("Execution servers started.");
+    server.connection({ 
+        host: conf.host,
+        port: conf.port,
+        tls: tls
     });
-});
 
+    var plugins = [];
 
-exports.migrateUp = function(){
-    var clusterpostProvider = conf.plugins["clusterpost-provider"];
-    var clusterjobs = clusterpostProvider.dataproviders[clusterpostProvider.default.dataprovider]
-    var couchdb = clusterjobs.hostname + "/" + clusterjobs.database;
+    Object.keys(conf.plugins).forEach(function(pluginName){
+        var plugin = {};
+        plugin.register = require(pluginName);
+        plugin.options = conf.plugins[pluginName];
+        plugins.push(plugin);
+    });
 
-    var views = path.join(__dirname, "./views");
-    var cuv = require('couch-update-views');
-    return cuv.migrateUp(couchdb, views);
+    plugins.push({
+        register: good,
+        options: {
+            reporters: [
+            {
+                reporter: require('good-console'),
+                events: { log: '*', response: '*' }
+            }, {
+                reporter: require('good-file'),
+                events: { ops: '*' },
+                config: 'all.log'
+            }]
+        }
+    });
+
+    if(cluster){
+        server.method({
+            name: 'cluster.getWorker',
+            method: function(){
+                return cluster.worker;
+            },
+            options: {}
+        });
+    }
+
+    server.register(plugins, function(err){
+        if (err) {
+            throw err; // something bad happened loading the plugin
+        }
+
+    });
+    
+    server.start(function () {
+        server.log('info', 'Server running at: ' + server.info.uri);
+    });
 }
+
+if(env === 'production'){
+    const cluster = require('cluster');
+    const numCPUs = require('os').cpus().length;
+
+    if (cluster.isMaster) {
+      // Fork workers.
+      for (var i = 0; i < numCPUs; i++) {
+        cluster.fork();
+      }
+
+      cluster.on('exit', (worker, code, signal) => {
+        console.log("worker ", worker.process.pid,"died");
+      });
+      
+    } else {
+        startServer(cluster);
+    }
+}else{
+
+    startServer();
+}
+
