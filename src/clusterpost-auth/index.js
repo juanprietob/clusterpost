@@ -14,7 +14,24 @@ exports.register = function (server, conf, next) {
 
 	conf.validate = validate;
 
-	return require('hapi-jwt-couch').register(server, conf, next);
+	server.register({
+		register: require('hapi-jwt-couch'),
+		options: conf
+	}, function(err){
+
+		if(err){
+			throw err;
+		}
+
+		server.method({
+			name: 'clusterpostauth.verify',
+			method: server.methods.jwtauth.verify,
+			options: {}
+		});
+
+	});
+	
+	return next();
 	
 };
 
