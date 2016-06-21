@@ -46,8 +46,3 @@ try{
 	fs.writeFileSync(path.join(installdir, 'index.js'), index);
 
 }
-
-
-var pack = fs.readFileSync(path.join(cwd, "package.json"));
-fs.writeFileSync(path.join(installdir, 'package.json'), pack);
-
