@@ -7,7 +7,7 @@ const run = function(migrate, update, viewsDir, couchDB){
     var couchUpdateViews;
 
     if(migrate){
-        couchUpdateViews = require(path.join(__dirname, "migrateUP"))(couchDB, viewsDir);    
+        couchUpdateViews = require(path.join(__dirname, "migrateUp"))(couchDB, viewsDir);    
     }else{
         couchUpdateViews = require(path.join(__dirname, "updateDesignDocument"))(couchDB, viewsDir, update);
     }
