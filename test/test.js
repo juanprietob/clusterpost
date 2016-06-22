@@ -3,6 +3,7 @@ var request = require('request');
 var fs = require('fs');
 var Promise = require('bluebird');
 var path = require('path');
+var _ = require('underscore');
 
 const Joi = require('joi');
 const Lab = require('lab');
@@ -84,6 +85,43 @@ var getUser = function(){
         var options = {
             url: getClusterPostServer() + "/auth/user",
             method: 'GET',
+            headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
+var getUsers = function(){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/auth/users",
+            method: 'GET',
+            headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
+var updateUser = function(userinfo){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/auth/user",
+            method: 'PUT',
+            json: userinfo,
             headers: { authorization: token }
         }
 
@@ -656,6 +694,102 @@ lab.experiment("Test clusterpost", function(){
             Joi.assert(res, joiokres);
         });
     });
+
+
+    lab.test('returns true when get all users is denied due to insufficient scope, updates scope manually to admin', function(){
+
+        return getUsers()
+        .then(function(res){
+            Joi.assert(res.statusCode, 403);
+
+            return getUser()
+            .then(function(res){
+                return new Promise(function(resolve, reject){
+
+                    var user = JSON.parse(res);
+                    user.scope.push('admin');
+
+                    var options = { 
+                        uri: "http://localhost:5984/clusterjobs/_bulk_docs",
+                        method: 'POST', 
+                        json : {
+                            docs: [user]
+                        }
+                    };
+                    
+                    request(options, function(err, res, body){
+
+                        if(err){
+                            reject(err);
+                        }else if(body.error){
+                            reject(body.error);
+                        }else{
+                            resolve(body);
+                        }
+                    });
+                });
+            });
+        })
+        
+    });
+
+    lab.test('returns true when a user is created, then all users are fetched, the scope of the new user is updated and the new user is deleted', function(){
+
+        var newuser = {
+                email: "someemail@gmail.com",
+                name: "Test user",
+                password: "Some88Password!"
+            }
+
+        return createUser(newuser)
+        .bind({})
+        .then(function(res){
+            this.newUserToken = "Bearer " + res.token;
+            return getUsers()
+        })        
+        .then(function(res){
+
+            var users = JSON.parse(res);
+            Joi.assert(users, Joi.array().items(Joi.object()));
+
+            var userfound = _.find(users, function(user){
+                return user.email === newuser.email;
+            });
+
+            userfound.scope.push('clusterpost');
+
+            return updateUser(userfound);
+        })
+        .then(function(res){
+            Joi.assert(res, Joi.object().keys({ 
+                ok: Joi.boolean(),
+                id: Joi.string(),
+                rev: Joi.string()
+            }));
+
+            return getUsers();
+        })
+        .then(function(res){
+            var userfound = _.find(JSON.parse(res), function(user){
+                return user.email === newuser.email;
+            });
+
+            Joi.assert(userfound.scope, Joi.array().items(Joi.string().valid('default', 'clusterpost')));
+
+            return res;
+        })
+        .then(function(res){
+            return deleteUser(this.newUserToken)
+            .then(function(res){
+                Joi.assert(res, Joi.object().keys({ 
+                    ok: Joi.boolean(),
+                    id: Joi.string(),
+                    rev: Joi.string()
+                }));
+            });
+        });
+    });
+
 
     lab.test('returns true when valid user deletes itself.', function(){
 
