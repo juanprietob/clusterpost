@@ -116,13 +116,19 @@ var getUsers = function(){
     });
 }
 
-var updateUser = function(userinfo){
+var updateUser = function(userinfo, usertoken){
+
+    var updatetoken = token;
+    if(usertoken){
+        updatetoken = usertoken;
+    }
+
     return new Promise(function(resolve, reject){
         var options = {
             url: getClusterPostServer() + "/auth/user",
             method: 'PUT',
             json: userinfo,
-            headers: { authorization: token }
+            headers: { authorization: updatetoken }
         }
 
         request(options, function(err, res, body){
@@ -744,9 +750,19 @@ lab.experiment("Test clusterpost", function(){
         return createUser(newuser)
         .bind({})
         .then(function(res){
-            this.newUserToken = "Bearer " + res.token;
-            return getUsers()
-        })        
+            var user = {
+                email: "someemail@gmail.com",
+                password: "Some88Password!"
+            }
+
+            return userLogin(user)
+            .then(function(res){
+                return "Bearer " + res.token;
+            });
+        }).then(function(token){
+            this.newUserToken = token;
+            return getUsers();
+        })       
         .then(function(res){
 
             var users = JSON.parse(res);
@@ -767,9 +783,22 @@ lab.experiment("Test clusterpost", function(){
                 rev: Joi.string()
             }));
 
+            return getUser();
+            
+        })
+        .then(function(res){
+                
+            var adminuser = JSON.parse(res);
+            adminuser.scope = ['default'];
+            
+            return updateUser(adminuser, this.newUserToken);
+        })
+        .then(function(res){
+            Joi.assert(res.statusCode, 401);
             return getUsers();
         })
         .then(function(res){
+            
             var userfound = _.find(JSON.parse(res), function(user){
                 return user.email === newuser.email;
             });
