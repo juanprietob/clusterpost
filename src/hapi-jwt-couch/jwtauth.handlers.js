@@ -39,7 +39,7 @@ module.exports = function (server, conf) {
 		var token = {};
 		var algo = conf.algorithm;
 		if(maxAge){
-			algo.maxAge = maxAge;
+			algo.expiresIn = maxAge;
 		}
 		token.token = jwt.sign(user, conf.privateKey, algo );
 		return token;
@@ -64,6 +64,14 @@ module.exports = function (server, conf) {
 	server.method({
 		name: 'jwtauth.verify',
 		method: verify,
+		options: {}
+	});
+
+	server.method({
+		name: 'jwt.verify',
+		method: function(token){
+			return jwt.verify(token, conf.privateKey);
+		},
 		options: {}
 	});
 
