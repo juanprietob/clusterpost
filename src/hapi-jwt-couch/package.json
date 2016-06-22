@@ -1,6 +1,6 @@
 {
   "name": "hapi-jwt-couch",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Simple user authentication for Hapi server using JWT and storing user data and encrypted passwords in couchdb.",
   "main": "index.js",
   "scripts": {
