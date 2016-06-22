@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-provider",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Transfer job description and data to couchdb. Submit task to the computing grid",
   "main": "index.js",
   "scripts": {
