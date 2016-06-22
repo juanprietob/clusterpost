@@ -39,6 +39,7 @@ var inputs = [
 ];
 var jobid;
 var token;
+var tokenraw;
 
 var createUser = function(user){
     return new Promise(function(resolve, reject){
@@ -169,6 +170,45 @@ var getDocumentAttachment = function(id, name){
             method: "GET",
             agentOptions: agentOptions,
             headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
+var getDownloadToken = function(id, name){
+
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : getClusterPostServer() + "/dataprovider/download/" + id + "/" + name,
+            method: "GET",
+            agentOptions: agentOptions,
+            headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(JSON.parse(body));
+            }
+        });
+    });
+}
+
+var downloadAttachment = function(token){
+
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : getClusterPostServer() + "/dataprovider/download/" + token,
+            method: "GET",
+            agentOptions: agentOptions
         }
 
         request(options, function(err, res, body){
@@ -418,6 +458,7 @@ lab.experiment("Test clusterpost", function(){
         return userLogin(user)
         .then(function(res){
             Joi.assert(res.token, Joi.string().required())
+            tokenraw = res.token;
             token = "Bearer " + res.token;
         });
         
@@ -498,6 +539,21 @@ lab.experiment("Test clusterpost", function(){
 
     lab.test('returns true if get attachment output stream is valid', function(done){
         getDocumentAttachment(jobid, "stdout.out")
+        .then(function(stdout){
+            var value = "774035995 70572 gravitational-waves-simulation.jpg";
+            if(stdout.indexOf(value) === -1){
+                done("Output validation not found: " + value);
+            }
+            done();
+        });
+    });
+
+    lab.test('returns true if get attachment output stream is valid using a download token', function(done){
+        getDownloadToken(jobid, "stdout.out")
+        .then(function(res){
+            Joi.assert(res.token, Joi.string());
+            return downloadAttachment(res.token);
+        })
         .then(function(stdout){
             var value = "774035995 70572 gravitational-waves-simulation.jpg";
             if(stdout.indexOf(value) === -1){
