@@ -127,7 +127,7 @@ module.exports = function (server, conf) {
 			var user = req.payload;
 			user.password = hash;
 			user.type = 'user';
-			user.scope = ['clusterpost'];
+			user.scope = ['default'];
 
 			return couchprovider.uploadDocuments(user)
 			.then(function(res){
@@ -147,11 +147,7 @@ module.exports = function (server, conf) {
 
 	handler.getUser = function(req, rep){
 		var credentials = req.auth.credentials;
-		rep({
-			name: credentials.name,
-			email: credentials.email, 
-			scope: credentials.scope
-		});
+		rep(credentials);
 	}
 
 	handler.login = function(req, rep){

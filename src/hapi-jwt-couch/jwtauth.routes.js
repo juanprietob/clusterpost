@@ -83,7 +83,7 @@ module.exports = function (server, conf) {
         config: {
             auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['default']
             },
             handler: handlers.getUser,
             validate: {
@@ -107,7 +107,7 @@ module.exports = function (server, conf) {
         config: {
             auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['default']
             },
             handler: handlers.deleteUser,
             description: 'Delete user from the db'
@@ -145,7 +145,7 @@ module.exports = function (server, conf) {
         config: {
             auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['default']
             },
             validate: {
                 query: false,
