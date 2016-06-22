@@ -235,7 +235,7 @@ module.exports = function (server, conf) {
 
 			info = info[0];
 
-			var maxAge = (new Date().getTime() + 30 * 60 * 1000)/1000;
+			var maxAge = "30m";
 
 			var token = server.methods.jwtauth.sign({ email: info.email }, maxAge);
 			
