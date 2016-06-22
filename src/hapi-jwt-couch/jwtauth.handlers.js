@@ -52,7 +52,7 @@ module.exports = function (server, conf) {
 	});
 
 	const verify = function(token){
-		try{
+		try{			
 			var decodedToken = jwt.verify(token, conf.privateKey);
 			return validateUser(decodedToken);
 		}catch(e){

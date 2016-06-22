@@ -104,17 +104,8 @@ module.exports = function (server, conf) {
 	handler.getJob = function(req, rep){
 		
 		server.methods.clusterprovider.getDocument(req.params.id)
-		.then(function(doc){
-			if(req.auth && req.auth.credentials){
-				return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
-			}else if(req.query && req.query.token){
-				return server.methods.clusterpostauth.verify(req.query.token)
-				.then(function(credentials){
-					return server.methods.clusterprovider.validateJobOwnership(doc, credentials);
-				});
-			}else{
-				throw Boom.unauthorized('You cannot get this job information!');
-			}
+		.then(function(doc){			
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
 			if(req.params.name){
@@ -154,6 +145,27 @@ module.exports = function (server, conf) {
 			rep(Boom.wrap(e));
 		});
 		
+	}
+
+	handler.getDownloadURL = function(req, rep){
+		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){			
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
+
+			var name = req.params.name;
+			var maxAge = (new Date().getTime() + 30 * 60 * 1000)/1000;
+
+			console.log(server.methods.jwtauth.sign({ email: req.auth.credentials.email, _id: doc._id}))
+			var token = server.methods.jwtauth.sign({ email: req.auth.credentials.email, _id: doc._id }, maxAge);			
+
+			rep(server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name) + "?token=" + token);
+			
+		})
+		.catch(function(e){
+			rep(Boom.wrap(e));
+		});
 	}
 
 	handler.deleteJob = function(req, rep){

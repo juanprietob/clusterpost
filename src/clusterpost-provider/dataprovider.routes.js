@@ -197,11 +197,9 @@ module.exports = function (server, conf) {
                 strategy: 'token',
                 scope: ['clusterpost', 'executionserver']
             },
-			handler: handlers.getJob,
+			handler: handlers.getDownloadURL,
 			validate: {
-			  	query: Joi.object().keys({
-                    token: Joi.string().required()
-                }),
+			  	query: false,
 			    params: {
 			    	id: Joi.string().alphanum().required(),
 			    	name: Joi.string().required()

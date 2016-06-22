@@ -1,4 +1,5 @@
 var Boom = require('boom');
+var Promise = require('bluebird');
 
 exports.register = function (server, conf, next) {
 
@@ -25,7 +26,9 @@ exports.register = function (server, conf, next) {
 
 		server.method({
 			name: 'clusterpostauth.verify',
-			method: server.methods.jwtauth.verify,
+			method: function(token){				
+				return Promise.resolve(server.methods.jwtauth.verify(token));
+			},
 			options: {}
 		});
 
