@@ -99,6 +99,33 @@ module.exports = function (server, conf) {
 		});
 	}
 
+	const getDocumentURIAttachment = function(doc, name){
+		if(doc._attachments && doc._attachments[name]){
+			return server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name);
+		}else{
+			var att = _.find(doc.inputs, function(input){
+				return input.name === name;
+			});
+			if(!att){
+				att = _.find(doc.outputs, function(output){
+					return output.name === name;
+				});
+			}
+			if(!att){
+				throw Boom.notFound("The attachment was not found -> " + req.params.name);
+			}					
+			if(att.type === 'tar.gz'){
+				name += ".tar.gz";
+			}
+			if(att.remote){
+				return server.methods.clusterprovider.getDocumentURIAttachment(att.remote.uri, att.remote.serverCodename);
+			}else{
+				return server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name);
+			}
+			
+		}
+	}
+
 	/*
 	*/
 	handler.getJob = function(req, rep){
@@ -110,31 +137,9 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 			if(req.params.name){
 
-				var name = req.params.name;
-				if(doc._attachments && doc._attachments[name]){
-					rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name));
-				}else{
-					var att = _.find(doc.inputs, function(input){
-						return input.name === name;
-					});
-					if(!att){
-						att = _.find(doc.outputs, function(output){
-							return output.name === name;
-						});
-					}
-					if(!att){
-						throw Boom.notFound("The attachment was not found -> " + req.params.name);
-					}					
-					if(att.type === 'tar.gz'){
-						name += ".tar.gz";
-					}
-					if(att.remote){
-						rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(att.remote.uri, att.remote.serverCodename));
-					}else{
-						rep.proxy(server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name));
-					}
-					
-				}
+				var uri = getDocumentURIAttachment(doc, req.params.name);
+
+				rep.proxy(uri);
 				
 			}else{
 				rep(doc);
@@ -147,7 +152,8 @@ module.exports = function (server, conf) {
 		
 	}
 
-	handler.getDownloadURL = function(req, rep){
+	handler.getDownloadToken = function(req, rep){
+
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){			
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
@@ -155,17 +161,38 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 
 			var name = req.params.name;
-			var maxAge = (new Date().getTime() + 30 * 60 * 1000)/1000;
+			var maxAge = "1m";
 
-			console.log(server.methods.jwtauth.sign({ email: req.auth.credentials.email, _id: doc._id}))
-			var token = server.methods.jwtauth.sign({ email: req.auth.credentials.email, _id: doc._id }, maxAge);			
-
-			rep(server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name) + "?token=" + token);
+			rep(server.methods.jwtauth.sign({ _id: doc._id, name: name }, maxAge));
 			
 		})
 		.catch(function(e){
 			rep(Boom.wrap(e));
 		});
+	}
+
+	handler.downloadAttachment = function(req, rep){
+		var token = req.params.token;
+		
+		try{
+			
+			var decodedToken = server.methods.jwt.verify(token);
+			
+			server.methods.clusterprovider.getDocument(decodedToken._id)
+			.then(function(doc){
+				rep.proxy(getDocumentURIAttachment(doc, decodedToken.name));
+			})
+			.catch(function(e){
+				rep(Boom.unauthorized(e));
+			});
+			
+		}catch(e){
+			rep(Boom.unauthorized(e));
+		}
+		
+
+
+		
 	}
 
 	handler.deleteJob = function(req, rep){

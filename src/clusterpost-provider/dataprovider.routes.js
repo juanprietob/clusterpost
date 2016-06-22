@@ -197,7 +197,7 @@ module.exports = function (server, conf) {
                 strategy: 'token',
                 scope: ['clusterpost', 'executionserver']
             },
-			handler: handlers.getDownloadURL,
+			handler: handlers.getDownloadToken,
 			validate: {
 			  	query: false,
 			    params: {
@@ -207,7 +207,27 @@ module.exports = function (server, conf) {
 			    payload: false
 			},
 			description: 'Get a specific attachment of the document posted to the database, the query parameter token is validated',
-      		cache : { expiresIn: 60 * 30 * 1000 }
+			response: {
+				schema: Joi.object().keys({
+					token: Joi.string().required()
+				})
+			}
+	    }
+	});
+
+	server.route({
+		method: 'GET',
+		path: "/dataprovider/download/{token}",
+		config: {
+			handler: handlers.downloadAttachment,
+			validate: {
+			  	query: false,
+			    params: {
+			    	token: Joi.string().required()
+			    },
+			    payload: false
+			},
+			description: 'Get an attachment using a temporary token'
 	    }
 	});
 
