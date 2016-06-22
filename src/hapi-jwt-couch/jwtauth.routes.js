@@ -16,6 +16,16 @@ module.exports = function (server, conf) {
         password: password
     });
 
+    var userinfo = Joi.object().keys({
+        _id: Joi.string().alphanum().required(),
+        _rev: Joi.string().required(),
+        name: Joi.string().required(),
+        email: Joi.string().email().required(), 
+        scope: Joi.array().items(Joi.string()),
+        password: Joi.forbidden(),
+        type: Joi.string().valid('user')
+    }).unknown();
+
     if(conf.user){
         user = conf.user;
     }
@@ -74,6 +84,56 @@ module.exports = function (server, conf) {
     });
 
     /*
+    *   Get users
+    */
+
+    server.route({
+        method: 'GET',
+        path: '/auth/users',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['admin']
+            },
+            handler: handlers.getUsers,
+            validate: {
+                query: false,
+                payload: false,
+                params: false
+            },
+            response: {
+                schema: Joi.array().items(userinfo)
+            },
+            description: 'Get all users information'
+        }
+    });
+
+    /*
+    *   Update user information
+    */
+
+    server.route({
+        method: 'PUT',
+        path: '/auth/user',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['default', 'admin']
+            },
+            handler: handlers.updateUser,
+            validate: {
+                query: false,
+                payload: userinfo,
+                params: false
+            },
+            response: {
+                schema: Joi.object()
+            },
+            description: 'Get all users information'
+        }
+    });
+
+    /*
     *   Get user
     */
 
@@ -92,7 +152,7 @@ module.exports = function (server, conf) {
                 params: false
             },
             response: {
-                schema: Joi.object()
+                schema: userinfo
             },
             description: 'Get user information'
         }

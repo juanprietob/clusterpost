@@ -150,6 +150,50 @@ module.exports = function (server, conf) {
 		rep(credentials);
 	}
 
+	handler.getUsers = function(req, rep){
+		couchprovider.getView('_design/user/_view/info')
+		.then(function(info){
+			
+			rep(_.pluck(info, 'value'));
+
+		})
+		.catch(function(err){
+			rep(Boom.badImplementation(err));
+		})
+	}
+
+	handler.updateUser = function(req, rep){
+
+		var user = req.auth.credentials;
+		var updateinfo = req.payload;
+
+		if(user.email !== updateinfo.email && user.scope.indexOf('admin') === -1){
+			rep(Boom.unauthorized('You cannot modify the user information'));
+		}else{
+			couchprovider.getView('_design/user/_view/hash?key=' + JSON.stringify(updateinfo.email))
+			.then(function(hash){
+				return _.pluck(hash, "value")[0];
+			})
+			.then(function(hash){
+				updateinfo.password = hash;
+
+				return couchprovider.uploadDocuments(updateinfo)
+				.then(function(res){
+					res = res[0];
+					if(res.ok){
+						return res;
+					}else{
+						throw res;
+					}
+				})
+			})
+			.then(rep)
+			.catch(function(err){
+				rep(Boom.badImplementation(err));
+			});
+		}
+	}
+
 	handler.login = function(req, rep){
 		
 		var email = req.payload.email;
