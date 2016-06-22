@@ -79,6 +79,24 @@ var userLogin = function(user){
     });
 }
 
+var getUser = function(){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/auth/user",
+            method: 'GET',
+            headers: { authorization: token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
 var deleteUser = function(token){
     return new Promise(function(resolve, reject){
         var options = {
@@ -464,8 +482,44 @@ lab.experiment("Test clusterpost", function(){
         
     });
 
+    lab.test('returns true when executionservers are fetched due to insufficient scope, the scope "clusterpost" is also added', function(){
 
-    lab.test('returns true when executionservers are fetched', function(){
+        return getExecutionServers()
+        .then(function(res){
+            Joi.assert(res.statusCode, 403);
+
+            return getUser()
+            .then(function(res){
+                return new Promise(function(resolve, reject){
+
+                    var user = JSON.parse(res);
+                    user.scope.push('clusterpost');
+
+                    var options = { 
+                        uri: "http://localhost:5984/clusterjobs/_bulk_docs",
+                        method: 'POST', 
+                        json : {
+                            docs: [user]
+                        }
+                    };
+                    
+                    request(options, function(err, res, body){
+
+                        if(err){
+                            reject(err);
+                        }else if(body.error){
+                            reject(body.error);
+                        }else{
+                            resolve(body);
+                        }
+                    });
+                });
+            });
+        });
+    });
+
+
+    lab.test('returns true when executionservers are fetched with valid scope', function(){
 
         return getExecutionServers()
         .then(function(res){
