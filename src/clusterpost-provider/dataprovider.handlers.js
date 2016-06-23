@@ -3,6 +3,8 @@ var _ = require('underscore');
 var Promise = require('bluebird');
 var Boom = require('boom');
 var spawn = require('child_process').spawn;
+var couchUpdateViews = require('couch-update-views');
+var path = require('path');
 
 module.exports = function (server, conf) {
 	
@@ -11,19 +13,7 @@ module.exports = function (server, conf) {
 		throw new Error("Have you installed the 'couch-provider' plugin with namespace 'couchprovider'?");
 	}
 
-	server.methods.clusterprovider.getDocument("_design/getJob")
-	.catch(function(err){
-		var couchUpdateViews = require('couch-update-views');
-		var path = require('path');
-		couchUpdateViews.migrateUp(server.methods.clusterprovider.getCouchDBServer(), path.join(__dirname, 'views'));
-	});
-
-	server.methods.clusterprovider.getDocument("_design/searchJob")
-	.catch(function(err){
-		var couchUpdateViews = require('couch-update-views');
-		var path = require('path');
-		couchUpdateViews.migrateUp(server.methods.clusterprovider.getCouchDBServer(), path.join(__dirname, 'views'));
-	});
+	couchUpdateViews.migrateUp(server.methods.clusterprovider.getCouchDBServer(), path.join(__dirname, 'views'), true);
 
 	var handler = {};
 	/*
