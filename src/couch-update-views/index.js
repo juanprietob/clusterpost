@@ -43,7 +43,20 @@ exports.couchUpdateViews = function(){
     var _update = argv["update"];
 
     var _viewsDir = argv["viewsDir"];
+
+    if(argv["views"]){
+        _viewsDir = argv["views"];        
+    }
+
     var _couchDB = argv["couchDB"];    
+
+    if(argv["couch"]){
+        _couchDB = argv["couch"];
+    }
+
+    if(argv["couchdb"]){
+        _couchDB = argv["couchdb"];
+    }
 
     if(!_migrate && !_update || !_viewsDir || !_couchDB){
         help();

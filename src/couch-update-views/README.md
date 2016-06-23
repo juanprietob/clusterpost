@@ -16,7 +16,7 @@ It will also help you update the JSON document of a view in your local directory
 
 ## Running couch-update-views: 
 
-### Generate a script 
+### Generate a script
 
 Name your script, ex: couchUpdateViews.js and add the following lines:
 
@@ -114,3 +114,37 @@ The content of the file should look like:
 ----
 
 
+## Use case example when starting your server application
+
+In this example, I'm using [Hapi](hapijs.com) as my server. 
+The plugin configuration has the couchdb url.
+
+----
+	conf = {
+		"couchdb": "http://localhost:5984/somedb",
+		"dirname": "/local/path/to/views"
+	}
+----
+
+----
+
+	module.exports = function (server, conf) {
+		
+		var couchUpdateViews = require('couch-update-views');
+		var path = require('path');
+
+		/*
+		*	@params couchdb, url of couchdb
+		*	@params dirname, path to directory containing the json documents of views
+		*	@params test, boolean to specify if it should test for differences in the view. If true, a message will be print indicating that there are differences *	in the documents. If false or undefined, whenever there are differences in the document, the view will be pushed to couchdb. 
+		*/
+		couchUpdateViews.migrateUp(conf.couchdb, conf.dirname, true)
+		.then(function(res){
+			console.log(res);//result of the operation
+		});
+
+		//Other server logic, routes etc.
+	}
+
+	
+---- 
