@@ -1,10 +1,11 @@
 # hapi-jwt-couch
 
-Hapi plugin to validate users using hapi-auth-jwt[https://github.com/ryanfitz/hapi-auth-jwt], storing user information and encrypted passwords 
+Hapi plugin to validate users using [hapi-auth-jwt](https://github.com/ryanfitz/hapi-auth-jwt), storing user information and encrypted passwords 
 in a couchdb instance. 
 
-This plugin also provides a 'recover my password' option by setting up an email account using nodemailer[https://github.com/nodemailer/nodemailer].
+This plugin also provides a 'recover my password' option by setting up an email account using [nodemailer](https://github.com/nodemailer/nodemailer).
 
+Edit the "message" portion of the configuration. The strings @USERNAME@, @SERVER@ and @TOKEN@ are replaced before sending the email. 
 
 ## Usage 
 
@@ -103,7 +104,20 @@ The Joi objects shown here for password, user and login are used by default.
 
 		conf.validate = validate;
 
-		return require('hapi-jwt-couch').register(server, conf, next);
+		server.register({
+			register: require('hapi-jwt-couch'),
+			options: conf
+		}, function(err){
+
+			if(err){
+				throw err;
+			}
+
+			//Additional logic here
+
+		});
+
+		return next();
 		
 	};
 
@@ -111,5 +125,19 @@ The Joi objects shown here for password, user and login are used by default.
 	  pkg: require('./package.json')
 	};
 
+----
+
+## Testing 
+
+Start the test server
+
+----
+	node test/server.js
+----
+
+Run all tests
+
+----
+	npm test
 ----
 

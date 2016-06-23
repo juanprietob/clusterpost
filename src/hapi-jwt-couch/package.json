@@ -4,7 +4,7 @@
   "description": "Simple user authentication for Hapi server using JWT and storing user data and encrypted passwords in couchdb.",
   "main": "index.js",
   "scripts": {
-    "test": "node ./test/server.js;lab -v -m 60000 ./test/test.js"
+    "test": "lab -v -m 60000 ./test/test.js"
   },
   "repository": {
     "type": "git",
