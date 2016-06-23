@@ -23,7 +23,7 @@ module.exports = function (server, conf) {
         email: Joi.string().email().required(), 
         scope: Joi.array().items(Joi.string()),
         password: Joi.forbidden(),
-        type: Joi.string().valid('user')
+        type: Joi.string().valid('user').required()
     }).unknown();
 
     if(conf.user){
@@ -109,16 +109,37 @@ module.exports = function (server, conf) {
     });
 
     /*
+    *   Admin Deletes user from DB
+    */
+    server.route({
+        method: 'DELETE',
+        path: '/auth/users',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['admin']
+            },
+            handler: handlers.deleteUser,
+            validate: {
+                query: false,
+                payload: userinfo,
+                params: false
+            },
+            description: 'Admin deletes user from the db'
+        }
+    });
+
+    /*
     *   Update user information
     */
 
     server.route({
         method: 'PUT',
-        path: '/auth/user',
+        path: '/auth/users',
         config: {
             auth: {
                 strategy: 'token',
-                scope: ['default', 'admin']
+                scope: ['admin']
             },
             handler: handlers.updateUser,
             validate: {
@@ -129,7 +150,32 @@ module.exports = function (server, conf) {
             response: {
                 schema: Joi.object()
             },
-            description: 'Get all users information'
+            description: 'Admin update user'
+        }
+    });
+
+    /*
+    *   Update user information
+    */
+
+    server.route({
+        method: 'PUT',
+        path: '/auth/user',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['default']
+            },
+            handler: handlers.updateUser,
+            validate: {
+                query: false,
+                payload: userinfo,
+                params: false
+            },
+            response: {
+                schema: Joi.object()
+            },
+            description: 'User updates itself'
         }
     });
 
@@ -170,6 +216,11 @@ module.exports = function (server, conf) {
                 scope: ['default']
             },
             handler: handlers.deleteUser,
+            validate: {
+                query: false,
+                payload: false,
+                params: false
+            },
             description: 'Delete user from the db'
         }
     });

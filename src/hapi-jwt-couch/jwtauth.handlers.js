@@ -10,6 +10,9 @@ module.exports = function (server, conf) {
 	var couchprovider = require('couch-provider').couchProvider;
 	couchprovider.setConfiguration(conf.userdb);
 
+	var couchUpdateViews = require('couch-update-views');
+	var path = require('path');
+
 	var transporter;
 
 	if(conf.mailer.nodemailer === 'nodemailer-stub-transport'){
@@ -24,14 +27,10 @@ module.exports = function (server, conf) {
 		}
 	});
 
-	couchprovider.getDocument("_design/user")
+	couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'), true)
 	.catch(function(err){
-		var couchUpdateViews = require('couch-update-views');
-		var path = require('path');
-		couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'));
+		couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'));	
 	});
-
-
 
 	var handler = {};
 
@@ -253,12 +252,21 @@ module.exports = function (server, conf) {
 	handler.deleteUser = function(req, rep){
 		
 		var credentials = req.auth.credentials;
+		var user = req.auth.credentials;
 
-		couchprovider.deleteDocument(credentials)
-		.then(rep)
-		.catch(function(err){
-			rep(Boom.conflict(err));
-		})
+		if(req.payload){
+			user = req.payload;	
+		}
+
+		if(user.email !== credentials.email && credentials.scope.indexOf('admin') === -1){
+			rep(Boom.unauthorized('You cannot delete the user'));
+		}else{
+			couchprovider.deleteDocument(user)
+			.then(rep)
+			.catch(function(err){
+				rep(Boom.conflict(err));
+			});
+		}
 	}
 
 	handler.resetPassword = function(req, rep){
@@ -279,7 +287,11 @@ module.exports = function (server, conf) {
 
 			var token = server.methods.jwtauth.sign({ email: info.email }, maxAge);
 			
-			var message = conf.mailer.message;
+			var message = "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye.";
+
+			if(conf.mailer.message){
+				message = conf.mailer.message;
+			}
 			
 			message = message.replace("@USERNAME@", info.name);
 			message = message.replace("@SERVER@", server.info.uri);
