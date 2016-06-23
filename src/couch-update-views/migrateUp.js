@@ -4,7 +4,7 @@ var fs = require('fs');
 var Promise = require('bluebird');
 var path = require('path');
 
-module.exports = function(dburl, viewsdir){
+module.exports = function(dburl, viewsdir, test){
 
     const createDB = function(url){
         return new Promise(function(resolve, reject){
@@ -37,53 +37,79 @@ module.exports = function(dburl, viewsdir){
         var testView = function(file){
             return new Promise(function(resolve, reject){
                 try{
-                    if(file.indexOf(".json") === -1) reject(file);
+                    if(file.indexOf(".json") === -1){
+                        reject(file);
+                    }else{
+                        fs.readFile(path.join(viewsdir, file), function (err, data) {
+                            if (err) throw err;
+                            
+                            var designdoc = JSON.parse(data);
 
-                    fs.readFile(path.join(viewsdir, file), function (err, data) {
-                        if (err) throw err;
-                        
-                        var designdoc = JSON.parse(data);
-
-                        var options = {
-                            uri: url + "/" + designdoc._id
-                        }
-
-                        request(options, function(err, res, body){
-                            var couchdesigndoc = JSON.parse(body);
-
-                            if(JSON.stringify(designdoc.views) !== JSON.stringify(couchdesigndoc.views)){
-
-                                console.info("Deploying design document: ", designdoc);
-
-                                var uri = url + "/" + designdoc._id;
-                                if(couchdesigndoc._rev){
-                                    designdoc._rev = couchdesigndoc._rev;
-                                    uri += "?rev="+designdoc._rev;
-                                }
-                                
-                                var options = {
-                                    uri :  uri,
-                                    method : 'PUT',
-                                    json : designdoc
-                                }
-
-                                request(options, function(err, res, body){
-                                    if(err){
-                                        reject(err.message);
-                                    }else{
-                                        resolve(body);
-                                    }
-                                });
-
-                            }else{                                
-                                resolve({
-                                	error: "No changes in document.",
-                                	couchDB: url, 
-                                	view: viewsdir+file
-                                });
+                            var options = {
+                                uri: url + "/" + designdoc._id
                             }
+
+                            request(options, function(err, res, body){
+                                var couchdesigndoc = JSON.parse(body);
+
+                                if(JSON.stringify(designdoc.views) !== JSON.stringify(couchdesigndoc.views)){
+
+                                    if(test && couchdesigndoc.error !== 'not_found'){
+
+                                        console.info("You have two different design documents in the views directory and the couchdb instance:");
+                                        console.info("You should 'migrateUp' the DB or 'update' the document in the view's folder to get rid of this message.");
+
+                                        console.info("Run the following command to migrate the view in couchdb");
+                                        console.info("node couchUpdateViews.js --migrate --viewsDir", viewsdir, "--couchDB", url);
+
+                                        console.info("Run the following command to update in your directory");
+                                        console.info("node couchUpdateViews.js --update", path.basename(file),"--viewsDir", viewsdir, "--couchDB", url);
+
+                                        resolve({
+                                            message: "Documents differ.",
+                                            couchDB: url, 
+                                            view: viewsdir+file
+                                        });
+                                    }else{
+
+                                        if(couchdesigndoc.error === 'not_found'){
+                                            console.info("Design document not found.");
+                                        }
+
+                                        console.info("Deploying design document: ", designdoc);
+
+                                        var uri = url + "/" + designdoc._id;
+                                        if(couchdesigndoc._rev){
+                                            designdoc._rev = couchdesigndoc._rev;
+                                            uri += "?rev="+designdoc._rev;
+                                        }
+                                        
+                                        var options = {
+                                            uri :  uri,
+                                            method : 'PUT',
+                                            json : designdoc
+                                        }
+
+                                        request(options, function(err, res, body){
+                                            if(err){
+                                                reject(err.message);
+                                            }else{
+                                                resolve(body);
+                                            }
+                                        });
+                                    }
+                                    
+
+                                }else{                                
+                                    resolve({
+                                        message: "No changes in document.",
+                                        couchDB: url, 
+                                        view: viewsdir+file
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
                 }catch(e){
                     reject(e);
                 }

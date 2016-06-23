@@ -13,7 +13,7 @@ const run = function(migrate, update, viewsDir, couchDB){
     }
 
 
-    couchUpdateViews
+    return couchUpdateViews
     .then(function(res){
         console.log(res);
         process.exit(0);
@@ -28,7 +28,7 @@ const help = function(){
     console.error("help: To run couch-update-views: ")
     console.error(process.argv[0] + " " + process.argv[1] + " --migrate | --update <design view name>");
     console.error("Options:");
-    console.error("--migrate    Migrate design documents in couchdb. The 'design views' in couchdb are updated with the contents of the 'viewsDir' folder if they differ.");
+    console.error("--migrate  Migrate design documents in couchdb. The 'design views' in couchdb are updated with the contents of the 'viewsDir' folder if they differ.");
     console.error("--update  <design view name>   Update the design view document stored in 'viewsDirs' with the document stored in 'couchDB'");    
     console.error("--viewsDir <path>   Directory with desgin views documents JSON files. (required)");
     console.error("--couchDB  <url>    CouchDB URL. (required)");    
@@ -37,6 +37,9 @@ const help = function(){
 exports.couchUpdateViews = function(){
 
     var _migrate = argv["migrate"];
+    if(argv["migrateUp"]){
+        _migrate = argv["migrateUp"];
+    }
     var _update = argv["update"];
 
     var _viewsDir = argv["viewsDir"];
@@ -47,8 +50,11 @@ exports.couchUpdateViews = function(){
         process.exit(1);
     }
 
-    run(_migrate, _update, _viewsDir, _couchDB);
-
+    run(_migrate, _update, _viewsDir, _couchDB)
+    .then(function(){
+        process.exit(0);
+    });
+    
 }
 
 exports.migrateUp = require(path.join(__dirname, "migrateUp"));
