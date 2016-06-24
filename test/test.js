@@ -646,6 +646,13 @@ lab.experiment("Test clusterpost", function(){
         });
     });
 
+    lab.test('returns true if attachment not found', function(){
+        return getDocumentAttachment(jobid, "stdout.err")
+        .then(function(res){
+            Joi.assert(res.statusCode, 404);
+        });
+    });
+
     lab.test('returns true if get attachment output stream is valid using a download token', function(done){
         getDownloadToken(jobid, "stdout.out")
         .then(function(res){

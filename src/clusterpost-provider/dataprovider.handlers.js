@@ -102,7 +102,7 @@ module.exports = function (server, conf) {
 				});
 			}
 			if(!att){
-				throw Boom.notFound("The attachment was not found -> " + req.params.name);
+				throw Boom.notFound("The attachment was not found -> " + name);
 			}					
 			if(att.type === 'tar.gz'){
 				name += ".tar.gz";
