@@ -105,19 +105,14 @@ var getUsers = function(){
     });
 }
 
-var updateUser = function(userinfo, usertoken){
-
-    var updatetoken = clusterpost.token;
-    if(usertoken){
-        updatetoken = usertoken;
-    }
+var updateUser = function(userinfo){
 
     return new Promise(function(resolve, reject){
         var options = {
             url: getClusterPostServer() + "/auth/user",
             method: 'PUT',
             json: userinfo,
-            headers: { authorization: updatetoken }
+            headers: { authorization: clusterpost.token }
         }
 
         request(options, function(err, res, body){
@@ -130,13 +125,33 @@ var updateUser = function(userinfo, usertoken){
     });
 }
 
-var deleteUser = function(token){
+var deleteUser = function(){
     return new Promise(function(resolve, reject){
         var options = {
             url: getClusterPostServer() + "/auth/user",
             method: 'DELETE',
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: token }
+            headers: { authorization: clusterpost.token }
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
+var deleteUsers = function(user){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/auth/users",
+            method: 'DELETE',
+            agentOptions: clusterpost.agentOptions,
+            headers: { authorization: clusterpost.token },
+            json: user
         }
 
         request(options, function(err, res, body){
@@ -306,7 +321,7 @@ var downloadAttachment = function(token){
     });
 }
 
-var uploadfile = function(jobid, filename){
+var uploadFile = function(jobid, filename){
 
 	return new Promise(function(resolve, reject){
 
@@ -338,13 +353,12 @@ var uploadfile = function(jobid, filename){
 	});
 }
 
-var uploadfiles = function(jobid, filenames){
+var uploadFiles = function(jobid, filenames){
     return Promise.map(filenames, function(filename){
-        return uploadfile(jobid, filename);
+        return uploadFile(jobid, filename);
     }, {concurrency: 1})
     .then(function(allupload){
-        var joiupload = Joi.array().items(clusterpost.joiokres).min(1);
-        Joi.assert(allupload, joiupload);
+        return allupload;
     });
 }
 
@@ -453,7 +467,7 @@ var createAndSubmitJob = function(job, files){
     })
     .then(function(res){
         jobid = res.id;
-        return uploadfiles(jobid, files);
+        return uploadFiles(jobid, files);
     })
     .then(function(res){
         return executeJob(jobid);
@@ -473,6 +487,7 @@ exports.getUser =   getUser;
 exports.getUsers    =   getUsers;
 exports.updateUser  =   updateUser;
 exports.deleteUser  =   deleteUser;
+exports.deleteUsers  =   deleteUsers;
 exports.getExecutionServers =   getExecutionServers;
 exports.createDocument  =   createDocument;
 exports.getDocument =   getDocument;
@@ -480,8 +495,8 @@ exports.getDocumentAttachment   =   getDocumentAttachment;
 exports.getJobs = getJobs;
 exports.getDownloadToken    =   getDownloadToken;
 exports.downloadAttachment  =   downloadAttachment;
-exports.uploadfile  =   uploadfile;
-exports.uploadfiles =   uploadfiles;
+exports.uploadFile  =   uploadFile;
+exports.uploadFiles =   uploadFiles;
 exports.executeJob  =   executeJob;
 exports.updateJobStatus =   updateJobStatus;
 exports.killJob =   killJob;
