@@ -17,15 +17,7 @@
 				"algorithms": [ "HS256" ] 
 			},
 			"mailer": {
-				"nodemailer": {
-					"host": "smtp.gmail.com",
-				    "secure": false,
-				    "port": 587,
-				    "auth": {
-				        "user": "uname",
-				        "pass": "pass"
-				    }
-				},
+				"nodemailer": "nodemailer-stub-transport",
 				"from": "clusterpost server <clusterpost@gmail.com>",
 				"message": "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye."
 			},
