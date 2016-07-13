@@ -92,6 +92,9 @@ module.exports = function (server, conf) {
 	        	maxBytes: 1024 * 1024 * 1024,
 	    		output: 'stream'
 	        },
+	        response: {
+	        	schema: Joi.object()
+	        },
 		    description: 'Add attachment data'
 	    }
 	});
