@@ -63,6 +63,7 @@ var clusterengine = require(path.join(__dirname, conf.engine))(conf);
 if(jobdelete){
 	try{
 		require(path.join(__dirname, "jobdelete"))(jobid, conf);
+        console.log("Deleted: ", jobid);
 		process.exit();
 	}catch(e){
         console.error(e);
