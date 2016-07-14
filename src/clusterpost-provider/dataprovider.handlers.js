@@ -196,8 +196,15 @@ module.exports = function (server, conf) {
 		})
 		.then(function(doc){
 			return server.methods.executionserver.jobdelete(doc)
-			.then(function(){
-				return server.methods.clusterprovider.deleteDocument(doc);
+			.then(function(res){
+				if(res.indexOf("Deleted:" + doc._id)){
+					return server.methods.clusterprovider.deleteDocument(doc);
+				}else{
+					return {
+						error: "Job data in execution server could not be deleted.",
+						status: res
+					};
+				}
 			});
 		})
 		.then(rep)
