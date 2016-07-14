@@ -407,7 +407,9 @@ module.exports = function (conf) {
 				}
 			});
 			fs.rmdirSync(dir);
+			return true;
 	    }
+	    return false;
 	}
 
 	return handler;
