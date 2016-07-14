@@ -62,11 +62,21 @@ var userLogin = function(user){
             if(err){
                 reject(err);
             }else{
+                clusterpost.tokenraw = body.token;
                 clusterpost.token = "Bearer " + body.token;
                 resolve(body);
             }
         });
     });
+}
+
+var setUserToken = function(token){
+    clusterpost.tokenraw = token;
+    clusterpost.token = "Bearer " + token;
+}
+
+var getUserToken = function(){
+    return clusterpost.tokenraw;
 }
 
 var getUser = function(){
@@ -282,6 +292,29 @@ var getDocumentAttachment = function(id, name){
     });
 }
 
+var getDocumentAttachmentSave = function(id, name, filename){
+
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
+            method: "GET",
+            agentOptions: clusterpost.agentOptions,
+            headers: { authorization: clusterpost.token }
+        }
+
+        var write = fs.createWriteStream(filename);
+        request(options).pipe(write);
+
+        write.on('finish', function(err){
+            if(err){
+                reject(err);
+            }else{
+                resolve(filename);
+            }
+        });
+    });
+}
+
 var getDownloadToken = function(id, name){
 
     return new Promise(function(resolve, reject){
@@ -477,12 +510,39 @@ var createAndSubmitJob = function(job, files){
     });
 }
 
+var getJobOutputs = function(job, outputdir){
+    
+    var outputs = job.outputs;
+    
+    return Promise.map(outputs, function(output){
+        var name = output.name;
+        if(output.type === "tar.gz" && name === "./"){
+            name = job._id + ".tar.gz";
+        }
+        if(outputdir){
+            try{
+                fs.mkdirSync(outputdir);
+            }catch(e){
+                if(e.code !== 'EEXIST'){
+                    throw e;
+                }
+            }
+            var filename = path.join(outputdir, name);
+            return getDocumentAttachmentSave(job._id, name, filename);
+        }else{
+            return getDocumentAttachment(job._id, name);
+        }
+    });
+}
+
 
 exports.setClusterPostServer = setClusterPostServer;
 exports.getClusterPostServer = getClusterPostServer;
 exports.setAgentOptions = setAgentOptions;
 exports.createUser  =   createUser;
 exports.userLogin   =   userLogin;
+exports.getUserToken = getUserToken
+exports.setUserToken = setUserToken
 exports.getUser =   getUser;
 exports.getUsers    =   getUsers;
 exports.updateUser  =   updateUser;
@@ -493,6 +553,7 @@ exports.createDocument  =   createDocument;
 exports.getDocument =   getDocument;
 exports.getDocumentAttachment   =   getDocumentAttachment;
 exports.getJobs = getJobs;
+exports.getJobOutputs = getJobOutputs;
 exports.getDownloadToken    =   getDownloadToken;
 exports.downloadAttachment  =   downloadAttachment;
 exports.uploadFile  =   uploadFile;
