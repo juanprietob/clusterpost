@@ -26,7 +26,6 @@ module.exports = function (server, conf) {
 
 		var jobs = [];
 		while (queue.length) {
-			console.log("doing");
 			var jobid = queue.shift();
 			jobs.push(inqueue[jobid]);
 			delete inqueue[jobid];

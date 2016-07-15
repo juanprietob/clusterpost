@@ -240,7 +240,9 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			server.methods.cronprovider.addJobToQueue(doc);
+			if(doc.jobstatus.status === 'RUN' || doc.jobstatus.status === 'UPLOADING'){
+				server.methods.cronprovider.addJobToQueue(doc);
+			}
 			return doc.jobstatus;
 		})
 		.then(rep)
