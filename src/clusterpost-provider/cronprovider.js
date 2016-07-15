@@ -50,7 +50,7 @@ module.exports = function (server, conf) {
 		    .then(function(docs){
 		    	var jobs = _.pluck(docs, "value");
 		    	_.each(jobs, function(job){
-		    		server.methods.addJobToQueue(job);
+		    		server.methods.cronprovider.addJobToQueue(job);
 		    	});
 		    })
 		    .catch(console.error);
