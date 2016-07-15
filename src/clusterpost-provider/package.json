@@ -19,7 +19,8 @@
     "joi": "^7.3.0",
     "node-crontab": "0.0.8",
     "underscore": "^1.8.3",
-    "couch-provider": "^1.0.2"
+    "couch-provider": "^1.0.2",
+    "linkedlist": "^1.0.1"
   },
   "repository": {
     "type": "git",

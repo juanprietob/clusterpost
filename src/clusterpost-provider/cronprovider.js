@@ -3,30 +3,59 @@ module.exports = function (server, conf) {
 	var crontab = require('node-crontab');
 	var _ = require('underscore');
 	var Promise = require('bluebird');
-	
-	var counter = 0;
-	var jobId = crontab.scheduleJob("*/30 * * * *", function(){
+	var os = require('os');
 
-		console.log("Running cronprovider service for running jobs...")
+	var LinkedList = require('linkedlist');
+	var queue = new LinkedList();
+	var inqueue = {};
 
-		console.log("Retrieving runnnig jobs...");		
+	const addJobToQueue = function(job){
+		if(!inqueue[job._id]){
+			queue.push(job._id);
+			inqueue[job._id] = job;
+		}
+	}
 
-		var view = "_design/searchjob/_view/jobstatus?key=" + JSON.stringify('RUN');
-	    server.methods.clusterprovider.getView(view)
-	    .then(function(docs){
-	    	var docs = _.pluck(docs, "value");
-	    	return Promise.map(docs, server.methods.executionserver.jobstatus)
-	    	.then(function(jobstatus){
-		    	_.each(jobstatus, function(jst, i){
-		    		if(jst.status !== 'RUN'){
-		    			console.log("Job: ", docs[i]._id, ",", jst.status, "owner:", docs[i].userEmail);
-		    		}
-		    	});
-		    });
-	    })
-	    .catch(console.error);
-
+	server.method({
+	    name: 'cronprovider.addJobToQueue',
+	    method: addJobToQueue,
+	    options: {}
 	});
 
+	crontab.scheduleJob("*/1 * * * *", function(){
+
+		var jobs = [];
+		while (queue.length) {
+			console.log("doing");
+			var jobid = queue.shift();
+			jobs.push(inqueue[jobid]);
+			delete inqueue[jobid];
+		}
+
+		Promise.map(jobs, function(job){
+    		return server.methods.executionserver.jobstatus(job, true);
+    	}, {
+    		concurrency: 1
+    	})
+	    .catch(console.error);
+		
+
+	});
+	
+	if(!server.methods.cluster || server.methods.cluster && server.methods.cluster.getWorker().id === 1){
+		crontab.scheduleJob("*/10 * * * *", function(){
+
+			var view = "_design/searchjob/_view/jobstatus?key=" + JSON.stringify('RUN');
+		    server.methods.clusterprovider.getView(view)
+		    .then(function(docs){
+		    	var jobs = _.pluck(docs, "value");
+		    	_.each(jobs, function(job){
+		    		server.methods.addJobToQueue(job);
+		    	});
+		    })
+		    .catch(console.error);
+
+		});
+	}
 
 }

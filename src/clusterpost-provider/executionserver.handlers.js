@@ -198,17 +198,28 @@ module.exports = function (server, conf) {
 			try{
 				var executionserver = conf.executionservers[doc.executionserver];
 				const jobstatus = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--status"]);
-
-				jobstatus.on('error', reject);
-
-				jobstatus.unref();
 				
-				var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
-			    server.methods.clusterprovider.getView(view)
-			    .then(function(docs){				    	
-			    	resolve(_.pluck(docs, "value")[0]);
-			    })
-			    .catch(reject);
+				var alldata = "";
+				jobstatus.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				var allerror = "";
+				jobstatus.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				jobstatus.on('close', function(code){
+					if(allerror !== ""){
+						alldata += allerror;
+					}
+					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
+				    server.methods.clusterprovider.getView(view)
+				    .then(function(docs){				    	
+				    	resolve(_.pluck(docs, "value")[0]);
+				    })
+				    .catch(reject);
+				});
 				
 			}catch(e){
 				reject(e);
@@ -229,14 +240,12 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			return server.methods.executionserver.jobstatus(doc)
-			.then(function(res){
-				return res;
-			});
+			server.methods.cronprovider.addJobToQueue(doc);
+			return doc.jobstatus;
 		})
 		.then(rep)
 		.catch(function(e){
-			rep(Boom.badRequest(e));
+			rep(Boom.wrap(e));
 		});
 		
 	}
@@ -265,6 +274,7 @@ module.exports = function (server, conf) {
 					}
 				});
 			}catch(e){
+				console.error(e);
 				reject(e);
 			}
 		});
