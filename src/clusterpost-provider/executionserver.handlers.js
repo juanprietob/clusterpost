@@ -64,6 +64,18 @@ module.exports = function (server, conf) {
 			.catch(function(err){
 				console.error(err);
 			});
+		})
+		.then(function(res){
+			console.log("Retrieving stalled uploading tasks...");
+
+			var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('UPLOADING');
+		    return server.methods.clusterprovider.getView(view)
+		    .then(function(docs){
+		    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToUpdateQueue);
+		    })
+		    .then(function(){
+		    	return res;
+		    });
 		});
 	}
 
@@ -96,23 +108,18 @@ module.exports = function (server, conf) {
 		method: getExecutionServer,
 		options: {}
 	});
-	/*
-	*/
-	handler.submitJob = function(req, rep){
 
-		server.methods.clusterprovider.getDocument(req.params.id)
-		.then(function(doc){
-			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
-		})
-		.then(function(doc){
+
+	const submitJob = function(doc){
+		return new Promise(function(resolve, reject){
 			var executionserver = conf.executionservers[doc.executionserver];
 			if(!executionserver){
 				throw Boom.notFound("The server " + doc.executionserver + " is not configured.");
 			}
 
-			var params = ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--submit"];
+			var params = ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--submit"];
 
-			if(req.payload.force){
+			if(doc.force){
 				params.push("-f");
 			}
 
@@ -132,18 +139,47 @@ module.exports = function (server, conf) {
 				if(code !== 0 || allerror !== ''){
 					console.error(allerror);
 					console.log(alldata);
-					rep(Boom.badImplementation(allerror));
+					reject(Boom.badImplementation(allerror));
 				}else{
 					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
 				    server.methods.clusterprovider.getView(view)
 				    .then(function(docs){				    	
-				    	rep(_.pluck(docs, "value")[0]);
+				    	resolve(_.pluck(docs, "value")[0]);
 				    })
 				    .catch(function(e){
-				    	rep(Boom.badImplementation(e));
+				    	reject(Boom.badImplementation(e));
 				    });
 				}
 			});
+		});
+	}
+
+	server.method({
+		name: 'executionserver.submitJob',
+		method: submitJob,
+		options: {}
+	});
+
+	/*
+	*/
+	handler.submitJob = function(req, rep){
+
+		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
+			doc.jobstatus.status = "QUEUE";
+			return server.methods.clusterprovider.uploadDocuments(doc)
+			.then(function(uploadstatus){
+				return server.methods.cronprovider.addJobToSubmitQueue(doc, req.payload.force);
+			})
+			.then(function(){
+				return doc.jobstatus
+			});
+		})
+		.then(function(res){
+			rep(res);
 		}).catch(function(e){
 			rep(Boom.badImplementation(e));
 		});
@@ -193,7 +229,7 @@ module.exports = function (server, conf) {
 	}
 
 
-	const jobstatus = function(doc){
+	const jobStatus = function(doc){
 		return new Promise(function(resolve, reject){
 			try{
 				var executionserver = conf.executionservers[doc.executionserver];
@@ -228,8 +264,8 @@ module.exports = function (server, conf) {
 	}
 
 	server.method({
-	    name: 'executionserver.jobstatus',
-	    method: jobstatus,
+	    name: 'executionserver.jobStatus',
+	    method: jobStatus,
 	    options: {}
 	});
 
@@ -241,7 +277,10 @@ module.exports = function (server, conf) {
 		})
 		.then(function(doc){
 			if(doc.jobstatus.status === 'RUN' || doc.jobstatus.status === 'UPLOADING'){
-				server.methods.cronprovider.addJobToQueue(doc);
+				return server.methods.cronprovider.addJobToUpdateQueue(doc)
+				.then(function(){
+					return doc.jobstatus;
+				});
 			}
 			return doc.jobstatus;
 		})
@@ -252,7 +291,7 @@ module.exports = function (server, conf) {
 		
 	}
 
-	const jobdelete = function(doc){
+	const jobDelete = function(doc){
 		return new Promise(function(resolve, reject){
 			try{
 				var executionserver = conf.executionservers[doc.executionserver];
@@ -283,8 +322,8 @@ module.exports = function (server, conf) {
 	}
 
 	server.method({
-	    name: 'executionserver.jobdelete',
-	    method: jobdelete,
+	    name: 'executionserver.jobDelete',
+	    method: jobDelete,
 	    options: {}
 	});
 

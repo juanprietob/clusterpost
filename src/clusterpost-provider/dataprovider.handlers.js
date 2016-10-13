@@ -108,7 +108,14 @@ module.exports = function (server, conf) {
 				name += ".tar.gz";
 			}
 			if(att.remote){
-				return server.methods.clusterprovider.getDocumentURIAttachment(att.remote.uri, att.remote.serverCodename);
+				if(att.remote.serverCodename){
+					return server.methods.clusterprovider.getDocumentURIAttachment(att.remote.uri, att.remote.serverCodename);
+				}else{ //The next case is for the dataprovider-fs
+					return {
+						uri: att.remote.uri,
+						passThrough: true
+					};
+				}
 			}else{
 				return server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name);
 			}
@@ -126,11 +133,7 @@ module.exports = function (server, conf) {
 		})
 		.then(function(doc){
 			if(req.params.name){
-
-				var uri = getDocumentURIAttachment(doc, req.params.name);
-
-				rep.proxy(uri);
-				
+				rep.proxy(getDocumentURIAttachment(doc, req.params.name));
 			}else{
 				rep(doc);
 			}
@@ -180,9 +183,6 @@ module.exports = function (server, conf) {
 			rep(Boom.unauthorized(e));
 		}
 		
-
-
-		
 	}
 
 	handler.deleteJob = function(req, rep){
@@ -195,16 +195,9 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			return server.methods.executionserver.jobdelete(doc)
-			.then(function(res){
-				if(res.indexOf("Deleted:" + doc._id)){
-					return server.methods.clusterprovider.deleteDocument(doc);
-				}else{
-					return {
-						error: "Job data in execution server could not be deleted.",
-						status: res
-					};
-				}
+			return server.methods.cronprovider.addJobToDeleteQueue(doc)
+			.then(function(){
+				return server.methods.clusterprovider.deleteDocument(doc);
 			});
 		})
 		.then(rep)

@@ -5,7 +5,9 @@ exports.register = function (server, conf, next) {
   require('./clusterprovider.methods')(server, conf);
   require('./cronprovider')(server, conf);
 
-  if(!server.methods.cluster || server.methods.cluster && server.methods.cluster.getWorker().id === 1){
+  var cluster = server.methods.getCluster();
+  if(!cluster || cluster && cluster.worker.id === 1){
+    
     server.methods.executionserver.startExecutionServers()
     .then(function(){
         console.log("Execution servers started.");

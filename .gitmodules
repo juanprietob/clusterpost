@@ -1,0 +1,3 @@
+[submodule "src/clusterpost-front"]
+	path = src/clusterpost-front
+	url = git@github.com:juanprietob/clusterpost-front.git
