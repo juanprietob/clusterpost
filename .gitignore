@@ -10,3 +10,4 @@ conf.my.json
 .token
 conf.production.json
 conf.test.json
+bower_components
