@@ -61,15 +61,15 @@ const startServer = function(cluster){
         }
     });
 
-    if(cluster){
-        server.method({
-            name: 'cluster.getWorker',
-            method: function(){
-                return cluster.worker;
-            },
-            options: {}
-        });
-    }
+    
+    server.method({
+        name: 'getCluster',
+        method: function(){
+            return cluster;
+        },
+        options: {}
+    });
+    
 
     server.register(plugins, function(err){
         if (err) {
