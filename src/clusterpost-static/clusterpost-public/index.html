@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="clusterpost" class="no-js"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="app.css" type="text/css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" type="text/css">
+  <link rel="stylesheet" href="bower_components/json-formatter/dist/json-formatter.min.css" type="text/css">
+  
+  
+  <title>DCBIA-Ortholab</title>
+
+</head>
+<body ng-app="clusterpost">
+
+  <div class="wrapper">
+      <div class="container-fluid">
+          <div class="col-md-10 col-md-offset-1">
+            <div ng-include src="'appHeader.html'" class="row"></div>
+            <div ng-view class="row"></div>
+          </div>
+      </div>
+      <div class="push"></div>
+  </div>  
+
+  <!-- In production use: -->
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap.min.js" ></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" ></script>
+  <script src="bower_components/underscore/underscore-min.js" ></script>
+  <script src="bower_components/jquery/dist/jquery.min.js" ></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="bower_components/angular-smart-table/dist/smart-table.min.js" ></script>
+  <script src="bower_components/json-formatter/dist/json-formatter.min.js" ></script>
+  
+
+
+  <!-- Application scripts -->
+  <script src="app.module.js"></script>
+
+
+  <script src="clusterpost-list/clusterpost-list.module.js"></script>
+  <script src="clusterpost-list/clusterpost-list.service.js"></script>
+  <script src="clusterpost-list/clusterpost-list.directive.js"></script>
+
+  <!-- Modules --> 
+  <script src="bower_components/jwt-user-login/src/jwtUserLogin.module.js"></script>
+
+  <!-- Services --> 
+  <script src="bower_components/jwt-user-login/src/jwtUserLogin.service.js"></script>
+
+  <!-- Controllers --> 
+  <!-- // <script src="bower_components/users-manager/usersManager.controller.js"></script> -->
+
+
+  <!-- Directives --> 
+  <script src="bower_components/jwt-user-login/src/jwtUserLogin.directive.js"></script>
+  <!-- <script src="bower_components/nav-bar/navBar.directive.js"></script> -->
+  
+
+</body>
+</html>
