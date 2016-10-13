@@ -209,6 +209,8 @@ var createDocument = function(job){
         request(options, function(err, res, body){
             if(err){
                 reject(err);
+            }else if(res.statusCode !== 200){
+                reject(body);
             }else{
                 resolve(body);
             }
@@ -510,6 +512,24 @@ var createAndSubmitJob = function(job, files){
     });
 }
 
+var mkdirp = function(outputdir){
+    var allpatharray = outputdir.split(path.sep);
+    var currentpath = '';
+    _.each(allpatharray, function(p){
+        currentpath = path.join(currentpath, p);
+        try{
+            fs.statSync(currentpath);
+        }catch(e){
+            try{
+                fs.mkdirSync(currentpath);
+            }catch(e){
+                console.error(e);
+                throw e;
+            }
+        }
+    });
+}
+
 var getJobOutputs = function(job, outputdir){
     
     var outputs = job.outputs;
@@ -520,13 +540,9 @@ var getJobOutputs = function(job, outputdir){
             name = job._id + ".tar.gz";
         }
         if(outputdir){
-            try{
-                fs.mkdirSync(outputdir);
-            }catch(e){
-                if(e.code !== 'EEXIST'){
-                    throw e;
-                }
-            }
+            
+            mkdirp(outputdir);
+            
             var filename = path.join(outputdir, name);
             return getDocumentAttachmentSave(job._id, name, filename);
         }else{
