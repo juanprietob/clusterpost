@@ -44,10 +44,10 @@ var jobid;
 var token;
 var tokenraw;
 
-var updateJobStatusRec = function(jobid){
+var updateJobStatusRec = function(jobid, validstatus){
     var clustermodelstatus = Joi.object().keys({
         jobid: Joi.number(),
-        status: Joi.string().valid('DONE'),
+        status: Joi.string().valid(validstatus),
         downloadstatus: Joi.array().items(Joi.object().keys({
             path: Joi.string(),
             status: Joi.boolean().valid(true)
@@ -56,7 +56,7 @@ var updateJobStatusRec = function(jobid){
     });
 
     return new Promise(function(resolve, reject){
-        setTimeout(resolve, 5000);
+        setTimeout(resolve, 65000);
     })
     .then(function(){
         return clusterpost.updateJobStatus(jobid)
@@ -260,31 +260,24 @@ lab.experiment("Test clusterpost", function(){
     lab.test('returns true when job is executed', function(){
         return clusterpost.executeJob(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, clustermodel.jobstatus);
+            Joi.assert(jobstatus.status, Joi.string().valid("QUEUE"));
         });
     });
 
-    lab.test('returns true when jobstatus is updated', function(){
-        return clusterpost.updateJobStatus(jobid)
+    lab.test('returns true when jobstatus is RUN', function(){
+        return updateJobStatusRec(jobid, "RUN")
         .then(function(jobstatus){
-            Joi.assert(jobstatus, clustermodel.jobstatus);
+            Joi.assert(jobstatus.status, Joi.string().valid("RUN"));
         });
     });
 
     lab.test('returns true until jobstatus is DONE', function(){
-        
-        return updateJobStatusRec(jobid)
+        return updateJobStatusRec(jobid, "DONE")
         .then(function(jobstatus){
             Joi.assert(jobstatus.status, Joi.string().valid("DONE"));
         });
     });
-
-    lab.test('returns true when job is executed again with force', function(){
-        return clusterpost.executeJob(jobid, true)
-        .then(function(jobstatus){
-            Joi.assert(jobstatus, clustermodel.jobstatus);
-        });
-    });
+    
 
     lab.test('returns true if get attachment output stream is valid', function(done){
         clusterpost.getDocumentAttachment(jobid, "stdout.out")
@@ -339,7 +332,14 @@ lab.experiment("Test clusterpost", function(){
     lab.test('returns true when second job is executed', function(){
         return clusterpost.executeJob(jobid)
         .then(function(jobstatus){
-            Joi.assert(jobstatus, clustermodel.jobstatus);
+            Joi.assert(jobstatus.status, Joi.string().valid("QUEUE"));
+        });
+    });
+
+    lab.test('returns true when second jobstatus is RUN', function(){
+        return updateJobStatusRec(jobid, "RUN")
+        .then(function(jobstatus){
+            Joi.assert(jobstatus.status, Joi.string().valid("RUN"));
         });
     });
 
