@@ -44,7 +44,7 @@ angular.module('clusterpost-list')
 
 		    clusterpostService.deleteJob(job._id)
 		    .then(function(res){
-		    	delete job;
+		    	//delete job;
 	        })
 	        .catch(function(e){
 	          console.error(e);
@@ -141,7 +141,7 @@ angular.module('clusterpost-list')
 	return {
 	    restrict : 'E',
 	    link : link,
-	    templateUrl: 'clusterpost-list/clusterpost-list.directive.html'
+	    templateUrl: './src/clusterpost-list.directive.html'
 	}
 
 });
