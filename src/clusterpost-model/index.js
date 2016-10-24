@@ -27,7 +27,8 @@ exports.jobpost = Joi.object().keys({
 		parameters: Joi.array().items(exports.parameter).min(1),
 		inputs: Joi.array().items(exports.input).min(1).optional(),
 		outputs: Joi.array().items(exports.output).min(1),
-		outputdir: Joi.string().optional()
+		outputdir: Joi.string().optional(),
+		name: Joi.string().optional()
     });
 
 exports.jobstatus = Joi.object().keys({
@@ -53,5 +54,6 @@ exports.job = Joi.object().keys({
 		inputs: Joi.array().items(exports.input).min(1).optional(),
 		outputs: Joi.array().items(exports.output).min(1),
 		outputdir: Joi.string().optional(),
+		name: Joi.string().optional(),
 		_attachments: Joi.optional()
     });
