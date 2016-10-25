@@ -8,8 +8,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="app.css" type="text/css">
-  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" type="text/css">
-  <link rel="stylesheet" href="bower_components/json-formatter/dist/json-formatter.min.css" type="text/css">
+
+  
+  
+
+  <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="clusterpost-list/dist/clusterpost-list.min.css" type="text/css">
   
   
   <title>DCBIA-Ortholab</title>
@@ -28,39 +32,30 @@
   </div>  
 
   <!-- In production use: -->
-  <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-route/angular-route.js"></script>
-  <script src="bower_components/angular-bootstrap/ui-bootstrap.min.js" ></script>
-  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" ></script>
-  <script src="bower_components/underscore/underscore-min.js" ></script>
-  <script src="bower_components/jquery/dist/jquery.min.js" ></script>
-  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="bower_components/angular-smart-table/dist/smart-table.min.js" ></script>
-  <script src="bower_components/json-formatter/dist/json-formatter.min.js" ></script>
-  
+  <script src="node_modules/angular/angular.min.js"></script>
+  <script src="node_modules/angular-route/angular-route.min.js"></script>
+  <script src="node_modules/underscore/underscore-min.js" ></script>
+  <script src="node_modules/angular-ui-bootstrap/dist/ui-bootstrap.js" ></script>
+  <script src="node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js" ></script>
+  <script src="node_modules/angular-smart-table/dist/smart-table.min.js" ></script>
+  <script src="node_modules/jwt-user-login/dist/jwt-user-login.min.js"></script>
 
 
   <!-- Application scripts -->
   <script src="app.module.js"></script>
 
 
-  <script src="clusterpost-list/clusterpost-list.module.js"></script>
-  <script src="clusterpost-list/clusterpost-list.service.js"></script>
-  <script src="clusterpost-list/clusterpost-list.directive.js"></script>
+  <script src="clusterpost-list/dist/clusterpost-list.min.js"></script>
+
+  <script src="//localhost:9000/livereload.js"></script>
 
   <!-- Modules --> 
-  <script src="bower_components/jwt-user-login/src/jwtUserLogin.module.js"></script>
 
   <!-- Services --> 
-  <script src="bower_components/jwt-user-login/src/jwtUserLogin.service.js"></script>
 
   <!-- Controllers --> 
   <!-- // <script src="bower_components/users-manager/usersManager.controller.js"></script> -->
-
-
   <!-- Directives --> 
-  <script src="bower_components/jwt-user-login/src/jwtUserLogin.directive.js"></script>
-  <!-- <script src="bower_components/nav-bar/navBar.directive.js"></script> -->
   
 
 </body>

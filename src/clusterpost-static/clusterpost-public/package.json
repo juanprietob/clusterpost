@@ -1,0 +1,38 @@
+{
+  "name": "clusterpost-public",
+  "version": "1.0.0",
+  "description": "Front end for clusterpost application",
+  "main": "app.module.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
+  },
+  "keywords": [
+    "Front-end",
+    "civility"
+  ],
+  "author": "juanprietob@gmail.com",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/juanprietob/clusterpost/issues"
+  },
+  "homepage": "https://github.com/juanprietob/clusterpost#readme",
+  "dependencies": {
+    "angular": "^1.5.8",
+    "angular-route": "^1.5.8",
+    "angular-smart-table": "^2.1.8",
+    "angular-ui-bootstrap": "^2.2.0",
+    "bootstrap": "^3.3.7",
+    "jwt-user-login": "^1.0.3",
+    "ui-bootstrap": "^0.1.5",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-run-grunt": "^0.1.4"
+  }
+}
