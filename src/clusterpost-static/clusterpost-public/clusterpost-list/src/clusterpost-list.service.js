@@ -69,6 +69,21 @@ angular.module('clusterpost-list')
         responseType: responseType
       });
     },
+    getAttachmentDowloadToken: function(id, filename, expires){
+      return $http({
+        method: 'GET',
+        url: '/dataprovider/download/' + id + '/' + encodeURIComponent(filename),
+        params: {
+          expires: expires
+        }
+      });
+    },
+    getDownloadAttachmentURL: function(id, filename){
+      return this.getAttachmentDowloadToken(id, filename)
+      .then(function(res){
+        return '/dataprovider/download/' + res.data.token;
+      });
+    },
     addAttachment: function(id, filename, data){
     	return $http({
         method: 'PUT',

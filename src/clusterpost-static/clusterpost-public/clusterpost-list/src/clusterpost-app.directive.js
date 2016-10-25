@@ -84,12 +84,12 @@ angular.module('clusterpost-list')
 			$scope.activeTab = 1;
 			clusterpostService.getAttachment(job._id, "stdout.out", "text")
 			.then(function(res){
-				$scope.jobs.selectedJob.stdout = res.data;
+				$scope.jobs.selectedJob.stdout = res.data.replace(/\n/g, "<br>");
 			})
 			.catch(console.error);
 			clusterpostService.getAttachment(job._id, "stderr.err", "text")
 			.then(function(res){
-				$scope.jobs.selectedJob.stderr = res.data;
+				$scope.jobs.selectedJob.stderr =res.data.replace(/\n/g, "<br>");
 			})
 			.catch(console.error);
 		}
@@ -172,6 +172,7 @@ angular.module('clusterpost-list')
 					$scope.appUser.allUsers = users.data;
 				});
 			}
+			return $scope.getDB();
 		})
 		.catch(console.error);
 
@@ -186,6 +187,18 @@ angular.module('clusterpost-list')
 				return job._id;
 			}
 		}
+
+		$scope.downloadAllJobs = function(){
+
+		}
+
+		$scope.downloadJob = function(job){
+			if($scope.downloadCallback){
+				return $scope.downloadCallback(job);
+			}else{
+				console.log("TODO");
+			}
+		}
 	}
 
 	return {
@@ -193,7 +206,8 @@ angular.module('clusterpost-list')
 	    link : link,
 	    scope:{
 	    	jobCallback: '=',
-	    	appName: '='
+	    	appName: '=',
+	    	downloadCallback: '='
 	    },
 	    templateUrl: './src/clusterpost-app.directive.html'
 	}
