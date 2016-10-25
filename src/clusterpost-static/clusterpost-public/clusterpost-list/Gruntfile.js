@@ -5,39 +5,75 @@ module.exports = function(grunt) {
         ngtemplates: {
             'clusterpost-list': {
                 src: './src/**.html',
-                dest: './src/clusterpost-list.templates.js'
+                dest: './dist/clusterpost-list.templates.js'
+            }
+        },
+        assets:{
+            appJS: [
+            'node_modules/jsonformatter/dist/json-formatter.min.js',
+            './src/clusterpost-list.module.js',
+            './src/clusterpost-list.service.js',
+            './src/clusterpost-list.directive.js',
+            './src/clusterpost-app.directive.js',
+            './dist/clusterpost-list.templates.js'
+            ]
+        },
+        concat: {
+            prod: { //target
+                files: {
+                    './dist/clusterpost-list.min.js' : '<%= assets.appJS %>'
+                }
+            },
+            dev: {
+                options: {
+                    sourceMap: true
+                },
+                files: {
+                    './dist/clusterpost-list.min.js' : '<%= assets.appJS %>'
+                }
             }
         },
         ngAnnotate: {
 		    options: {
-		        singleQuotes: true
-		    },
+                singleQuotes: true
+            },
             app: {
                 files: {
-                    './src/clusterpost-list.module.minified.js': ['./src/clusterpost-list.module.js'],
-                    './src/clusterpost-list.service.minified.js': ['./src/clusterpost-list.service.js'],
-                    './src/clusterpost-list.directive.minified.js': ['./src/clusterpost-list.directive.js'],
-                    './src/clusterpost-list.templates.minified.js': ['./src/clusterpost-list.templates.js']
+                    './dist/clusterpost-list.min.js': './dist/clusterpost-list.min.js'
                 }
             }
 		},
-		concat: {
-    		js: { //target
-        		src: ['./node_modules/jsonformatter/dist/json-formatter.min.js', './src/clusterpost-list.module.minified.js', './src/clusterpost-list.service.minified.js', './src/clusterpost-list.directive.minified.js', './src/clusterpost-list.templates.minified.js'],
-        		dest: './dist/clusterpost-list.min.js'
-    		},
-            dev: {
-                src: ['./node_modules/jsonformatter/dist/json-formatter.min.js', './src/clusterpost-list.module.js', './src/clusterpost-list.service.js', './src/clusterpost-list.directive.js', './src/clusterpost-list.templates.js'],
-                dest: './dist/clusterpost-list.js',
-            },
-		},
 		uglify: {
-    		js: { //target
-        		src: ['./dist/clusterpost-list.min.js'],
-        		dest: './dist/clusterpost-list.min.js'
-    		}
+            prod: {
+                files: {
+                    './dist/clusterpost-list.min.js': ['./dist/clusterpost-list.min.js']
+                }
+            },
+            dev: {
+                options: {
+                    mangle: false,
+                    compress: false,
+                    sourceMap: true,
+                    sourceMapIncludeSources: true,
+                    sourceMapIn: './dist/clusterpost-list.min.js.map'
+                },
+                files: { //target
+                    './dist/clusterpost-list.min.js': ['./dist/clusterpost-list.min.js']
+                }
+            }
 		},
-        clean: ['./src/*.minified.js', './src/clusterpost-list.templates.js']   
+        cssmin: {
+            options: {
+                shorthandCompacting: false,
+                roundingPrecision: -1
+            },
+            target: {
+                files: {
+                    'dist/clusterpost-list.min.css': ['src/*.css', './node_modules/jsonformatter/dist/json-formatter.min.css']
+                }
+            }
+        },
+        clean: ['./dist/clusterpost-list.templates.js']   
     });
 
     //load grunt tasks
@@ -46,8 +82,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-ng-annotate'); 
     grunt.loadNpmTasks('grunt-angular-templates');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
 
     //register grunt default task
-    grunt.registerTask('default', [ 'ngtemplates', 'ngAnnotate', 'concat', 'uglify','clean']);
+    grunt.registerTask('default', [ 'ngtemplates', 'concat:prod', 'ngAnnotate', 'uglify:prod', 'cssmin', 'clean']);
+    //register dev task
+    grunt.registerTask('dev', [ 'ngtemplates', 'concat:dev', 'ngAnnotate', 'uglify:dev', 'cssmin', 'clean']);
 }

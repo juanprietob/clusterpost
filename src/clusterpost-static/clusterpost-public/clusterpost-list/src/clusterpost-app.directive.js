@@ -1,6 +1,6 @@
 
 angular.module('clusterpost-list')
-.directive('clusterpostJobs', function($routeParams,$location, clusterpostService, $filter, $q, clusterauth){
+.directive('clusterpostApp', function($routeParams,$location, clusterpostService, $filter, $q, clusterauth){
 
 	function link($scope,$attrs){
 		
@@ -65,7 +65,11 @@ angular.module('clusterpost-list')
 		}
 
 	    $scope.getDB = function(){
-			clusterpostService.getAllJobs().then(function(res){
+	    	clusterpostService.getUserJobs({
+	    		userEmail: $scope.appUser.selectedUser.email,
+	    		executable: $scope.appName
+	    	})
+	    	.then(function(res){
 				$scope.jobs.data = res.data;
 				$scope.jobs.status = _.uniq(_.pluck(_.pluck(res.data, 'jobstatus'), 'status'));
 				$scope.jobs.executables = _.uniq(_.pluck(res.data, 'executable'));
@@ -142,37 +146,56 @@ angular.module('clusterpost-list')
 			}
 		}
 
+		$scope.jobAppCallback = function(job){
+			if($scope.jobCallback){
+				$scope.jobCallback(job);
+			}
+		}
+
 		$scope.numJobsInPage = [ {id: '0', value: '10'},
 							      {id: '1', value: '50'},
 							      {id: '2', value: '100'}];
 		// $scope.itemsByPage = "10";
 		$scope.rowCollection = [];
-		$scope.getDB();
 		$scope.forceRunJob = false;
 		$scope.activeTab = 0;
+		$scope.appUser = {};
+
+
+		clusterauth.getUser()
+		.then(function(user){
+			$scope.appUser.selectedUser = user;
+			$scope.appUser.user = user;
+			if($scope.appUser.user.scope.indexOf('admin')){
+				clusterauth.getUsers()
+				.then(function(users){
+					$scope.appUser.allUsers = users.data;
+				});
+			}
+		})
+		.catch(console.error);
+
+		$scope.appUser.userChange = function(){
+			$scope.getDB();
+		}
+
+		$scope.getJobName = function(job){
+			if(job.name){
+				return job.name;
+			}else{
+				return job._id;
+			}
+		}
 	}
 
 	return {
 	    restrict : 'E',
 	    link : link,
-	    templateUrl: './src/clusterpost-list.directive.html'
+	    scope:{
+	    	jobCallback: '=',
+	    	appName: '='
+	    },
+	    templateUrl: './src/clusterpost-app.directive.html'
 	}
 
-});
-
-angular.module('clusterpost-list')
-.directive('onFilter', function () {
-  return {
-    require: '^stTable',
-    scope: {
-        onFilter: '='
-    },
-    link: function (scope, element, attr, ctrl) {
-      scope.$watch(ctrl.getFilteredCollection, function(val) {
-      	if(scope.onFilter){
-      		scope.onFilter(val);
-      	}
-      });
-    }
-  }
 });

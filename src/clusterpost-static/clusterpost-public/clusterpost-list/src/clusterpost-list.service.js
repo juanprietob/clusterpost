@@ -88,6 +88,13 @@ angular.module('clusterpost-list')
         }        
       });
     },
+    getUserJobs: function(params){
+      return $http({
+        method: 'GET',
+        url: '/dataprovider/user',
+        params: params        
+      });
+    },
     deleteJob: function(id){
        return $http({
          method: 'DELETE',

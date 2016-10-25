@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-list",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "List jobs running in clusterpost",
   "main": "clusterpost-list.module.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "grunt-angular-templates": "^1.1.0",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-cssmin": "^1.0.2",
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-ng-annotate": "^2.0.2"
   },
@@ -34,7 +35,6 @@
     "angular-bootstrap": "^0.12.2",
     "angular-route": "^1.5.8",
     "angular-smart-table": "^2.1.8",
-    "json-formatter": "^0.1.0",
     "jsonformatter": "^0.6.0",
     "underscore": "^1.8.3"
   }
