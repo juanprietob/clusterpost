@@ -26,6 +26,13 @@ module.exports = function (server, conf) {
         type: Joi.string().valid('user').required()
     }).unknown();
 
+    var scopes = Joi.object().keys({
+        _id: Joi.string().alphanum().required(),
+        _rev: Joi.string().required(),
+        type: Joi.string().valid('scopes').required(),
+        scopes: Joi.array().items(Joi.string()).required()
+    });
+
     if(conf.user){
         user = conf.user;
     }
@@ -289,6 +296,53 @@ module.exports = function (server, conf) {
             },
             handler: handlers.resetPassword,
             description: 'Send user an email with a token. The token is valid for 30 min and it can be used to change the password.'
+        }
+    });
+
+    /*
+    *   Get scopes
+    */
+
+    server.route({
+        method: 'GET',
+        path: '/auth/scopes',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['admin']
+            },
+            handler: handlers.getScopes,
+            validate: {
+                query: false,
+                payload: false,
+                params: false
+            },
+            // response: {
+            //     schema: Joi.array().items(scopes)
+            // },
+            description: 'Get all scopes'
+        }
+    });
+
+    /*
+    *   Update scopes
+    */
+
+    server.route({
+        method: 'PUT',
+        path: '/auth/scopes',
+        config: {
+            auth: {
+                strategy: 'token',
+                scope: ['default']
+            },
+            handler: handlers.updateScopes,
+            validate: {
+                query: false,
+                payload: scopes,
+                params: false
+            },
+            description: 'Update scope list'
         }
     });
 }
