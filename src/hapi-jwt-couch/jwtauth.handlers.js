@@ -322,6 +322,34 @@ module.exports = function (server, conf) {
 		
 	}
 
+	handler.getScopes = function(req, rep){
+		couchprovider.getView('_design/user/_view/scopes?include_docs=true')
+		.then(function(info){
+			rep(_.pluck(info, 'doc'));
+		})
+		.catch(function(err){
+			rep(Boom.badImplementation(err));
+		})
+	}
+
+	handler.updateScopes = function(req, rep){
+
+		var user = req.auth.credentials;
+		var updateinfo = req.payload;
+
+		if(user.scope.indexOf('admin') === -1){
+			rep(Boom.unauthorized('You cannot modify the scopes'));
+		}else{
+			return couchprovider.uploadDocuments(req.payload)
+			.then(function(res){
+				rep(res[0]);
+			})
+			.catch(function(e){
+				rep(Boom.wrap(e));
+			});
+		}
+	}
+
 
 
 	return handler;
