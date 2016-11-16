@@ -10,6 +10,8 @@ var qs = require('querystring');
 
 var clusterpost = {};
 
+clusterpost.auth = {};
+
 clusterpost.joiokres = Joi.object().keys({
     ok: Joi.boolean().valid(true),
     id: Joi.string(),
@@ -62,8 +64,7 @@ var userLogin = function(user){
             if(err){
                 reject(err);
             }else{
-                clusterpost.tokenraw = body.token;
-                clusterpost.token = "Bearer " + body.token;
+                clusterpost.auth.bearer = body.token
                 resolve(body);
             }
         });
@@ -71,12 +72,11 @@ var userLogin = function(user){
 }
 
 var setUserToken = function(token){
-    clusterpost.tokenraw = token;
-    clusterpost.token = "Bearer " + token;
+    clusterpost.auth.bearer = token;
 }
 
 var getUserToken = function(){
-    return clusterpost.tokenraw;
+    return clusterpost.auth.bearer;
 }
 
 var getUser = function(){
@@ -84,7 +84,7 @@ var getUser = function(){
         var options = {
             url: getClusterPostServer() + "/auth/user",
             method: 'GET',
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -102,7 +102,7 @@ var getUsers = function(){
         var options = {
             url: getClusterPostServer() + "/auth/users",
             method: 'GET',
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -122,7 +122,7 @@ var updateUser = function(userinfo){
             url: getClusterPostServer() + "/auth/user",
             method: 'PUT',
             json: userinfo,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -141,7 +141,7 @@ var deleteUser = function(){
             url: getClusterPostServer() + "/auth/user",
             method: 'DELETE',
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -160,7 +160,7 @@ var deleteUsers = function(user){
             url: getClusterPostServer() + "/auth/users",
             method: 'DELETE',
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token },
+            auth: clusterpost.auth,
             json: user
         }
 
@@ -180,7 +180,7 @@ var getExecutionServers = function(){
             url : getClusterPostServer() + "/executionserver",
             method: "GET",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -203,7 +203,7 @@ var createDocument = function(job){
             method: "POST",
             json: job,
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -215,8 +215,6 @@ var createDocument = function(job){
                 resolve(body);
             }
         });
-
-
     });
 }
 
@@ -227,7 +225,7 @@ var getDocument = function(id){
             url : getClusterPostServer() + "/dataprovider/" + id,
             method: "GET",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -261,7 +259,7 @@ var getJobs = function(executable, jobstatus, email){
             url : getClusterPostServer() + "/dataprovider/user?" + qs.stringify(params),
             method: "GET",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -281,7 +279,7 @@ var getDocumentAttachment = function(id, name){
             url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
             method: "GET",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -301,7 +299,7 @@ var getDocumentAttachmentSave = function(id, name, filename){
             url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
             method: "GET",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         var write = fs.createWriteStream(filename);
@@ -324,7 +322,7 @@ var getDownloadToken = function(id, name){
             url : getClusterPostServer() + "/dataprovider/download/" + id + "/" + name,
             method: "GET",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -366,9 +364,9 @@ var uploadFile = function(jobid, filename){
                 method: "PUT",
                 agentOptions: clusterpost.agentOptions,
                 headers: { 
-                    authorization: clusterpost.token,
                     "Content-Type": "application/octet-stream"
-                }
+                },
+                auth: clusterpost.auth
             }
 
             var stream = fs.createReadStream(filename);
@@ -407,7 +405,7 @@ var executeJob = function(jobid, force){
                 },
                 method: "POST",
                 agentOptions: clusterpost.agentOptions,
-                headers: { authorization: clusterpost.token }
+                auth: clusterpost.auth
             }
 
             request(options, function(err, res, body){
@@ -430,7 +428,7 @@ var updateJobStatus = function(jobid){
                 url : getClusterPostServer() + "/executionserver/" + jobid,
                 method: "GET",
                 agentOptions: clusterpost.agentOptions,
-                headers: { authorization: clusterpost.token }
+                auth: clusterpost.auth
             }
 
             request(options, function(err, res, body){
@@ -452,7 +450,7 @@ var killJob = function(jobid){
             url : getClusterPostServer() + "/executionserver/" + jobid,
             method: "DELETE",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
@@ -471,7 +469,7 @@ var deleteJob = function(jobid){
             url : getClusterPostServer() + "/dataprovider/" + jobid,
             method: "DELETE",
             agentOptions: clusterpost.agentOptions,
-            headers: { authorization: clusterpost.token }
+            auth: clusterpost.auth
         }
 
         request(options, function(err, res, body){
