@@ -29,7 +29,25 @@ module.exports = function (server, conf) {
 
 	couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'), true)
 	.catch(function(err){
-		couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'));	
+		return couchUpdateViews.migrateUp(couchprovider.getCouchDBServer(), path.join(__dirname, 'views'));
+	})
+	.then(function(){
+		return couchprovider.getView("_design/user/_view/scopes");
+	})
+	.then(function(res){
+		if(res.length === 0){
+			console.log("Generating default scopes...");
+			return couchprovider.uploadDocuments({
+				type: 'scopes',
+				scopes:['default','admin']
+			})
+			.then(function(){
+				console.log("Done!");
+			});
+		}
+	})
+	.catch(function(err){
+		console.error(err);
 	});
 
 	var handler = {};
