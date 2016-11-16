@@ -33,6 +33,11 @@ module.exports = function (server, conf) {
         scopes: Joi.array().items(Joi.string()).required()
     });
 
+    var scopespost = Joi.object().keys({
+        type: Joi.string().valid('scopes').required(),
+        scopes: Joi.array().items(Joi.string()).required()
+    });
+
     if(conf.user){
         user = conf.user;
     }
@@ -343,6 +348,25 @@ module.exports = function (server, conf) {
                 params: false
             },
             description: 'Update scope list'
+        }
+    });
+
+    /*
+    *   Create scopes
+    */
+
+    server.route({
+        method: 'POST',
+        path: '/auth/scopes',
+        config: {
+            auth: false,
+            handler: handlers.createScopes,
+            validate: {
+                query: false,
+                payload: scopespost,
+                params: false
+            },
+            description: 'Create default scopes.'
         }
     });
 }

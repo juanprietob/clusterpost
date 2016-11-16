@@ -350,6 +350,23 @@ module.exports = function (server, conf) {
 		}
 	}
 
+	handler.createScopes = function(req, rep){
+
+		var scopes = req.payload;
+		
+		return couchprovider.uploadDocuments(scopes)
+		.then(function(res){
+			res = res[0];
+			if(res.ok){
+				return rep(res);
+			}else{
+				throw Boom.badData(res);
+			}
+		})
+		.catch(rep);
+
+	}
+
 
 
 	return handler;
