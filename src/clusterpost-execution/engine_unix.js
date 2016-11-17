@@ -117,6 +117,7 @@ module.exports = function (conf) {
 						}else{
 							var l = lines[1].replace(/\s\s+/g, ' ').split(' ');
 							resolve({
+								jobid: jobid,
 								status: 'RUN',
 								stat: l[2],
 								time: l[3]

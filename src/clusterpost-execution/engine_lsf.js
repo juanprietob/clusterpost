@@ -80,15 +80,15 @@ module.exports = function (conf) {
 							status: 'FAIL',
 							error: allerror + alldata
 						});
+					}else{
+						var ind = alldata.indexOf('<') + 1;
+	                    var jobid = alldata.substr(ind, alldata.indexOf('>') - ind);
+
+						resolve({
+							jobid : Number.parseInt(jobid),
+							status: 'RUN'
+						});
 					}
-
-					var ind = alldata.indexOf('<') + 1;
-                    var jobid = alldata.substr(ind, alldata.indexOf('>') - ind);
-
-					resolve({
-						jobid : Number.parseInt(jobid),
-						status: 'RUN'
-					});
 				});
 				
 			}catch(e){
@@ -111,6 +111,13 @@ module.exports = function (conf) {
 			try{
 
 				var jobid = doc.jobstatus.jobid;
+				if(!jobid && doc.jobstatus.stat){
+					try{
+						jobid = doc.jobstatus.stat.split("\n")[1].split(" ")[0];
+					}catch(e){
+						console.error(e);
+					}
+				}
 				var params = ["-J", doc.userEmail, jobid];
 
 				const ps = spawn('bjobs', params);
@@ -147,6 +154,7 @@ module.exports = function (conf) {
 						});						
 					}else{
 						resolve({
+							jobid: jobid,
 							status: 'RUN',
 							stat: alldata
 						});	
