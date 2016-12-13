@@ -257,7 +257,6 @@ module.exports = function (server, conf) {
 		}else{
 			view = '_design/searchJob/_view/executable?include_docs=true';
 		}
-
 		server.methods.clusterprovider.getView(view)
 		.then(function(rows){
 			return _.pluck(rows, 'doc');
