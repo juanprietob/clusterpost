@@ -15,7 +15,7 @@ It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Pro
 ## Usage
 
 ----
-	//Multiple db configuration, namespace is optional
+	//Multiple db configuration, namespace is optional, you can add multiple namespaces by providing an array
 	var couchdbconfig = {
 		"default" : "db1",
 		"db1" : {
