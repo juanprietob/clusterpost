@@ -10,7 +10,7 @@ module.exports = function (server, conf) {
 	
 
 	if(!server.methods.clusterprovider){
-		throw new Error("Have you installed the 'couch-provider' plugin with namespace 'couchprovider'?");
+		throw new Error("Have you installed the 'couch-provider' plugin with namespace 'clusterprovider'?");
 	}
 
 	couchUpdateViews.migrateUp(server.methods.clusterprovider.getCouchDBServer(), path.join(__dirname, 'views'), true);
@@ -128,7 +128,7 @@ module.exports = function (server, conf) {
 	handler.getJob = function(req, rep){
 		
 		server.methods.clusterprovider.getDocument(req.params.id)
-		.then(function(doc){			
+		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){

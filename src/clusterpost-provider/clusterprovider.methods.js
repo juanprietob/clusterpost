@@ -23,7 +23,7 @@ module.exports = function (server, conf) {
 
 	const validateJobOwnership = function(doc, credentials){
 		return new Promise(function(resolve, reject){
-			if(doc.userEmail === credentials.email || credentials.scope.indexOf('admin') || (credentials.executionserver && credentials.executionserver === doc.executionserver)){
+			if(doc.userEmail === credentials.email || credentials.scope.indexOf('admin') >= 0 || (credentials.scope.indexOf("executionserver") >= 0)){
 				resolve(doc);
 			}else{
 				reject(Boom.unauthorized("You are not allowed to access this job document!"));
