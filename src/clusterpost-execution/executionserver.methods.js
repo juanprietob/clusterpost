@@ -16,10 +16,10 @@ module.exports = function (conf) {
 	    agentOptions.ca = fs.readFileSync(conf.tls.cert);
 	}
 
-	var token;
+	var auth = {};
 
 	if(conf.token){
-		token = "Bearer " + conf.token;
+		auth.bearer = conf.token;
 	}
 
 	var handler = {};
@@ -42,9 +42,7 @@ module.exports = function (conf) {
 	                method: 'PUT', 
 	                json : doc, 
 	                agentOptions: agentOptions,
-            		headers: { 
-            			"Authorization": token
-            		}
+	                auth: auth
 	            };
 	            
 	            request(options, function(err, res, body){
@@ -65,9 +63,7 @@ module.exports = function (conf) {
 				var options = {
 					uri: handler.getDataProvider() + "/" + id, 
 	                agentOptions: agentOptions,
-            		headers: { 
-            			"Authorization": token
-            		}
+	                auth: auth
 				}
 				request(options, function(err, res, body){
 					if(err){
@@ -128,9 +124,9 @@ module.exports = function (conf) {
 				var options = {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + encodeURIComponent(name),
 					method: 'PUT',
+					auth: auth,
 					headers: {
-						"Content-Type": "application/octet-stream",
-						"Authorization": token
+						"Content-Type": "application/octet-stream"
 					}, 
 	                agentOptions: agentOptions
 				}
@@ -182,9 +178,7 @@ module.exports = function (conf) {
 				var options = {
 					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name, 
 	                agentOptions: agentOptions,
-            		headers: { 
-            			"Authorization": token
-            		}
+            		auth: auth
 				}
 
 				var filepath = path.join(cwd, input.name);
