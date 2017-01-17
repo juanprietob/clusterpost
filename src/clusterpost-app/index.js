@@ -130,7 +130,7 @@ loginprom
                             
                             if(deletejobs){
                                 console.log("Deleting job");
-                                //return clusterpost.deleteJob(job._id);
+                                return clusterpost.deleteJob(job._id);
                             }
                         });
                     }else{
@@ -143,7 +143,7 @@ loginprom
                             }
                             if(deletejobs){
                                 console.log("Deleting job");
-                                //return clusterpost.deleteJob(job._id);
+                                return clusterpost.deleteJob(job._id);
                             }
                         });
                     }
