@@ -252,7 +252,7 @@ var getJobs = function(executable, jobstatus, email){
         }
 
         if(email){
-            params.email = email;
+            params.userEmail = email;
         }
 
         var options = {
