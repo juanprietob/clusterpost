@@ -225,7 +225,10 @@ module.exports = function (server, conf) {
 		var jobstatus = req.query.jobstatus;
 		var executable = req.query.executable;
 
-		if(jobstatus){
+		if(jobstatus && executable){
+			var key = [email, jobstatus, executable];
+			view = '_design/searchJob/_view/useremailjobstatusexecutable?include_docs=true&key=' + JSON.stringify(key);
+		}else if(jobstatus){
 			var key = [email, jobstatus];
 			view = '_design/searchJob/_view/useremailjobstatus?include_docs=true&key=' + JSON.stringify(key);
 		}else if(executable){

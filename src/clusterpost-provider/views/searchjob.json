@@ -16,6 +16,9 @@
         },
         "executable": {
             "map": "function(doc) {\n\tif(doc.type === 'job'){\n\t\t  emit(doc.executable, doc.userEmail);\n\t}\n}"
+        },
+        "useremailjobstatusexecutable": {
+            "map": "function(doc) {\n\tif(doc.type === 'job' && doc.jobstatus && doc.jobstatus.status){\n\t\t  emit([doc.userEmail, doc.jobstatus.status, doc.executable], doc._id);\n\t}\n}"
         }
     }
 }
