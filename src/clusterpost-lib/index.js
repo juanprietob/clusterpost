@@ -511,8 +511,10 @@ var createAndSubmitJob = function(job, files){
 }
 
 var mkdirp = function(outputdir){
+
+    var pathparse = path.parse(outputdir);
     var allpatharray = outputdir.split(path.sep);
-    var currentpath = '';
+    currentpath = pathparse.root;
     _.each(allpatharray, function(p){
         currentpath = path.join(currentpath, p);
         try{
@@ -536,12 +538,13 @@ var getJobOutputs = function(job, outputdir){
         var name = output.name;
         if(output.type === "tar.gz" && name === "./"){
             name = job._id + ".tar.gz";
+        }else if(output.type === "tar.gz" && path.parse(name).ext !== ".tar.gz"){
+            name = output.name + ".tar.gz";
         }
         if(outputdir){
-            
-            mkdirp(outputdir);
-            
             var filename = path.join(outputdir, name);
+            console.log("Downloading file:", filename)
+            mkdirp(path.parse(filename).dir);//Creates directories in case the file is stored as path form
             return getDocumentAttachmentSave(job._id, name, filename);
         }else{
             return getDocumentAttachment(job._id, name);
