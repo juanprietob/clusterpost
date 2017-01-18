@@ -4,6 +4,7 @@ var Promise = require('bluebird');
 var argv = require('minimist')(process.argv.slice(2));
 const os = require('os');
 const fs = require('fs');
+const prompt = require('prompt');
 
 
 var agentoptions = {
@@ -19,8 +20,7 @@ const getConfigFile = function () {
             // Try to load the user's personal configuration file
             var conf = path.join(os.homedir(), '.clusterpost.json');
             resolve(require(conf));
-        } catch (e) {
-            console.log(e)
+        } catch (e) {            
             reject(e);
         }
     });
@@ -29,9 +29,7 @@ const getConfigFile = function () {
 const help = function(){
     console.error("Help: Download tasks from the server.");
     console.error("Required parameters when login for first time:");
-    console.error("--server url, set the server url. ex., https://some.server:8180");
-    console.error("-u username");
-    console.error("-p password");
+    console.error("--server url, set the server url. ex., https://some.server:8180");    
     console.error("\nOptional parameters:");
     console.error("--dir  Output directory, default: ./out");
     console.error("--status one of [DONE, RUN, FAIL, EXIT, UPLOADING, CREATE], if this flag is provided, the job information will only be printed. By default, the behavior is status 'DONE' and download the results.");
@@ -48,7 +46,7 @@ if(argv["h"] || argv["help"]){
 var writeConfFile = function(conf){
     var confpath = path.join(os.homedir(), '.clusterpost.json');
     console.log("Writting configuration file with server information and token to:", confpath);
-    console.log("You won't need to type the login information next time.");
+    console.log("You won't need to type the server information next time.");
     console.log("If you have authentication problems in the future, please delete this file and type the login information again.");
 
     fs.writeFileSync(confpath, JSON.stringify(conf));
@@ -58,21 +56,42 @@ var login = function(user){
     return clusterpost.userLogin(user);
 }
 
+var getUsernamePassword = function(){
+    return new Promise(function(resolve, reject){
+        var schema = {
+            properties: {
+                email: {
+                    pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                    message: 'Email address',
+                    required: true
+                },
+                password: {                    
+                    hidden: true,
+                    required: true
+                }
+            }
+        };
+        prompt.start();
+        prompt.get(schema, function (err, result) {
+            resolve(result);
+        });
+    });
+}
+
 var loginprom = undefined;
-if(argv["server"] && argv["u"] && argv["p"]){
+if(argv["server"]){
 
     var conf = {};
     conf.server = argv["server"];
 
     clusterpost.setClusterPostServer(conf.server);
 
-    var user = {};
-    user.email = argv["u"];
-    user.password = argv["p"];
-
-    loginprom = login(user)
+    loginprom = 
+    getUsernamePassword()
+    .then(function(user){
+        return login(user);
+    })
     .then(function(res){
-
         conf.token = res.token;
         writeConfFile(conf);
     });
@@ -116,10 +135,10 @@ loginprom
     if(!status){
         if(!jobid){
             return clusterpost.getJobs(executable, "DONE", userEmai)
-            .then(function(jobs){
-                console.log(jobs);
+            .then(function(jobs){                
                 return Promise.map(jobs, function(job){
-                    if(job.outputdir){
+                    console.log(JSON.stringify(job, null, 2));
+                    if(job.outputdir){                        
                         return clusterpost.getJobOutputs(job, job.outputdir)
                         .then(function(){
                             if(job.name){
@@ -163,9 +182,15 @@ loginprom
             return clusterpost.getDocument(jobid)
             .then(function(job){
                 if(job.outputdir){
-                    return clusterpost.getJobOutputs(job, path.join(job.outputdir, jobid));
+                    return clusterpost.getJobOutputs(job, job.outputdir);
                 }else{
-                    return clusterpost.getJobOutputs(job, path.join(outputdir, jobid));
+                    var joboutputdir = undefined;
+                    if(job.name){
+                        joboutputdir = path.join(outputdir, job.name);
+                    }else{
+                        joboutputdir = path.join(outputdir, job._id);
+                    }
+                    return clusterpost.getJobOutputs(job, joboutputdir);
                 }
             })
             .then(function(){

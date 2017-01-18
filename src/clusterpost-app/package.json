@@ -24,6 +24,7 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "clusterpost-lib": "^1.0.3",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "prompt": "^1.0.0"
   }
 }
