@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Performs tasks in your desktop. Retrieve finished jobs. ",
   "main": "index.js",
   "scripts": {
