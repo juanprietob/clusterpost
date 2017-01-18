@@ -134,7 +134,14 @@ loginprom
                             }
                         });
                     }else{
-                        return clusterpost.getJobOutputs(job, path.join(outputdir, job._id))
+                        var joboutputdir = undefined;
+                        if(job.name){
+                            joboutputdir = path.join(outputdir, job.name);
+                        }else{
+                            joboutputdir = path.join(outputdir, job._id);
+                        }
+                        
+                        return clusterpost.getJobOutputs(job, joboutputdir)
                         .then(function(){
                             if(job.name){
                                 console.log(job.name, "downloaded...");
