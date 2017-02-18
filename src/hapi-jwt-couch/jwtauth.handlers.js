@@ -52,11 +52,13 @@ module.exports = function (server, conf) {
 
 	var handler = {};
 
-	const sign = function(user, maxAge){
+	const sign = function(user, algorithm){
 		var token = {};
-		var algo = conf.algorithm;
-		if(maxAge){
-			algo.expiresIn = maxAge;
+		var algo;
+		if(algorithm){
+			algo = algorithm;
+		}else{
+			algo = conf.algorithm;
 		}
 		token.token = jwt.sign(user, conf.privateKey, algo );
 		return token;
