@@ -231,7 +231,7 @@ module.exports = function (server, conf) {
 
 	const retrieveQueueJobs = function(){
 		var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('QUEUE');
-
+		console.log("Retrieve jobs in QUEUE");
 	    return server.methods.clusterprovider.getView(view)
 	    .then(function(docs){
 	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToSubmitQueue);
@@ -265,5 +265,8 @@ module.exports = function (server, conf) {
 		Promise.all([retrieveQueueJobs(), retrieveRunningJobs()])
 		.catch(console.error);
 	});
+
+	//Run once the retrieveQueueJobs() when starting the server
+	retrieveQueueJobs()
 
 }
