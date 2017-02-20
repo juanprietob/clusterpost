@@ -296,7 +296,7 @@ var getDocumentAttachmentSave = function(id, name, filename){
 
     return new Promise(function(resolve, reject){
         var options = {
-            url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
+            url : getClusterPostServer() + "/dataprovider/" + id + "/" + encodeURIComponent(name),
             method: "GET",
             agentOptions: clusterpost.agentOptions,
             auth: clusterpost.auth
