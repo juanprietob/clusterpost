@@ -5,6 +5,22 @@ exports.register = function (server, conf, next) {
   var path = require('path');
   var Boom = require('Boom');
 
+  _.each(conf.links, function(dir, key){
+
+    var currentpath = path.join(__dirname, key);
+
+    try{
+      fs.statSync(currentpath);
+    }catch(e){
+      try{
+        fs.linkSync(dir, currentpath);
+      }catch(e){
+        console.error(e);
+      }
+    }
+    
+  })
+
   server.route({
     path: '/dataprovider-fs/{path*}',
     method: 'GET',
