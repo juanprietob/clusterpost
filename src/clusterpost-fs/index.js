@@ -3,7 +3,7 @@ exports.register = function (server, conf, next) {
   var _ = require('underscore');
   var fs = require('fs');
   var path = require('path');
-  var Boom = require('Boom');
+  var Boom = require('boom');
 
   _.each(conf.links, function(dir, key){
 
