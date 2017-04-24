@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-fs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Serves a local filesystem using a route ",
   "main": "index.js",
   "scripts": {
