@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-lib",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Library implementing the API of clusterpost-server application",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "bluebird": "^3.4.1",
     "clusterpost-model": "^1.1.3",
     "joi": "^9.0.0",
+    "prompt": "^1.0.0",
     "request": "^2.73.0",
     "underscore": "^1.8.3"
   }

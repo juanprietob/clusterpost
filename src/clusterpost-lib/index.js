@@ -7,6 +7,7 @@ var _ = require('underscore');
 var Joi = require('joi');
 var clustermodel = require("clusterpost-model");
 var qs = require('querystring');
+var prompt = require('prompt');
 
 var clusterpost = {};
 
@@ -66,6 +67,32 @@ var userLogin = function(user){
             }else{
                 clusterpost.auth.bearer = body.token
                 resolve(body);
+            }
+        });
+    });
+}
+
+var getUsernamePassword = function(){
+    return new Promise(function(resolve, reject){
+        var schema = {
+            properties: {
+                email: {
+                    pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                    message: 'Email address',
+                    required: true
+                },
+                password: {                    
+                    hidden: true,
+                    required: true
+                }
+            }
+        };
+        prompt.start();
+        prompt.get(schema, function (err, result) {
+            if(err){
+                reject(err)
+            }else{
+                resolve(result);
             }
         });
     });
@@ -558,6 +585,7 @@ exports.getClusterPostServer = getClusterPostServer;
 exports.setAgentOptions = setAgentOptions;
 exports.createUser  =   createUser;
 exports.userLogin   =   userLogin;
+exports.getUsernamePassword = getUsernamePassword;
 exports.getUserToken = getUserToken
 exports.setUserToken = setUserToken
 exports.getUser =   getUser;
