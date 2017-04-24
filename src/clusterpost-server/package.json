@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-server",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "description": "Server side application using REST api. Create/post 'job' document describing task and input data, run tasks on remote computing grids and retrive outputs. All process is done automatically.",
   "main": "index.js",
   "dependencies": {
