@@ -99,7 +99,16 @@ var getUsernamePassword = function(){
 }
 
 var setUserToken = function(token){
-    clusterpost.auth.bearer = token;
+    if(_.isObject(token)){
+        if(token.token){
+            clusterpost.auth.bearer = token.token;
+        }else{
+            console.error("setUserToken: ", JSON.stringify(token));
+            throw "Invalid token set for auth mechanism, must be an object {'token': 'someAuthToken'}";
+        }
+    }else{
+        clusterpost.auth.bearer = token;
+    }
 }
 
 var getUserToken = function(){
@@ -111,7 +120,8 @@ var getUser = function(){
         var options = {
             url: getClusterPostServer() + "/auth/user",
             method: 'GET',
-            auth: clusterpost.auth
+            auth: clusterpost.auth,
+            agentOptions: clusterpost.agentOptions
         }
 
         request(options, function(err, res, body){
@@ -129,7 +139,8 @@ var getUsers = function(){
         var options = {
             url: getClusterPostServer() + "/auth/users",
             method: 'GET',
-            auth: clusterpost.auth
+            auth: clusterpost.auth,
+            agentOptions: clusterpost.agentOptions
         }
 
         request(options, function(err, res, body){
@@ -149,7 +160,8 @@ var updateUser = function(userinfo){
             url: getClusterPostServer() + "/auth/user",
             method: 'PUT',
             json: userinfo,
-            auth: clusterpost.auth
+            auth: clusterpost.auth,
+            agentOptions: clusterpost.agentOptions
         }
 
         request(options, function(err, res, body){
