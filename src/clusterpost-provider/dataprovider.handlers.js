@@ -113,7 +113,8 @@ module.exports = function (server, conf) {
 				}else{ //The next case is for the dataprovider-fs
 					return {
 						uri: att.remote.uri,
-						passThrough: true
+						passThrough: true,
+						rejectUnauthorized: false
 					};
 				}
 			}else{
