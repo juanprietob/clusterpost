@@ -15,7 +15,10 @@ module.exports = function (server, conf) {
 	const startExecutionServers = function(){
 		return Promise.map(_.keys(conf.executionservers), function(eskey){
 			return new Promise(function(resolve, reject){
-				var token = server.methods.jwtauth.sign({ executionserver: eskey });
+				var token = server.methods.jwtauth.sign({ executionserver: eskey }, { 
+                                "algorithm": "HS256",
+                                "expiresIn": "356d"
+                });
 				var filename = path.join(os.tmpdir(), "." + eskey);
 				fs.writeFile(filename, JSON.stringify(token), function(err){
 					if(err){
