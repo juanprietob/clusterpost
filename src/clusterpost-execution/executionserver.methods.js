@@ -2,25 +2,21 @@
 module.exports = function (conf) {
 
 	var fs = require('fs');
-	var request = require('request');
 	var Promise = require('bluebird');
 	var _ = require("underscore");
 	var path = require("path");
 	var tarGzip = require('node-targz');
 	var Joi = require('joi');
 	var clustermodel = require('clusterpost-model');
+	var clusterpost = require('clusterpost-lib');
 
-	var agentOptions = {};
-
-	if(conf.tls && conf.tls.cert){
-	    agentOptions.ca = fs.readFileSync(conf.tls.cert);
+	var agentOptions = {
+		rejectUnauthorized: false
 	}
 
-	var auth = {};
-
-	if(conf.token){
-		auth.bearer = conf.token;
-	}
+	clusterpost.setClusterPostServer(conf.uri);
+	clusterpost.setAgentOptions(agentOptions);
+	clusterpost.setUserToken(conf.token);
 
 	var handler = {};
 
@@ -34,50 +30,16 @@ module.exports = function (conf) {
 
 
 	handler.uploadDocumentDataProvider = function(doc){
-
-        return new Promise(function(resolve, reject){
-        	try{
-        		var options = { 
-	                uri: handler.getDataProvider(),
-	                method: 'PUT', 
-	                json : doc, 
-	                agentOptions: agentOptions,
-	                auth: auth
-	            };
-	            
-	            request(options, function(err, res, body){
-	                if(err) resolve(err);
-	                resolve(body);
-	            });
-        	}catch(e){
-        		reject(e);
-        	}
-            
-        });
+		return clusterpost.updateDocument(doc);
 	}
 
 	handler.getDocument = function(id){
 		Joi.assert(id, Joi.string().alphanum());
-		return new Promise(function(resolve, reject){
-			try{
-				var options = {
-					uri: handler.getDataProvider() + "/" + id, 
-	                agentOptions: agentOptions,
-	                auth: auth
-				}
-				request(options, function(err, res, body){
-					if(err){
-						reject(err);
-					}else{
-						var job = JSON.parse(body);
-						Joi.assert(job, clustermodel.job);
-						resolve(job);
-					}
-				});
-			}catch(e){
-				reject(e);
-			}
-			
+
+		return clusterpost.getDocument(id)
+		.then(function(job){
+			Joi.assert(job, clustermodel.job);
+			return job;
 		});
 	}
 
@@ -117,95 +79,21 @@ module.exports = function (conf) {
 	handler.addDocumentAttachment = function(doc, name, path){
 		Joi.assert(doc._id, Joi.string().alphanum());
 		Joi.assert(name, Joi.string());
-		
-		return new Promise(function(resolve, reject){
-			try{
 
-				var options = {
-					uri: handler.getDataProvider() + "/" + doc._id + "/" + encodeURIComponent(name),
-					method: 'PUT',
-					auth: auth,
-					headers: {
-						"Content-Type": "application/octet-stream"
-					}, 
-	                agentOptions: agentOptions
-				}
-
-				try{
-
-					var fstat = fs.statSync(path);
-					if(fstat){
-						var stream = fs.createReadStream(path);						
-						
-						stream.pipe(request(options, function(err, res, body){
-							if(err){
-								reject(err);
-							}else{
-								resolve(JSON.parse(body));
-							}
-						}));
-					}else{
-						reject({
-							"error": "File not found: " + path
-						})
-					}
-				}catch(e){
-					reject({
-						"error" : e
-					});
-				}
-				
-			}catch(e){
-				reject(e);
-			}
-		});
-		
+		return clusterpost.uploadFile(doc._id, path, name);
 	}
 	
 
 	handler.savePromise = function(doc, cwd, input){
 
-		return new Promise(function(resolve, reject){
-
-			if(doc._attachments && !doc._attachments[input.name]){
-				reject({					
-					"status" : false,
-					"error": "Document is missing attachment" + input.name
-				});
-			}
-
-			try{
-				var options = {
-					uri: handler.getDataProvider() + "/" + doc._id + "/" + input.name, 
-	                agentOptions: agentOptions,
-            		auth: auth
-				}
-
-				var filepath = path.join(cwd, input.name);
-
-				var writestream = fs.createWriteStream(filepath);
-
-				request(options).pipe(writestream);
-
-				writestream.on('finish', function(err){					
-					if(err){
-						reject({
-							"path" : filepath,
-							"status" : false,
-							"error": err
-						});
-					}else{
-						resolve({
-							"path" : filepath,
-							"status" : true
-						});
-					}
-				});
-
-			}catch(e){
-				reject(e);
-			}
-		});
+		if(doc._attachments && !doc._attachments[input.name]){
+			return Promise.reject({					
+				"status" : false,
+				"error": "Document is missing attachment" + input.name
+			});
+		}else{
+			return clusterpost.getDocumentAttachmentSave(doc._id, input.name, path.join(cwd, input.name));
+		}
 	}
 
 	handler.getAllDocumentInputs = function(doc, cwd){

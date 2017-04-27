@@ -1,7 +1,5 @@
 {
-	"dataprovider":{
-		"hostname": "https://localhost:8180/dataprovider"
-	},
+	"uri": "https://localhost:8180",
 	"engine" : "engine_unix", 
 	"storagedir" : "./clusterpost_storage", 
 	"tls": {

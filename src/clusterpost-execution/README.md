@@ -13,7 +13,9 @@ This installation step generated a conf.json file and index.js
 
 ## Configuration
 
-Edit conf.js with a local path to store the data in the local machine and the IP of the machine running the clusterpost-server application. 
+Edit conf.js with a local path to store the data in the local machine and the URL of the machine running the clusterpost-server application -> https://youripaddress:8180
+
+2.1 For versions previous to v1.1.0
 
 If you configured the clusterpost-server with an SSL certificate, you will need a copy of the certificate.
 
@@ -25,4 +27,4 @@ To retrieve the certificate from the server running clusterpost-server
 
 Where localhost:8180 must be changed by the IP address running clusterpost-server.
 
-Change the path to the certificate accordingly. 
+Change the path to the certificate accordingly in the configuration file

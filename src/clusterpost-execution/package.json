@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-execution",
-  "version": "1.0.19",
+  "version": "1.1.0",
   "description": "Download data from the data provider to the local disk. Submit tasks to the job manager. Check if the task has finished and upload the results back to the data provider",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
     "joi": "^7.3.0",
     "minimist": "^1.2.0",
     "node-targz": "0.0.3",
-    "request": "^2.69.0",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "clusterpost-lib": "^1.1.0"
   },
   "repository": {
     "type": "git",
