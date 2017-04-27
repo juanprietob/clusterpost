@@ -258,7 +258,7 @@ var createDocument = function(job){
 }
 
 var getDocument = function(id){
-
+    Joi.assert(id, Joi.string().alphanum());
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + id,
@@ -274,6 +274,29 @@ var getDocument = function(id){
                 resolve(JSON.parse(body));
             }
         });
+    });
+}
+
+var updateDocument = function(doc){
+    Joi.assert(doc, clustermodel.job);
+    return new Promise(function(resolve, reject){
+        try{
+            var options = { 
+                uri: getClusterPostServer() + "/dataprovider",
+                method: 'PUT', 
+                json : doc, 
+                agentOptions: clusterpost.agentOptions,
+                auth: clusterpost.auth
+            };
+            
+            request(options, function(err, res, body){
+                if(err) resolve(err);
+                resolve(body);
+            });
+        }catch(e){
+            reject(e);
+        }
+        
     });
 }
 
@@ -312,7 +335,8 @@ var getJobs = function(executable, jobstatus, email){
 }
 
 var getDocumentAttachment = function(id, name){
-
+    Joi.assert(id, Joi.string().alphanum())
+    Joi.assert(name, Joi.string())
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + id + "/" + name,
@@ -331,31 +355,52 @@ var getDocumentAttachment = function(id, name){
     });
 }
 
+/*
+*   Download an attachment from the DB
+*   
+*/
 var getDocumentAttachmentSave = function(id, name, filename){
-
+    Joi.assert(id, Joi.string().alphanum())
+    Joi.assert(name, Joi.string())
+    Joi.assert(filename, Joi.string())
     return new Promise(function(resolve, reject){
-        var options = {
-            url : getClusterPostServer() + "/dataprovider/" + id + "/" + encodeURIComponent(name),
-            method: "GET",
-            agentOptions: clusterpost.agentOptions,
-            auth: clusterpost.auth
-        }
 
-        var write = fs.createWriteStream(filename);
-        request(options).pipe(write);
+        try{
 
-        write.on('finish', function(err){
-            if(err){
-                reject(err);
-            }else{
-                resolve(filename);
+            var options = {
+                url : getClusterPostServer() + "/dataprovider/" + id + "/" + encodeURIComponent(name),
+                method: "GET",
+                agentOptions: clusterpost.agentOptions,
+                auth: clusterpost.auth
             }
-        });
+
+            var writestream = fs.createWriteStream(filename);
+            request(options).pipe(writestream);
+
+            writestream.on('finish', function(err){                 
+                if(err){
+                    reject({
+                        "path" : filename,
+                        "status" : false,
+                        "error": err
+                    });
+                }else{
+                    resolve({
+                        "path" : filename,
+                        "status" : true
+                    });
+                }
+            });
+
+        }catch(e){
+            reject(e);
+        }
     });
 }
 
 var getDownloadToken = function(id, name){
-
+    Joi.assert(id, Joi.string().alphanum())
+    Joi.assert(name, Joi.string())
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/download/" + id + "/" + name,
@@ -375,7 +420,7 @@ var getDownloadToken = function(id, name){
 }
 
 var downloadAttachment = function(token){
-
+    Joi.assert(token, Joi.string())
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/download/" + token,
@@ -393,13 +438,26 @@ var downloadAttachment = function(token){
     });
 }
 
-var uploadFile = function(jobid, filename){
-
+/*
+*   Uploads a file to the database. 
+*   jobid is required
+*   filename is required
+*   name is optional. 
+*/
+var uploadFile = function(jobid, filename, name){
+    Joi.assert(jobid, Joi.string().alphanum())
+    Joi.assert(filename, Joi.string())
 	return new Promise(function(resolve, reject){
+
+        if(name === undefined){
+            name = path.basename(filename);
+        }else{
+            name = encodeURIComponent(name);
+        }
 
         try{
             var options = {
-                url : getClusterPostServer() + "/dataprovider/" + jobid + "/" + path.basename(filename),
+                url : getClusterPostServer() + "/dataprovider/" + jobid + "/" + name,
                 method: "PUT",
                 agentOptions: clusterpost.agentOptions,
                 headers: { 
@@ -408,16 +466,24 @@ var uploadFile = function(jobid, filename){
                 auth: clusterpost.auth
             }
 
-            var stream = fs.createReadStream(filename);
+            var fstat = fs.statSync(filename);
+            if(fstat){
 
-            stream.pipe(request(options, function(err, res, body){
-                    if(err){
-                        reject(err);
-                    }else{
-                        resolve(JSON.parse(body));
-                    }
+                var stream = fs.createReadStream(filename);
+
+                stream.pipe(request(options, function(err, res, body){
+                        if(err){
+                            reject(err);
+                        }else{
+                            resolve(JSON.parse(body));
+                        }
+                    })
+                );
+            }else{
+                reject({
+                    "error": "File not found: " + filename
                 })
-            );
+            }
         }catch(e){
             reject(e);
         }
@@ -435,6 +501,7 @@ var uploadFiles = function(jobid, filenames){
 }
 
 var executeJob = function(jobid, force){
+    Joi.assert(jobid, Joi.string().alphanum())
     return new Promise(function(resolve, reject){
         try{
             var options = {
@@ -461,6 +528,7 @@ var executeJob = function(jobid, force){
 }
 
 var updateJobStatus = function(jobid){
+    Joi.assert(jobid, Joi.string().alphanum())
     return new Promise(function(resolve, reject){
         try{
             var options = {
@@ -484,6 +552,7 @@ var updateJobStatus = function(jobid){
 }
 
 var killJob = function(jobid){
+    Joi.assert(jobid, Joi.string().alphanum())
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/executionserver/" + jobid,
@@ -503,6 +572,7 @@ var killJob = function(jobid){
 }
 
 var deleteJob = function(jobid){
+    Joi.assert(jobid, Joi.string().alphanum())
     return new Promise(function(resolve, reject){
         var options = {
             url : getClusterPostServer() + "/dataprovider/" + jobid,
@@ -608,7 +678,9 @@ exports.deleteUsers  =   deleteUsers;
 exports.getExecutionServers =   getExecutionServers;
 exports.createDocument  =   createDocument;
 exports.getDocument =   getDocument;
+exports.updateDocument =   updateDocument;
 exports.getDocumentAttachment   =   getDocumentAttachment;
+exports.getDocumentAttachmentSave = getDocumentAttachmentSave;
 exports.getJobs = getJobs;
 exports.getJobOutputs = getJobOutputs;
 exports.getDownloadToken    =   getDownloadToken;
