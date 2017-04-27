@@ -202,9 +202,7 @@ module.exports = function (server, conf) {
             },
 			handler: handlers.getDownloadToken,
 			validate: {
-			  	query: {
-			  		expires: Joi.any().optional()
-			  	},
+			  	query: false,
 			    params: {
 			    	id: Joi.string().alphanum().required(),
 			    	name: Joi.string().required()

@@ -155,12 +155,7 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 
 			var name = req.params.name;
-			var expires = "1m";
-			if(req.query.expires){
-				expires = req.query.expires;
-			}
-
-			rep(server.methods.jwtauth.sign({ _id: doc._id, name: name }, expires));
+			rep(server.methods.jwtauth.sign({ _id: doc._id, name: name }));
 			
 		})
 		.catch(function(e){
