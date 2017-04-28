@@ -210,6 +210,15 @@ module.exports = function (server, conf) {
 	    options: {}
 	});
 
+	const retrieveQueueJobs = function(){
+		var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('QUEUE');
+	    return server.methods.clusterprovider.getView(view)
+	    .then(function(docs){
+	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToSubmitQueue);
+	    })
+	    .catch(console.error);
+	}
+
 	const retrieveRunningJobs = function(){
 		var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('RUN');
 
@@ -223,24 +232,36 @@ module.exports = function (server, conf) {
 		});
 	}
 
-	server.method({
-	    name: 'cronprovider.retrieveRunningJobs',
-	    method: retrieveRunningJobs,
-	    options: {}
-	});
+	//Checks for stalled uploading tasks. 
+	const retrieveUploadingJobs = function(){
 
-	const retrieveQueueJobs = function(){
-		var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('QUEUE');
-		console.log("Retrieve jobs in QUEUE");
+		var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('UPLOADING');
 	    return server.methods.clusterprovider.getView(view)
 	    .then(function(docs){
-	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToSubmitQueue);
+	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToUpdateQueue);
 	    })
 	    .catch(console.error);
+		
 	}
+
+	const retrieveJobs = function(){
+		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs()])
+		.catch(console.error);
+	}
+
+	var cluster = server.methods.getCluster();
 	
-	
-	crontab.scheduleJob("*/1 * * * *", function(){
+	var workerid = 1;
+
+	if(cluster && cluster.worker){
+		//The worker id [between 1 - N]
+		workerid = cluster.worker.id;
+	}
+
+	//Every 5 minutes
+	crontime = "*/"+String(5*workerid)+" * * * *";
+	//This function is the one that runs and checks the different queues, it is done in sequence.
+	crontab.scheduleJob(crontime, function(){
 		submitJobs()
 		.then(function(){
 			return updateJobsStatus();
@@ -251,22 +272,15 @@ module.exports = function (server, conf) {
 		.catch(console.error);
 		
 	});
-
-	var cluster = server.methods.getCluster();
 	
-	var crontimemin = 10;
-
-	if(cluster && cluster.worker){
-		crontimemin *= cluster.worker.id;
-	}
-	var crontime = "*/"+crontimemin+" * * * *";
-
+	//Every 10 minutes
+	crontime = "*/"+String(10*workerid)+" * * * *";
+	//Retrieve the status of the jobs from the server
 	crontab.scheduleJob(crontime, function(){
-		Promise.all([retrieveQueueJobs(), retrieveRunningJobs()])
-		.catch(console.error);
+		retrieveJobs();
 	});
 
 	//Run once the retrieveQueueJobs() when starting the server
-	retrieveQueueJobs()
+	retrieveJobs();
 
 }

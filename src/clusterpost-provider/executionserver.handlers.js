@@ -67,18 +67,6 @@ module.exports = function (server, conf) {
 			.catch(function(err){
 				console.error(err);
 			});
-		})
-		.then(function(res){
-			console.log("Retrieving stalled uploading tasks...");
-
-			var view = "_design/searchJob/_view/jobstatus?key=" + JSON.stringify('UPLOADING');
-		    return server.methods.clusterprovider.getView(view)
-		    .then(function(docs){
-		    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToUpdateQueue);
-		    })
-		    .then(function(){
-		    	return res;
-		    });
 		});
 	}
 
