@@ -43,14 +43,19 @@ module.exports = function (conf) {
 		});
 	}
 
+	//Read all files in directory and return an array with all files
 	const getAllFiles = function(dir, files){		
-		fs.readdirSync(dir).forEach(function(file) {	 
-        	var current = path.join(dir, file);       	
-			var stat = fs.statSync(current);
-			if (stat && stat.isDirectory()) {
-				getAllFiles(current, files);
-			}else {
-			    files.push(current);
+		fs.readdirSync(dir).forEach(function(file){
+			try{
+				var current = path.join(dir, file);
+				var stat = fs.statSync(current);
+				if (stat && stat.isDirectory()) {
+					getAllFiles(current, files);
+				}else {
+				    files.push(current);
+				}
+			}catch(e){
+				console.error(e);
 			}
         });
 	}	
@@ -82,6 +87,15 @@ module.exports = function (conf) {
 
 		return clusterpost.uploadFile(doc._id, path, name);
 	}
+
+	handler.fileExists = function(cwd, input){
+		try{
+			fs.statSync(path.join(cwd, input.name));
+			return true;
+		}catch(e){
+			return false;
+		}
+	}
 	
 
 	handler.savePromise = function(doc, cwd, input){
@@ -96,6 +110,7 @@ module.exports = function (conf) {
 		}
 	}
 
+
 	handler.getAllDocumentInputs = function(doc, cwd){
 
 		var inputs = doc.inputs;
@@ -105,11 +120,13 @@ module.exports = function (conf) {
 		if(!inputs){
 			return Promise.all([]);
 		}
-
+		//Initialize download status to false
 		for(var i = 0; i < inputs.length; i++){
 			downloadstatus.push(false);
 		}
 
+		//Check for the jobstatus and downloadstatus part of the job
+		//They are organized the same way as the array initialize in the previous step
 		if(doc.jobstatus && doc.jobstatus.downloadstatus){
 			var ds = doc.jobstatus.downloadstatus;
 			for(var i = 0; i < ds.length; i++){
@@ -118,16 +135,18 @@ module.exports = function (conf) {
 				}
 			}
 		}
+
+		//If the download status is ok then don't download again. 
 		for(var i = 0; i < inputs.length; i++){
 			var input = inputs[i];
-			if(downloadstatus[i]){
+			if(downloadstatus[i] && handler.fileExists(cwd, input)){
 				alldownloads.push(downloadstatus[i]);
 			}else{				
 				alldownloads.push(handler.savePromise(doc, cwd, input)
-					.catch(function(e){
-						console.error(e);
-						return e;
-					}));
+				.catch(function(e){
+					console.error(e);
+					return e;
+				}));
 			}
 		}		
 		return Promise.all(alldownloads);
