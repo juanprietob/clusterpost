@@ -149,13 +149,9 @@ var getConfigFile = function () {
 var setConfigFile = function (config) {
   try {
     // Try to load the user's personal configuration file in the current directory
-    var configfilename = path.join(process.cwd(), configfilename);
-    fs.writeFileSync(configfilename, JSON.stringify(config));
-            
-    return require(conf);
+    fs.writeFileSync(path.join(process.cwd(), configfilename);, JSON.stringify(config));
   } catch (e) {
-    // Else, read the default configuration file
-    return null;
+    console.error(e);
   }
 };
 
