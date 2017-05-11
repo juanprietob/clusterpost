@@ -14,6 +14,7 @@ var joiconf = Joi.object().keys({
         uri: Joi.string().uri(),
         token: Joi.string()
     });
+var jws = require('jsonwebtoken');
 
 var clusterpost = {};
 
