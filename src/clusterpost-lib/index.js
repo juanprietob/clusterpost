@@ -8,6 +8,12 @@ var Joi = require('joi');
 var clustermodel = require("clusterpost-model");
 var qs = require('querystring');
 var prompt = require('prompt');
+var os = require('os');
+var configfilename = '.clusterpost-config.json'
+var joiconf = Joi.object().keys({
+        uri: Joi.string().uri(),
+        token: Joi.string()
+    });
 
 var clusterpost = {};
 
@@ -20,7 +26,11 @@ clusterpost.joiokres = Joi.object().keys({
 });
 
 var setClusterPostServer = function(uri){
-    clusterpost.uri = uri;
+    if(_.isObject(uri)){
+        _.extend(clusterpost, uri);
+    }else{
+        clusterpost.uri = uri;
+    }
 }
 
 var getClusterPostServer = function(){
@@ -73,6 +83,11 @@ var userLogin = function(user){
 }
 
 var getUsernamePassword = function(){
+    console.info("Please use promptUsernamePassword() instead, this function will be deprecated");
+    return promptUsernamePassword();
+}
+
+var promptUsernamePassword = function(){
     return new Promise(function(resolve, reject){
         var schema = {
             properties: {
@@ -96,6 +111,101 @@ var getUsernamePassword = function(){
             }
         });
     });
+}
+
+var promptClusterpostServer = function(){
+    return new Promise(function(resolve, reject){
+        var schema = {
+            properties: {
+                uri: {
+                    message: 'Please enter the clusterpost server uri',
+                    required: true
+                }
+            }
+        };
+        prompt.start();
+        prompt.get(schema, function (err, result) {
+            if(err){
+                reject(err)
+            }else{
+                resolve(result);
+            }
+        });
+    });
+}
+
+var getConfigFile = function () {
+  try {
+    // Try to load the user's personal configuration file in the current directory
+    var conf = require(path.join(process.cwd(), configfilename));
+    Joi.assert(conf, joiconf);
+    return conf;
+  } catch (e) {
+    // Else, read the default configuration file
+    return null;
+  }
+};
+
+var setConfigFile = function (config) {
+  try {
+    // Try to load the user's personal configuration file in the current directory
+    var configfilename = path.join(process.cwd(), configfilename);
+    fs.writeFileSync(configfilename, JSON.stringify(config));
+            
+    return require(conf);
+  } catch (e) {
+    // Else, read the default configuration file
+    return null;
+  }
+};
+
+var start = function(){
+    var config = getConfigFile();
+    if(config){
+        
+        setClusterPostServer(config.uri);
+        if(testUserToken(config)){
+            setUserToken(config);
+            return Promise.resolve();
+        }else{
+            return promptUsernamePassword()
+            .then(function(user){
+                return userLogin(user);
+            })
+            .then(function(token){
+                _.extend(token, {
+                    uri: getClusterPostServer()
+                });
+                setConfigFile(token);
+            });
+        }
+    }else{
+        return promptClusterpostServer()
+        .then(function(server){
+            setClusterPostServer(server);
+            return promptUsernamePassword()
+        })
+        .then(function(user){
+            return userLogin(user);
+        })
+        .then(function(token){
+            _.extend(token, {
+                uri: getClusterPostServer()
+            });
+            setConfigFile(token);
+        });
+    }
+}
+
+var testUserToken = function(token){
+    var jwt = jws.decode(token.token);
+
+    if(jwt.exp && jwt.exp < Date.now() / 1000){
+        return false;
+    }else if(jwt.exp === undefined){
+        console.log("WARNING! The token does not have an expiry date. Tokens without expiry date were deprecated. The clusterpost-server could be running an old version. Please contact the clusterpost-server administrator.");
+    }
+    return true;
 }
 
 var setUserToken = function(token){
@@ -668,6 +778,7 @@ exports.setAgentOptions = setAgentOptions;
 exports.createUser  =   createUser;
 exports.userLogin   =   userLogin;
 exports.getUsernamePassword = getUsernamePassword;
+exports.promptUsernamePassword = promptUsernamePassword;
 exports.getUserToken = getUserToken
 exports.setUserToken = setUserToken
 exports.getUser =   getUser;
