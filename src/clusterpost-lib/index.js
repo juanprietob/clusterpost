@@ -806,3 +806,4 @@ exports.updateJobStatus =   updateJobStatus;
 exports.killJob =   killJob;
 exports.deleteJob   =   deleteJob;
 exports.createAndSubmitJob  =   createAndSubmitJob;
+exports.start = start;
