@@ -149,7 +149,7 @@ var getConfigFile = function () {
 var setConfigFile = function (config) {
   try {
     // Try to load the user's personal configuration file in the current directory
-    fs.writeFileSync(path.join(process.cwd(), configfilename);, JSON.stringify(config));
+    fs.writeFileSync(path.join(process.cwd(), configfilename), JSON.stringify(config));
   } catch (e) {
     console.error(e);
   }
