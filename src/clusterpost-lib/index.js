@@ -601,8 +601,11 @@ var uploadFile = function(jobid, filename, name){
 	});
 }
 
-var uploadFiles = function(jobid, filenames){
-    return Promise.map(filenames, function(filename){
+var uploadFiles = function(jobid, filenames, names){
+    return Promise.map(filenames, function(filename, index){
+        if(names !== undefined){
+            return uploadFile(jobid, filename, names[index]);
+        }
         return uploadFile(jobid, filename);
     }, {concurrency: 1})
     .then(function(allupload){
@@ -710,7 +713,7 @@ var checkFiles = function(files){
     });
 }
 
-var createAndSubmitJob = function(job, files){
+var createAndSubmitJob = function(job, files, names){
     var jobid;
 
     return checkFiles(files)
@@ -719,7 +722,7 @@ var createAndSubmitJob = function(job, files){
     })
     .then(function(res){
         jobid = res.id;
-        return uploadFiles(jobid, files);
+        return uploadFiles(jobid, files, names);
     })
     .then(function(res){
         return executeJob(jobid);
