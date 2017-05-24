@@ -1,9 +1,8 @@
-
-exports.couchProvider = require('./couch.provider');
+const couchProvider = require('./couch.provider');
+exports.couchProvider = couchProvider;
 
 exports.register = function (server, conf, next) {
-
-	var couchProvider = exports.couchProvider;
+	
     couchProvider.setConfiguration(conf);
     var namespace = 'couchprovider';
 
