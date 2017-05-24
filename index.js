@@ -24,18 +24,18 @@ const startServer = function(cluster){
     
     var server = new Hapi.Server();
 
+    var tls;
     if(conf.tls && conf.tls.key && conf.tls.cert){
-        const tls = {
+        tls = {
           key: fs.readFileSync(conf.tls.key),
           cert: fs.readFileSync(conf.tls.cert)
         };
     }
-
     server.connection({ 
         host: conf.host,
         port: conf.port,
         tls: tls
-    });
+    });    
 
     var plugins = [];
 
@@ -79,8 +79,12 @@ const startServer = function(cluster){
     });
     
     server.start(function () {
-        server.log('info', 'Server running at: ' + server.info.uri);
+        server.connections.forEach(function(connection){
+            server.log('info', 'server is listening port: ' + connection.info.uri);
+        });
     });
+
+
 }
 
 if(env === 'production'){
@@ -89,7 +93,7 @@ if(env === 'production'){
 
     if (cluster.isMaster) {
       // Fork workers.
-      for (var i = 0; i < numCPUs; i++) {
+      for (var i = 0; i < 1; i++) {
         cluster.fork();
       }
 
@@ -104,4 +108,3 @@ if(env === 'production'){
 
     startServer();
 }
-
