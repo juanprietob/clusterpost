@@ -22,6 +22,9 @@ config(['$routeProvider', function($routeProvider) {
   .when('/users', {
     templateUrl: 'bower_components/users-manager/usersManager.template.html'
   })
+  .when('/component-size-rle', {
+    templateUrl: 'home/component-size-rle.html'
+  })
   .when('/notFound', {
     templateUrl: 'notFound.html'
   })

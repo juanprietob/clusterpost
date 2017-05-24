@@ -27,6 +27,7 @@
     "angular-smart-table": "^2.1.8",
     "angular-ui-bootstrap": "^2.2.0",
     "bootstrap": "^3.3.7",
+    "clusterpost-list": "^1.0.8",
     "jquery": "^3.1.1",
     "jwt-user-login": "^1.0.3",
     "ui-bootstrap": "^0.1.5",
