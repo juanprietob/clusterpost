@@ -52,7 +52,7 @@ exports.uploadDocuments = function(docs, codename){
 
     return new Promise(function(resolve, reject){
         var options = { 
-            uri: getCouchDBServer(codename) + "/_bulk_docs",
+            uri: exports.getCouchDBServer(codename) + "/_bulk_docs",
             method: 'POST', 
             json : alldocs
         };
@@ -75,7 +75,7 @@ exports.getDocument = function(id, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
-				uri: getCouchDBServer(codename) + "/" + id
+				uri: exports.getCouchDBServer(codename) + "/" + id
 			}
 			request(options, function(err, res, body){
 				if(err){
@@ -100,7 +100,7 @@ exports.deleteDocument = function(doc, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
-				uri: getCouchDBServer(codename) + "/" + doc._id + "?rev=" + doc._rev,
+				uri: exports.getCouchDBServer(codename) + "/" + doc._id + "?rev=" + doc._rev,
 				method: 'DELETE'
 			}				
 			request(options, function(err, res, body){
@@ -127,7 +127,7 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 
 		try{
 			var options = {
-				uri: getCouchDBServer(codename) + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
+				uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
 				method: 'PUT',
 				headers: {
 					"Content-type" : "application/octet-stream"
@@ -150,7 +150,7 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 
 exports.getDocumentURIAttachment = function(uri, codename){
 	return {
-		uri: getCouchDBServer(codename) + "/" + uri
+		uri: exports.getCouchDBServer(codename) + "/" + uri
 	};
 }
 
@@ -178,7 +178,7 @@ exports.getView = function(view, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
-				uri: getCouchDBServer(codename) + "/" + view
+				uri: exports.getCouchDBServer(codename) + "/" + view
 			}
 
 			request(options, function(err, res, body){					
