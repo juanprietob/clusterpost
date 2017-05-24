@@ -19,7 +19,7 @@ exports.register = function (server, conf, next) {
       }
     }
     
-  })
+  });
 
   server.route({
     path: '/dataprovider-fs/{path*}',

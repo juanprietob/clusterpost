@@ -356,6 +356,7 @@ var createDocument = function(job){
             if(err){
                 reject(err);
             }else if(res.statusCode !== 200){
+                console.error(err);
                 reject(body);
             }else{
                 resolve(body);
