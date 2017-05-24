@@ -1,13 +1,12 @@
 {
   "name": "couch-provider",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Provide the implementation for different request methos to couchdb server. It implements, POST, GET, DELETE, PUT methods for documents and views",
   "main": "index.js",
   "dependencies": {
     "request": "^2.69.0",
     "bluebird": "^3.3.0",
-    "underscore": "^1.8.3",
-    "boom": "^3.1.2"
+    "underscore": "^1.8.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
