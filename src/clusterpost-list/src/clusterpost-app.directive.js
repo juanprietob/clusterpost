@@ -3,7 +3,6 @@ angular.module('clusterpost-list')
 .directive('clusterpostApp', function($routeParams,$location, clusterpostService, $filter, $q, clusterauth){
 
 	function link($scope,$attrs){
-		
 
 		$scope.jobs = {
 			selectedJob: {}
@@ -167,17 +166,25 @@ angular.module('clusterpost-list')
 			$scope.appUser.selectedUser = user;
 			$scope.appUser.user = user;
 			if($scope.appUser.user.scope.indexOf('admin')){
-				clusterauth.getUsers()
+				return clusterauth.getUsers()
 				.then(function(users){
 					$scope.appUser.allUsers = users.data;
+					if($routeParams.adminCpUid){
+						$scope.appUser.selectedUser = _.find($scope.appUser.allUsers, function(user){
+							return user._id === $routeParams.adminCpUid;
+						});
+					}
+					return $scope.getDB();
 				});
+			}else{
+				return $scope.getDB();
 			}
-			return $scope.getDB();
 		})
 		.catch(console.error);
 
 		$scope.appUser.userChange = function(){
 			$scope.getDB();
+			$location.search('adminCpUid',$scope.appUser.selectedUser._id);
 		}
 
 		$scope.getJobName = function(job){
@@ -189,7 +196,13 @@ angular.module('clusterpost-list')
 		}
 
 		$scope.downloadAllJobs = function(){
+			if($scope.jobs.filteredJobs){
+				
+				var prom = _.map($scope.jobs.filteredJobs, $scope.downloadJob);
 
+				Promise.all(prom)
+				.catch(console.error);
+			}
 		}
 
 		$scope.downloadJob = function(job){
@@ -199,6 +212,8 @@ angular.module('clusterpost-list')
 				console.log("TODO");
 			}
 		}
+
+
 	}
 
 	return {

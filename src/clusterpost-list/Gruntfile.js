@@ -73,7 +73,10 @@ module.exports = function(grunt) {
                 }
             }
         },
-        clean: ['./dist/clusterpost-list.templates.js']   
+        clean: {
+            dev: ['./dist/clusterpost-list.templates.js'],
+            prod: ['./dist/clusterpost-list.templates.js', 'dist/clusterpost-list.min.js.map']
+        }   
     });
 
     //load grunt tasks
@@ -86,7 +89,7 @@ module.exports = function(grunt) {
 
 
     //register grunt default task
-    grunt.registerTask('default', [ 'ngtemplates', 'concat:prod', 'ngAnnotate', 'uglify:prod', 'cssmin', 'clean']);
+    grunt.registerTask('default', [ 'ngtemplates', 'concat:prod', 'ngAnnotate', 'uglify:prod', 'cssmin', 'clean:prod']);
     //register dev task
-    grunt.registerTask('dev', [ 'ngtemplates', 'concat:dev', 'ngAnnotate', 'uglify:dev', 'cssmin', 'clean']);
+    grunt.registerTask('dev', [ 'ngtemplates', 'concat:dev', 'ngAnnotate', 'uglify:dev', 'cssmin', 'clean:dev']);
 }
