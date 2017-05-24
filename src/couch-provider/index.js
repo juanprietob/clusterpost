@@ -1,4 +1,4 @@
-const couchProvider = require('./couch.provider');
+var couchProvider = require('./couch.provider');
 exports.couchProvider = couchProvider;
 
 exports.register = function (server, conf, next) {

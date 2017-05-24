@@ -1,11 +1,10 @@
 var request = require('request');
 var _ = require('underscore');
 var Promise = require('bluebird');
-var Boom = require('boom');
 
 var configuration;
 
-const setConfiguration = function(conf){
+exports.setConfiguration = function(conf){
 	if(!conf || !conf.default && !conf.hostname && !conf.database){
 		var confexample = {
 			"default": "codename",
@@ -20,7 +19,7 @@ const setConfiguration = function(conf){
 	configuration = conf;
 }
 
-const getCouchDBServer = function(codename){
+exports.getCouchDBServer = function(codename){
 
 	var couchserver;
 	if(codename){
@@ -32,7 +31,7 @@ const getCouchDBServer = function(codename){
 	}
 
 	if(!couchserver){
-		throw Boom.notFound("No couchdb server found in configuration", [codename, configuration]);
+		throw "No couchdb server found in configuration with " + codename;
 	}
 
 	var url = couchserver.hostname + "/" + couchserver.database;
@@ -41,7 +40,7 @@ const getCouchDBServer = function(codename){
 
 }
 
-const uploadDocuments = function(docs, codename){
+exports.uploadDocuments = function(docs, codename){
 	
 	var alldocs = {};
 
@@ -72,7 +71,7 @@ const uploadDocuments = function(docs, codename){
 }
 
 
-const getDocument = function(id, codename){
+exports.getDocument = function(id, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
@@ -84,7 +83,7 @@ const getDocument = function(id, codename){
 				}else{
 					var doc = JSON.parse(body);
 					if(doc.error){
-						reject(Boom.notFound(doc));
+						reject(doc.error);
 					}else{
 						resolve(doc);
 					}
@@ -97,7 +96,7 @@ const getDocument = function(id, codename){
 	});
 }
 
-const deleteDocument = function(doc, codename){
+exports.deleteDocument = function(doc, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
@@ -123,7 +122,7 @@ const deleteDocument = function(doc, codename){
 	});
 }
 
-const addDocumentAttachment = function(doc, name, stream, codename){
+exports.addDocumentAttachment = function(doc, name, stream, codename){
 	return new Promise(function(resolve, reject){
 
 		try{
@@ -149,14 +148,14 @@ const addDocumentAttachment = function(doc, name, stream, codename){
 }
 
 
-const getDocumentURIAttachment = function(uri, codename){
+exports.getDocumentURIAttachment = function(uri, codename){
 	return {
 		uri: getCouchDBServer(codename) + "/" + uri
 	};
 }
 
 
-const getDocumentAttachment = function(uri, codename){
+exports.getDocumentAttachment = function(uri, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = getDocumentURIAttachment(uri, codename);
@@ -175,7 +174,7 @@ const getDocumentAttachment = function(uri, codename){
 	
 }
 
-const getView = function(view, codename){
+exports.getView = function(view, codename){
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
@@ -195,14 +194,3 @@ const getView = function(view, codename){
 		}
 	})
 }
-
-exports.setConfiguration = setConfiguration;
-exports.getCouchDBServer = getCouchDBServer;
-exports.uploadDocuments = uploadDocuments;
-exports.getDocument = getDocument;
-exports.deleteDocument = deleteDocument;
-exports.addDocumentAttachment =  addDocumentAttachment;
-exports.getDocumentURIAttachment = getDocumentURIAttachment;
-exports.getDocumentAttachment = getDocumentAttachment;
-exports.getView = getView;
-
