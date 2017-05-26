@@ -725,7 +725,10 @@ var createAndSubmitJob = function(job, files, names){
             return uploadFiles(jobid, files, names);
         });
     }else{
-        prom = createDocument(job);
+        prom = createDocument(job)
+        .then(function(res){
+            jobid = res.id;
+        });
     }
     return prom
     .then(function(res){
