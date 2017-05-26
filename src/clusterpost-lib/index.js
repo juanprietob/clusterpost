@@ -714,14 +714,20 @@ var checkFiles = function(files){
 var createAndSubmitJob = function(job, files, names){
     var jobid;
 
-    return checkFiles(files)
-    .then(function(){
-        return createDocument(job);
-    })
-    .then(function(res){
-        jobid = res.id;
-        return uploadFiles(jobid, files, names);
-    })
+    var prom;
+    if(files){
+        prom = checkFiles(files)
+        .then(function(){
+            return createDocument(job);
+        })
+        .then(function(res){
+            jobid = res.id;
+            return uploadFiles(jobid, files, names);
+        });
+    }else{
+        prom = createDocument(job);
+    }
+    return prom
     .then(function(res){
         return executeJob(jobid);
     })
