@@ -93,10 +93,11 @@ angular.module('clusterpost-list')
       });
     },
     addAttachments: function(id, filenameArray, dataArray){
+      var service = this;
       var addAttachmentsRec = function(id, filenameArray, dataArray, index, resArray){
-        return addAttachment(id, filenameArray[index], dataArray[index])
+        return service.addAttachment(id, filenameArray[index], dataArray[index])
         .then(function (res) {
-          resarray.push(res);
+          resArray.push(res);
           index++;
           if(index < filenameArray.length && index < dataArray.length){            
             return addAttachmentsRec(id, filenameArray, dataArray, index, resArray);
@@ -131,14 +132,14 @@ angular.module('clusterpost-list')
        })
     },
     createAndSubmitJob: function(job, filenameArray, dataArray){
-      return this.createJob(job)
+      var service = this;
+      return service.createJob(job)
       .then(function(res){
         var doc = res.data;
         var job_id = doc.id;
-        return this.addAttachments(job_id, filenameArray, dataArray)
-        .then(function(res){
-          console.log(res);
-          // return submitJob(job_id);
+        return service.addAttachments(job_id, filenameArray, dataArray)
+        .then(function(res){          
+          return submitJob(job_id);
         });
       });
     }
