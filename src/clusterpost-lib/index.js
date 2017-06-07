@@ -712,8 +712,7 @@ var checkFiles = function(files){
 }
 
 var createAndSubmitJob = function(job, files, names){
-    var jobid;
-
+    var jobid;    
     var prom;
     if(files){
         prom = checkFiles(files)
@@ -769,6 +768,9 @@ var getJobOutputs = function(job, outputdir){
             name = job._id + ".tar.gz";
         }else if(output.type === "tar.gz" && path.parse(name).ext !== ".tar.gz"){
             name = output.name + ".tar.gz";
+        }
+        if(name.indexOf("./") === 0){
+            name = name.slice(2);
         }
         if(outputdir){
             var filename = path.join(outputdir, name);

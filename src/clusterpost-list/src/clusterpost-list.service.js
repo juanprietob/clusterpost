@@ -92,6 +92,20 @@ angular.module('clusterpost-list')
         
       });
     },
+    addAttachments: function(id, filenameArray, dataArray){
+      var addAttachmentsRec = function(id, filenameArray, dataArray, index, resArray){
+        return addAttachment(id, filenameArray[index], dataArray[index])
+        .then(function (res) {
+          resarray.push(res);
+          index++;
+          if(index < filenameArray.length && index < dataArray.length){            
+            return addAttachmentsRec(id, filenameArray, dataArray, index, resArray);
+          }
+          return resArray; 
+        })
+      }
+      return addAttachmentsRec(id, filenameArray, dataArray, 0, []);
+    },
     getJobUser: function(email, jobstatus, executable){
     	return $http({
         method: 'GET',
@@ -115,6 +129,18 @@ angular.module('clusterpost-list')
          method: 'DELETE',
          url: '/dataprovider/' + id
        })
+    },
+    createAndSubmitJob: function(job, filenameArray, dataArray){
+      return this.createJob(job)
+      .then(function(res){
+        var doc = res.data;
+        var job_id = doc.id;
+        return this.addAttachments(job_id, filenameArray, dataArray)
+        .then(function(res){
+          console.log(res);
+          // return submitJob(job_id);
+        });
+      });
     }
   }
 });
