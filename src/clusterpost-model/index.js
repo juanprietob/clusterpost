@@ -15,7 +15,10 @@ exports.input = Joi.object().keys({
   	remote : Joi.object().keys({
   		serverCodename: Joi.string().optional(),
   		uri: Joi.string()
-  	}).optional()
+  	}).optional(),
+  	local : Joi.object().keys({
+  		uri: Joi.string()
+  	})
 });
 
 exports.jobpost = Joi.object().keys({
