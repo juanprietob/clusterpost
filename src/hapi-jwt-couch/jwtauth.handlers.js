@@ -34,8 +34,8 @@ module.exports = function (server, conf) {
 	.then(function(){
 		return couchprovider.getView("_design/user/_view/scopes");
 	})
-	.then(function(res){
-		if(res.length === 0){
+	.then(function(res){		
+		if(res && res.length === 0){
 			console.log("Generating default scopes...");
 			return couchprovider.uploadDocuments({
 				type: 'scopes',
@@ -44,9 +44,9 @@ module.exports = function (server, conf) {
 			.then(function(){
 				console.log("Done!");
 			});
-		}
+		}		
 	})
-	.catch(function(err){
+	.catch(function(err){		
 		console.error(err);
 	});
 
