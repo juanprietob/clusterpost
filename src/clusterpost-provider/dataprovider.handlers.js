@@ -117,6 +117,8 @@ module.exports = function (server, conf) {
 						rejectUnauthorized: false
 					};
 				}
+			}else if(att.local){
+				return server.methods.clusterprovider.getDocumentURIAttachment(att.local.uri);
 			}else{
 				return server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name);
 			}

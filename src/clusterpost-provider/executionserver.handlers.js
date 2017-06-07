@@ -45,7 +45,7 @@ module.exports = function (server, conf) {
 					});
 
 					scp.on('close', function(code){
-						if(code !== 0 || allerror !== ''){
+						if(code != 0 && allerror !== ''){
 							reject(Boom.badImplementation(allerror));
 						}else{
 							resolve(filename);
