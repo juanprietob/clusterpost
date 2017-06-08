@@ -159,7 +159,8 @@ module.exports = function (server, conf) {
 			  	query: Joi.object().keys({
 			  		userEmail: Joi.string().email().optional(),
 			  		jobstatus: Joi.string().optional(),
-			  		executable: Joi.string().optional()
+			  		executable: Joi.string().optional(),
+			  		executionserver: Joi.string().optional()
 			  	}), 
 			  	params: false
 			},

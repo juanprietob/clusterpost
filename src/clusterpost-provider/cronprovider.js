@@ -16,6 +16,10 @@ module.exports = function (server, conf) {
 
 	var deletequeue = new LinkedList();
 
+	var killqueue = new LinkedList();
+
+	var qs = require('querystring');
+
 	const addJobToUpdateQueue = function(job){
 		return new Promise(function(resolve, reject){
 			try{
@@ -64,7 +68,7 @@ module.exports = function (server, conf) {
 
 	const addJobToDeleteQueue = function(job){
 		return new Promise(function(resolve, reject){
-			try{
+			try{				
 				deletequeue.push(job);
 				resolve(true);
 			}catch(e){
@@ -76,6 +80,23 @@ module.exports = function (server, conf) {
 	server.method({
 	    name: 'cronprovider.addJobToDeleteQueue',
 	    method: addJobToDeleteQueue,
+	    options: {}
+	});
+
+	const addJobToKillQueue = function(job){
+		return new Promise(function(resolve, reject){
+			try{
+				killqueue.push(job);
+				resolve(true);
+			}catch(e){
+				reject(e);
+			}
+		});
+	}
+
+	server.method({
+	    name: 'cronprovider.addJobToKillQueue',
+	    method: addJobToKillQueue,
 	    options: {}
 	});
 
@@ -174,9 +195,45 @@ module.exports = function (server, conf) {
 	    options: {}
 	});
 
-	const deleteJobs = function () {
+	const killJobs = function () {
 		
 		return new Promise(function(resolve, reject){
+			if(killqueue.length > 0){
+				var jobs = [];
+				
+				while (killqueue.length) {
+					jobs.push(killqueue.shift());
+				}
+
+				Promise.map(jobs, function(job){
+		    		return server.methods.executionserver.jobKill(job)
+		    		.catch(function(e){
+				    	console.error("Error while killing job", job._id, e);
+				    	return e;
+				    });
+		    	}, {
+		    		concurrency: 1
+		    	})
+		    	.then(resolve)
+			    .catch(function(e){
+			    	console.error(e);
+			    	reject(e);
+			    });
+			}else{
+				resolve(false);
+			}
+		});
+	}
+
+	server.method({
+	    name: 'cronprovider.killJobs',
+	    method: submitJobs,
+	    options: {}
+	});
+
+	const deleteJobs = function () {
+		
+		return new Promise(function(resolve, reject){			
 			if(deletequeue.length > 0){
 				var jobs = [];
 				
@@ -184,8 +241,16 @@ module.exports = function (server, conf) {
 					jobs.push(deletequeue.shift());
 				}
 
-				Promise.map(jobs, function(job){
+				Promise.map(jobs, function(job){					
 		    		return server.methods.executionserver.jobDelete(job)
+		    		.then(function(status){
+		    			return server.methods.clusterprovider.getDocument(job._id);
+		    		})
+		    		.then(function(doc){
+		    			return server.methods.clusterprovider.deleteDocument(doc)
+						.then(resolve)
+						.catch(reject);
+		    		})
 		    		.catch(function(e){
 				    	console.error("Error while deleting job", job._id, e);
 				    	return e;
@@ -244,8 +309,36 @@ module.exports = function (server, conf) {
 		
 	}
 
+	const retrieveDeleteJobs = function(){
+		var params = {
+			key: JSON.stringify('DELETE')
+		}
+
+		var view = "_design/searchJob/_view/jobstatus?" + qs.stringify(params);
+		
+	    return server.methods.clusterprovider.getView(view)
+	    .then(function(docs){
+	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToDeleteQueue);
+	    })
+	    .catch(console.error);
+	}
+
+	const retrieveKillJobs = function(){
+		var params = {
+			key: JSON.stringify('KILL')
+		}
+
+		var view = "_design/searchJob/_view/jobstatus?" + qs.stringify(params);
+		
+	    return server.methods.clusterprovider.getView(view)
+	    .then(function(docs){
+	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToKillQueue);
+	    })
+	    .catch(console.error);
+	}
+
 	const retrieveJobs = function(){
-		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs()])
+		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveDeleteJobs(), retrieveKillJobs()])
 		.catch(console.error);
 	}
 
@@ -258,13 +351,16 @@ module.exports = function (server, conf) {
 		workerid = cluster.worker.id;
 	}
 
-	//Every 5 minutes
-	crontime = "*/"+String(5*workerid)+" * * * *";
+	//Every 1 minute(s)
+	crontime = "*/"+String(1*workerid)+" * * * *";
 	//This function is the one that runs and checks the different queues, it is done in sequence.
 	crontab.scheduleJob(crontime, function(){
 		submitJobs()
 		.then(function(){
 			return updateJobsStatus();
+		})
+		.then(function(){			
+			return killJobs();
 		})
 		.then(function(){
 			return deleteJobs();

@@ -31,26 +31,28 @@ module.exports = function (server, conf) {
 			.then(function(filename){
 				return new Promise(function(resolve, reject){
 					var executionserver = conf.executionservers[eskey];
-					var destination = path.join(executionserver.sourcedir, ".token");
+					if(!executionserver.remote){
+						var destination = path.join(executionserver.sourcedir, ".token");
 					
-					const scp = spawn('scp', ['-i', executionserver.identityfile, filename, executionserver.user + "@" + executionserver.hostname + ":" + destination ]);
-					var alldata = "";
-					scp.stdout.on('data', function(data){
-						alldata += data;
-					});
+						const scp = spawn('scp', ['-i', executionserver.identityfile, filename, executionserver.user + "@" + executionserver.hostname + ":" + destination ]);
+						var alldata = "";
+						scp.stdout.on('data', function(data){
+							alldata += data;
+						});
 
-					var allerror = "";
-					scp.stderr.on('data', function(data){
-						allerror += data;
-					});
+						var allerror = "";
+						scp.stderr.on('data', function(data){
+							allerror += data;
+						});
 
-					scp.on('close', function(code){
-						if(code != 0 && allerror !== ''){
-							reject(Boom.badImplementation(allerror));
-						}else{
-							resolve(filename);
-						}
-					});
+						scp.on('close', function(code){
+							if(code != 0 && allerror !== ''){
+								reject(Boom.badImplementation(allerror));
+							}else{
+								resolve(filename);
+							}
+						});
+					}
 				});
 			})
 			.then(function(filename){
@@ -102,46 +104,54 @@ module.exports = function (server, conf) {
 
 
 	const submitJob = function(doc){
+		var executionserver = conf.executionservers[doc.executionserver];
+		if(!executionserver){
+			return Promise.reject("No execution server configured", doc.executionserver);			
+		}
+		if(executionserver.remote){
+			return Promise.resolve(true);
+		}
 		return new Promise(function(resolve, reject){
-			var executionserver = conf.executionservers[doc.executionserver];
-			if(!executionserver){
-				throw Boom.notFound("The server " + doc.executionserver + " is not configured.");
-			}
 
-			var params = ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--submit"];
+			try{
+				var params = ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--submit"];
 
-			if(doc.force){
-				params.push("-f");
-			}
-
-			const submitjob = spawn('ssh', params);
-
-			var alldata = "";
-			submitjob.stdout.on('data', function(data){
-				alldata += data;
-			});
-
-			var allerror = "";
-			submitjob.stderr.on('data', function(data){
-				allerror += data;
-			});
-
-			submitjob.on('close', function(code){
-				if(code !== 0 || allerror !== ''){
-					console.error(allerror);
-					console.log(alldata);
-					reject(Boom.badImplementation(allerror));
-				}else{
-					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
-				    server.methods.clusterprovider.getView(view)
-				    .then(function(docs){				    	
-				    	resolve(_.pluck(docs, "value")[0]);
-				    })
-				    .catch(function(e){
-				    	reject(Boom.badImplementation(e));
-				    });
+				if(doc.force){
+					params.push("-f");
 				}
-			});
+
+				const submitjob = spawn('ssh', params);
+
+				var alldata = "";
+				submitjob.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				var allerror = "";
+				submitjob.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				submitjob.on('close', function(code){
+					if(code !== 0 || allerror !== ''){
+						console.error(allerror);
+						console.log(alldata);
+						reject(Boom.badImplementation(allerror));
+					}else{
+						var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
+					    server.methods.clusterprovider.getView(view)
+					    .then(function(docs){				    	
+					    	resolve(_.pluck(docs, "value")[0]);
+					    })
+					    .catch(function(e){
+					    	reject(Boom.badImplementation(e));
+					    });
+					}
+				});
+			}catch(e){
+				reject(e);
+			}
+			
 		});
 	}
 
@@ -176,54 +186,17 @@ module.exports = function (server, conf) {
 		});
 	}
 
-	handler.killJob = function(req, rep){
-		server.methods.clusterprovider.getDocument(req.params.id)
-		.then(function(doc){
-			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
-		})
-		.then(function(doc){
-			var executionserver = conf.executionservers[doc.executionserver];
-			if(!executionserver){
-				throw Boom.notFound("The server " + doc.executionserver + " is not configured.");
-			}
-
-			const killjob = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", req.params.id, "--kill"]);
-
-			var alldata = "";
-			killjob.stdout.on('data', function(data){
-				alldata += data;
-			});
-
-			var allerror = "";
-			killjob.stderr.on('data', function(data){
-				allerror += data;
-			});
-
-			killjob.on('close', function(code){
-				if(code !== 0 || allerror !== ''){
-					console.error(allerror);
-					console.log(alldata);
-				}
-				var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
-			    server.methods.clusterprovider.getView(view)
-			    .then(function(docs){				    	
-			    	rep(_.pluck(docs, "value")[0]);
-			    })
-			    .catch(function(e){
-			    	rep(Boom.badImplementation(e));
-			    });
-			});
-
-		}).catch(function(e){
-			rep(Boom.badImplementation(e));
-		});
-	}
-
 
 	const jobStatus = function(doc){
-		return new Promise(function(resolve, reject){
+		var executionserver = conf.executionservers[doc.executionserver];
+		if(!executionserver){
+			return Promise.reject("No execution server configured", doc.executionserver);			
+		}
+		if(executionserver.remote){
+			return Promise.resolve(true);
+		}
+		return new Promise(function(resolve, reject){			
 			try{
-				var executionserver = conf.executionservers[doc.executionserver];
 				const jobstatus = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--status"]);
 				
 				var alldata = "";
@@ -251,6 +224,7 @@ module.exports = function (server, conf) {
 			}catch(e){
 				reject(e);
 			}
+			
 		});
 	}
 
@@ -282,10 +256,90 @@ module.exports = function (server, conf) {
 		
 	}
 
+	const jobKill = function(doc){
+		var executionserver = conf.executionservers[doc.executionserver];
+		
+		if(!executionserver){
+			return Promise.reject("No execution server configured", doc.executionserver);			
+		}
+		if(executionserver.remote){
+			return Promise.resolve(true);
+		}
+
+		return new Promise(function(resolve, reject){						
+			try{					
+				const jobstatus = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--kill"]);
+				
+				var alldata = "";
+				jobstatus.stdout.on('data', function(data){
+					alldata += data;
+				});
+
+				var allerror = "";
+				jobstatus.stderr.on('data', function(data){
+					allerror += data;
+				});
+
+				jobstatus.on('close', function(code){
+					if(allerror !== ""){
+						alldata += allerror;
+					}
+					var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
+				    server.methods.clusterprovider.getView(view)
+				    .then(function(docs){				    	
+				    	resolve(_.pluck(docs, "value")[0]);
+				    })
+				    .catch(reject);
+				});
+				
+			}catch(e){
+				reject(e);
+			}
+			
+		});
+	}
+
+	server.method({
+	    name: 'executionserver.jobKill',
+	    method: jobKill,
+	    options: {}
+	});
+	
+
+	handler.killJob = function(req, rep){
+		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
+			doc.jobstatus.status = "KILL";
+			return server.methods.clusterprovider.uploadDocuments(doc)
+			.then(function(uploadstatus){
+				return server.methods.cronprovider.addJobToKillQueue(doc);
+			})
+			.then(function(){
+				return doc.jobstatus
+			});
+		})
+		.then(function(res){
+			rep(res);
+		})
+		.catch(function(e){
+			rep(Boom.badImplementation(e));
+		});
+	}
+
 	const jobDelete = function(doc){
+		var executionserver = conf.executionservers[doc.executionserver];
+		if(!executionserver){
+			return Promise.reject("No execution server configured", doc.executionserver);			
+		}
+		if(executionserver.remote){
+			return Promise.resolve(true);
+		}
 		return new Promise(function(resolve, reject){
 			try{
-				var executionserver = conf.executionservers[doc.executionserver];
+
 				const jobdelete = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--delete"]);
 
 				var alldata = "";
@@ -302,7 +356,14 @@ module.exports = function (server, conf) {
 					if(allerror !== ""){
 						reject(Boom.badImplementation(allerror));
 					}else{
-						resolve(alldata);
+						var view = "_design/getJob/_view/status?key=" + JSON.stringify(doc._id);
+					    server.methods.clusterprovider.getView(view)
+					    .then(function(docs){				    	
+					    	resolve(_.pluck(docs, "value")[0]);
+					    })
+					    .catch(function(e){
+					    	reject(Boom.badImplementation(e));
+					    });
 					}
 				});
 			}catch(e){

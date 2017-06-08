@@ -196,10 +196,17 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			return server.methods.cronprovider.addJobToDeleteQueue(doc)
+			doc.jobstatus.status = "DELETE";
+			return server.methods.clusterprovider.uploadDocuments(doc)
+			.then(function(uploadstatus){			
+				
+				doc._rev = uploadstatus[0].rev;
+				
+				return server.methods.cronprovider.addJobToDeleteQueue(doc);			
+			})
 			.then(function(){
-				return server.methods.clusterprovider.deleteDocument(doc);
-			});
+				return doc.jobstatus
+			});;
 		})
 		.then(rep)
 		.catch(function(e){
@@ -222,6 +229,8 @@ module.exports = function (server, conf) {
 		
 		var jobstatus = req.query.jobstatus;
 		var executable = req.query.executable;
+		var executionserver = req.query.executionserver;
+		var view;
 
 		if(jobstatus && executable){
 			var key = [email, jobstatus, executable];
@@ -232,6 +241,12 @@ module.exports = function (server, conf) {
 		}else if(executable){
 			var key = [email, executable];
 			view = '_design/searchJob/_view/useremailexecutable?include_docs=true&key=' + JSON.stringify(key);
+		}else if(executionserver){
+			var key = {
+				key: JSON.stringify([executionserver, jobstatus]),
+				include_docs: true
+			}
+		    view = '_design/searchJob/_view/executionserverjobstatus?' + qs.stringify(key);
 		}else{
 			view = '_design/searchJob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}
