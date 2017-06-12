@@ -43,6 +43,10 @@ module.exports = function (conf) {
 		});
 	}
 
+	handler.deleteDocument = function(doc){
+		return clusterpost.deleteJob(doc._id);
+	}
+
 	//Read all files in directory and return an array with all files
 	const getAllFiles = function(dir, files){		
 		fs.readdirSync(dir).forEach(function(file){
@@ -311,6 +315,36 @@ module.exports = function (conf) {
 			return true;
 	    }
 	    return false;
+	}
+
+	//One of
+	//'CREATE', 'QUEUE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'
+	handler.getJobsStatus = function(status){
+		if(conf.executionserver){
+			return clusterpost.getExecutionServerJobs(conf.executionserver, status);
+		}else{
+			return Promise.reject("No executionserver in configuration.", JSON.stringify(conf), "Set the codename for the executionserver as 'executionserver: servername'");
+		}
+	}
+
+	handler.getJobsQueue = function(){
+		return handler.getJobsStatus("QUEUE")
+	}
+
+	handler.getJobsRun = function(){
+		return handler.getJobsStatus("RUN");
+	}
+
+	handler.getJobsUploading = function(){
+		return handler.getJobsStatus("UPLOADING");
+	}
+
+	handler.getJobsKill = function(){
+		return handler.getJobsStatus("KILL");
+	}
+
+	handler.getJobsDelete = function(){
+		return clusterpost.getDeleteQueue();
 	}
 
 	return handler;
