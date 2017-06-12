@@ -4,7 +4,7 @@ module.exports = function(doc, conf){
     var executionmethods = require('./executionserver.methods')(conf);
     var clusterengine = require("./" + conf.engine)(conf);
 
-    if(doc.jobstatus && doc.jobstatus.status === "RUN" && doc.jobstatus.status !== "DONE"){
+    if(doc.jobstatus && (doc.jobstatus.status === "RUN" || doc.jobstatus.status === "KILL")){
 
         return clusterengine.killJob(doc)
         .then(function(status){

@@ -194,7 +194,7 @@ module.exports = function (conf) {
 
 				kill.on('close', function(code){
 					resolve({
-						status: 'KILL',
+						status: 'EXIT',
 						stat: allerror + alldata
 					});
 				});

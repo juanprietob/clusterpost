@@ -168,7 +168,7 @@ module.exports = function (conf) {
 						stat+= allerror;
 					}
 					resolve({
-						status: 'KILL',
+						status: 'EXIT',
 						stat: stat
 					});
 				});
