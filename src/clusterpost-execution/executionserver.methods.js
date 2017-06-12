@@ -103,8 +103,11 @@ module.exports = function (conf) {
 	
 
 	handler.savePromise = function(doc, cwd, input){
+		var inp = _.find(doc.inputs, function(inp){
+			return inp.name === input.name;
+		});
 
-		if(doc._attachments && !doc._attachments[input.name]){
+		if(!inp || (doc._attachments && !doc._attachments[input.name] && !inp.remote && !inp.local)){
 			return Promise.reject({					
 				"status" : false,
 				"error": "Document is missing attachment" + input.name
