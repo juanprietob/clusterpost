@@ -142,6 +142,12 @@ angular.module('clusterpost-list')
           return submitJob(job_id);
         });
       });
+    },
+    getExecutionServerTokens: function(){
+      return $http({
+         method: 'GET',
+         url: '/executionserver/tokens'
+       })
     }
   }
 });

@@ -15,6 +15,7 @@ module.exports = function(grunt) {
             './src/clusterpost-list.service.js',
             './src/clusterpost-list.directive.js',
             './src/clusterpost-app.directive.js',
+            './src/clusterpost-es-admin.directive.js',
             './dist/clusterpost-list.templates.js'
             ]
         },
