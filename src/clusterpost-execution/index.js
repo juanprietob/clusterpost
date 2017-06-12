@@ -3,7 +3,7 @@ var _ = require('underscore');
 var argv = require('minimist')(process.argv.slice(2));
 var path = require('path');
 var fs = require('fs');
-
+var Promise = require('bluebird');
 
 var submit = argv["submit"];
 var jobid = argv["j"];
@@ -15,6 +15,8 @@ var kill = argv["kill"];
 
 var jobdelete = argv["delete"];
 
+var remote = argv["remote"];
+
 var help = function(){
     console.error("help: To execute the program you must specify the job id. ")
     console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
@@ -25,9 +27,10 @@ var help = function(){
     console.error("--status  	get job status");
     console.error("--kill  		kill job");
     console.error("--delete  	delete job");
+    console.error("--remote     retrieve existing");
 }
 
-if(!jobid || !submit && !status && !kill && !jobdelete){
+if(!remote && (!jobid || !submit && !status && !kill && !jobdelete)){
     help();
     process.exit(1);
 }
@@ -60,35 +63,91 @@ try{
 var executionmethods = require(path.join(__dirname, 'executionserver.methods'))(conf);
 var clusterengine = require(path.join(__dirname, conf.engine))(conf);
 
-if(jobdelete){
-	try{
-		require(path.join(__dirname, "jobdelete"))(jobid, conf);
-        console.log("Deleted: ", jobid);
-		process.exit();
-	}catch(e){
-        console.error(e);
-        process.exit(1);
+
+if(remote){
+
+    var crontab = require('node-crontab');
+    var jobId = crontab.scheduleJob("*/1 * * * *", function(){         
+        executionmethods.getJobsQueue()
+        .then(function(jobs){
+            console.log("jobsubmit", jobs);
+            return Promise.map(jobs, function(doc){
+                return require(path.join(__dirname, "jobsubmit"))(doc, null, conf);
+            }, 
+            {
+                concurrency: 1
+            });
+        })
+        .then(function(){
+            return Promise.all([executionmethods.getJobsUploading(), executionmethods.getJobsRun()])
+        })
+        .then(function(jobs){            
+            jobs = _.flatten(jobs);
+            console.log("jobstatus", jobs);
+            return Promise.map(jobs, function(doc){
+                return require(path.join(__dirname, "jobstatus"))(doc, conf);
+            },
+            {
+                concurrency: 1
+            });
+        })
+        .then(function(){
+            return executionmethods.getJobsKill()
+        })
+        .then(function(jobs){
+            console.log("jobkill", jobs);
+            return Promise.map(jobs, function(doc){                
+                return require(path.join(__dirname, "jobkill"))(doc, conf);
+            },
+            {
+                concurrency: 1
+            });
+        })
+        .then(function(){
+            return executionmethods.getJobsDelete();
+        })
+        .then(function(jobs){
+            jobs = _.flatten(jobs);
+            console.log("jobdelete", jobs);
+            return Promise.map(jobs, function(doc){
+                return require(path.join(__dirname, "jobdelete"))(doc._id, conf, doc);
+            },
+            {
+                concurrency: 1
+            });
+        })
+        .catch(function(error){
+            console.error(error);
+            process.exit(1);
+        });
+    });
+
+}else{
+
+    if(jobdelete){            
+        require(path.join(__dirname, "jobdelete"))(jobid, conf);
+    }else{
+        executionmethods.getDocument(jobid)
+        .then(function(doc){ 
+
+            if(submit){
+                return require(path.join(__dirname, "jobsubmit"))(doc, force, conf);
+            }else if(status){
+                return require(path.join(__dirname, "jobstatus"))(doc, conf);
+            }else if(kill){
+                return require(path.join(__dirname, "jobkill"))(doc, conf);
+            }
+            
+        })
+        .then(function(res){
+            console.log(res);
+            process.exit();
+        })
+        .catch(function(error){
+            console.error(error);
+            process.exit(1);
+        });
     }
+
+    
 }
-
-executionmethods.getDocument(jobid)
-.then(function(doc){ 
-
-	if(submit){
-		return require(path.join(__dirname, "jobsubmit"))(doc, force, conf);
-	}else if(status){
-		return require(path.join(__dirname, "jobstatus"))(doc, conf);
-	}else if(kill){
-		return require(path.join(__dirname, "jobkill"))(doc, conf);
-	}
-    
-    
-})
-.then(function(res){
-    console.log(res);
-    process.exit();
-})
-.catch(function(error){
-    console.error(error);
-    process.exit(1);
-});
