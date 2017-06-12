@@ -5,6 +5,7 @@ var Boom = require('boom');
 var spawn = require('child_process').spawn;
 var couchUpdateViews = require('couch-update-views');
 var path = require('path');
+var qs = require('querystring');
 
 module.exports = function (server, conf) {
 	
@@ -186,6 +187,19 @@ module.exports = function (server, conf) {
 		
 	}
 
+	const jobDelete = function(doc){
+		return server.methods.clusterprovider.getDocument(doc._id)
+		.then(function(doc){
+			return server.methods.clusterprovider.deleteDocument(doc);
+		});
+	}
+
+	server.method({
+	    name: 'dataprovider.jobDelete',
+	    method: jobDelete,
+	    options: {}
+	});
+
 	handler.deleteJob = function(req, rep){
 
 		server.methods.clusterprovider.getDocument(req.params.id)
@@ -196,23 +210,19 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			doc.jobstatus.status = "DELETE";
-			return server.methods.clusterprovider.uploadDocuments(doc)
-			.then(function(uploadstatus){			
-				
-				doc._rev = uploadstatus[0].rev;
-				
-				return server.methods.cronprovider.addJobToDeleteQueue(doc);			
-			})
-			.then(function(){
-				return doc.jobstatus
-			});;
+			//The job is added to the delete queue. The actual deleation is done in the dataprovider.jobDelete function
+			//After the job is deleted in the executionserver side, the deletion is done there.
+			//The call to these functions is done in the cronprovider that manages the queues
+			return server.methods.cronprovider.addJobToDeleteQueue(doc);
+			
 		})
 		.then(rep)
 		.catch(function(e){
 			rep(Boom.wrap(e));
 		});
 	}
+
+
 
 	/*
 	*/
@@ -235,7 +245,7 @@ module.exports = function (server, conf) {
 		if(jobstatus && executable){
 			var key = [email, jobstatus, executable];
 			view = '_design/searchJob/_view/useremailjobstatusexecutable?include_docs=true&key=' + JSON.stringify(key);
-		}else if(jobstatus){
+		}else if(jobstatus && email){
 			var key = [email, jobstatus];
 			view = '_design/searchJob/_view/useremailjobstatus?include_docs=true&key=' + JSON.stringify(key);
 		}else if(executable){
@@ -246,7 +256,7 @@ module.exports = function (server, conf) {
 				key: JSON.stringify([executionserver, jobstatus]),
 				include_docs: true
 			}
-		    view = '_design/searchJob/_view/executionserverjobstatus?' + qs.stringify(key);
+		    view = '_design/searchJob/_view/executionserverjobstatus?' + qs.stringify(key);		    
 		}else{
 			view = '_design/searchJob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}

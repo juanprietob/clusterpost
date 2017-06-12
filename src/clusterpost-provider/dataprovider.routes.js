@@ -152,7 +152,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
                 strategy: 'token',
-                scope: ['clusterpost']
+                scope: ['clusterpost', 'executionserver']
             },
 			handler: handlers.getUserJobs,
 			validate: {

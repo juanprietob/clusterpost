@@ -11,6 +11,8 @@ module.exports = function (server, conf) {
 	
 
 	var handler = {};
+	var LinkedList = require('linkedlist');
+	var remotedeletequeue = new LinkedList();
 
 	const startExecutionServers = function(){
 		return Promise.map(_.keys(conf.executionservers), function(eskey){
@@ -264,8 +266,7 @@ module.exports = function (server, conf) {
 		}
 		if(executionserver.remote){
 			return Promise.resolve(true);
-		}
-
+		}		
 		return new Promise(function(resolve, reject){						
 			try{					
 				const jobstatus = spawn('ssh', ['-q', '-i', executionserver.identityfile, executionserver.user + "@" + executionserver.hostname, "node", executionserver.sourcedir + "/index.js", "-j", doc._id, "--kill"]);
@@ -279,7 +280,7 @@ module.exports = function (server, conf) {
 				jobstatus.stderr.on('data', function(data){
 					allerror += data;
 				});
-
+				console.log("killing")
 				jobstatus.on('close', function(code){
 					if(allerror !== ""){
 						alldata += allerror;
@@ -335,6 +336,7 @@ module.exports = function (server, conf) {
 			return Promise.reject("No execution server configured", doc.executionserver);			
 		}
 		if(executionserver.remote){
+			remotedeletequeue.push(doc);
 			return Promise.resolve(true);
 		}
 		return new Promise(function(resolve, reject){
@@ -378,6 +380,15 @@ module.exports = function (server, conf) {
 	    method: jobDelete,
 	    options: {}
 	});
+
+	handler.getDeleteQueue = function(req, rep){		
+
+		var remotedeletejobs = [];		
+		while (remotedeletequeue.length) {
+			remotedeletejobs.push(remotedeletequeue.shift());
+		}		
+		rep(remotedeletejobs);
+	}
 
 	return handler;
 

@@ -2,6 +2,7 @@ module.exports = function (server, conf) {
 
 	var handlers = require('./executionserver.handlers')(server, conf);
 	var Joi = require('joi');
+	var clustermodel = require('clusterpost-model');
 	
 
 	server.route({
@@ -82,6 +83,27 @@ module.exports = function (server, conf) {
 				payload: false
 			},
 			description: 'Update job status'
+		}
+	});
+
+	server.route({
+		method: 'GET',
+		path: "/executionserver/deletequeue",
+		config: {
+			auth: {
+				strategy: 'token',
+				scope: ['clusterpost', 'executionserver']
+			},
+			handler: handlers.getDeleteQueue,
+			validate:{
+				params: false,
+				query: false,
+				payload: false
+			},
+			response: {
+				schema: Joi.array().items(clustermodel.job)
+			},
+			description: 'Get delete queue for remote execution server'
 		}
 	});
 }

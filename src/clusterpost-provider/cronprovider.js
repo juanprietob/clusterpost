@@ -203,8 +203,7 @@ module.exports = function (server, conf) {
 				
 				while (killqueue.length) {
 					jobs.push(killqueue.shift());
-				}
-
+				}				
 				Promise.map(jobs, function(job){
 		    		return server.methods.executionserver.jobKill(job)
 		    		.catch(function(e){
@@ -243,13 +242,8 @@ module.exports = function (server, conf) {
 
 				Promise.map(jobs, function(job){					
 		    		return server.methods.executionserver.jobDelete(job)
-		    		.then(function(status){
-		    			return server.methods.clusterprovider.getDocument(job._id);
-		    		})
-		    		.then(function(doc){
-		    			return server.methods.clusterprovider.deleteDocument(doc)
-						.then(resolve)
-						.catch(reject);
+		    		.then(function(){
+		    			return server.methods.dataprovider.jobDelete(job);
 		    		})
 		    		.catch(function(e){
 				    	console.error("Error while deleting job", job._id, e);
@@ -309,20 +303,6 @@ module.exports = function (server, conf) {
 		
 	}
 
-	const retrieveDeleteJobs = function(){
-		var params = {
-			key: JSON.stringify('DELETE')
-		}
-
-		var view = "_design/searchJob/_view/jobstatus?" + qs.stringify(params);
-		
-	    return server.methods.clusterprovider.getView(view)
-	    .then(function(docs){
-	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToDeleteQueue);
-	    })
-	    .catch(console.error);
-	}
-
 	const retrieveKillJobs = function(){
 		var params = {
 			key: JSON.stringify('KILL')
@@ -338,7 +318,7 @@ module.exports = function (server, conf) {
 	}
 
 	const retrieveJobs = function(){
-		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveDeleteJobs(), retrieveKillJobs()])
+		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveKillJobs()])
 		.catch(console.error);
 	}
 
