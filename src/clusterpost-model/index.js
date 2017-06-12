@@ -18,7 +18,7 @@ exports.input = Joi.object().keys({
   	}).optional(),
   	local : Joi.object().keys({
   		uri: Joi.string()
-  	})
+  	}).optional()
 });
 
 exports.jobpost = Joi.object().keys({
