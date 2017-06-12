@@ -390,6 +390,26 @@ module.exports = function (server, conf) {
 		rep(remotedeletejobs);
 	}
 
+	handler.getExecutionServerTokens = function(req, rep){
+
+
+		var tokens = _.map(conf.executionservers, function(es, eskey){
+			if(es.remote){
+				var token = server.methods.jwtauth.sign({ executionserver: eskey }, { 
+                    "algorithm": "HS256",
+                    "expiresIn": "356d"
+                });
+
+				token.executionserver = eskey;
+                return token;
+			}
+			return null;
+		});
+		
+		rep(_.compact(tokens));
+
+	}
+
 	return handler;
 
 }

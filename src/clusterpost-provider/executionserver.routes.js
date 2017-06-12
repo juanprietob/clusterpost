@@ -106,5 +106,29 @@ module.exports = function (server, conf) {
 			description: 'Get delete queue for remote execution server'
 		}
 	});
+
+	server.route({
+		method: 'GET',
+		path: "/executionserver/tokens",
+		config: {
+			auth: {
+				strategy: 'token',
+				scope: ['admin']
+			},
+			handler: handlers.getExecutionServerTokens,
+			validate:{
+				params: false,
+				query: false,
+				payload: false
+			},
+			response: {
+				schema: Joi.array().items(Joi.object().keys({
+					executionserver: Joi.string(),
+					token: Joi.string()
+				}))
+			},
+			description: 'Get tokens for the remote execution servers'
+		}
+	});
 }
 
