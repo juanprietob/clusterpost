@@ -139,7 +139,7 @@ angular.module('clusterpost-list')
         var job_id = doc.id;
         return service.addAttachments(job_id, filenameArray, dataArray)
         .then(function(res){          
-          return submitJob(job_id);
+          return service.submitJob(job_id);
         });
       });
     },
