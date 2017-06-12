@@ -408,23 +408,8 @@ var updateDocument = function(doc){
     });
 }
 
-var getJobs = function(executable, jobstatus, email){
+var getUserJobs = function(params){
     return new Promise(function(resolve, reject){
-
-        var params = {};
-
-        if(executable){
-            params.executable = executable;
-        }
-
-        if(jobstatus){
-            params.jobstatus = jobstatus;
-        }
-
-        if(email){
-            params.userEmail = email;
-        }
-
         var options = {
             url : getClusterPostServer() + "/dataprovider/user?" + qs.stringify(params),
             method: "GET",
@@ -440,6 +425,42 @@ var getJobs = function(executable, jobstatus, email){
             }
         });
     });
+}
+
+var getJobs = function(executable, jobstatus, email){
+
+    var params = {};
+
+    if(executable){
+        params.executable = executable;
+    }
+
+    if(jobstatus){
+        params.jobstatus = jobstatus;
+    }
+
+    if(email){
+        params.userEmail = email;
+    }
+
+    return getUserJobs(params);
+    
+}
+
+var getExecutionServerJobs = function(executionserver, jobstatus){
+
+    var params = {};
+
+    if(executionserver){
+        params.executionserver = executionserver;
+    }
+
+    if(jobstatus){
+        params.jobstatus = jobstatus;
+    }        
+
+    return getUserJobs(params);
+    
 }
 
 var getDocumentAttachment = function(id, name){
@@ -783,6 +804,24 @@ var getJobOutputs = function(job, outputdir){
     });
 }
 
+var getDeleteQueue = function(){
+    return new Promise(function(resolve, reject){
+        var options = {
+            url : getClusterPostServer() + "/executionserver/deletequeue",
+            method: "GET",
+            agentOptions: clusterpost.agentOptions,
+            auth: clusterpost.auth
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(JSON.parse(body));
+            }
+        });
+    });
+}
 
 exports.setClusterPostServer = setClusterPostServer;
 exports.getClusterPostServer = getClusterPostServer;
@@ -804,7 +843,10 @@ exports.getDocument =   getDocument;
 exports.updateDocument =   updateDocument;
 exports.getDocumentAttachment   =   getDocumentAttachment;
 exports.getDocumentAttachmentSave = getDocumentAttachmentSave;
+exports.getUserJobs = getUserJobs;
 exports.getJobs = getJobs;
+exports.getDeleteQueue = getDeleteQueue;
+exports.getExecutionServerJobs = getExecutionServerJobs
 exports.getJobOutputs = getJobOutputs;
 exports.getDownloadToken    =   getDownloadToken;
 exports.downloadAttachment  =   downloadAttachment;
