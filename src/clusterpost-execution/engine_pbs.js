@@ -79,6 +79,7 @@ module.exports = function (conf) {
 			script += "#PBS " + preamble + "\n";
 			script += "####  End PBS preamble\n";
 
+			script += 'if [ -n "$PBS_O_WORKDIR" ]; then cd $PBS_O_WORKDIR; fi'
 
 			script += doc.executable;
 
