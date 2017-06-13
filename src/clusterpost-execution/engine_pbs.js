@@ -89,10 +89,11 @@ module.exports = function (conf) {
 				}).join(" ");
 			}
 			
-			fs.writeFileSync(path.join(cwd, scriptfilename), script);
+			var scriptpath = path.join(cwd, scriptfilename);
+			fs.writeFileSync(scriptpath, script);
 
 			try{
-				const runcommand = spawn(command, ["script.pbs"]);
+				const runcommand = spawn(command, [scriptpath]);
 
 				var allerror = "";
 				runcommand.stderr.on('data', function(data){
