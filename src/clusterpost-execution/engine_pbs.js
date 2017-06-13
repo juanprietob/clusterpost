@@ -10,8 +10,21 @@ module.exports = function (conf) {
 
 	var executionmethods = require('./executionserver.methods')(conf);
 	var clustermodel = require('clusterpost-model');
+	var parseString = require('xml2js').parseString;
 
 	var handler = {};
+
+	const getXmlJs = function(xml){
+		return new Promise(function(resolve, reject){			
+			parseString(xml, function(err, result){
+				if(err){
+					reject(err)
+				}else{
+					resolve(resolve);
+				}
+			})
+		})
+	}
 
 	handler.submitJob = function(doc, cwd){
 
@@ -19,7 +32,7 @@ module.exports = function (conf) {
 
 		return new Promise(function(resolve, reject){
 
-			var command = 'qsub';
+			var command = "qsub";
 			var parameters = doc.parameters;
 			var scriptfilename = "script.pbs";
 
@@ -29,7 +42,7 @@ module.exports = function (conf) {
 			}
 
 			params.push({
-				flag: "-wd",
+				flag: "-d",
 				name: cwd
 			});
 			params.push({
@@ -98,14 +111,22 @@ module.exports = function (conf) {
 							error: allerror + alldata
 						});
 					}else{
-						// var ind = alldata.indexOf('<') + 1;
-	     				// var jobid = alldata.substr(ind, alldata.indexOf('>') - ind);
-	     				var jobid = "1";
+						
+						try{
+							var jobid = alldata.split('.')[0];
 
-						resolve({
-							jobid : Number.parseInt(jobid),
-							status: 'RUN'
-						});
+							resolve({
+								jobid : Number.parseInt(jobid),
+								status: 'RUN'
+							});
+						}catch(e){
+							reject({								
+								status: 'FAIL',
+								error: allerror,
+								stat: alldata
+							});
+						}
+	     				
 					}
 				});
 				
@@ -123,22 +144,17 @@ module.exports = function (conf) {
 	handler.getJobStatus = function(doc){
 
 		Joi.assert(doc.jobstatus, clustermodel.jobstatus);
+		Joi.assert(doc.jobstatus.jobid, Joi.number().required(), "Please execute the job first.");		
 
 		return new Promise(function(resolve, reject){
 
 			try{
 
 				var jobid = doc.jobstatus.jobid;
-				if(!jobid && doc.jobstatus.stat){
-					try{
-						jobid = doc.jobstatus.stat.split("\n")[1].split(" ")[0];
-					}catch(e){
-						console.error(e);
-					}
-				}
-				var params = ["-J", doc.userEmail, jobid];
+				
+				var params = ["-x", jobid];
 
-				const ps = spawn('ls', params);
+				const ps = spawn('qstat', params);
 
 				var allerror = "";
 				ps.stderr.on('data', function(data){
@@ -150,34 +166,48 @@ module.exports = function (conf) {
 					alldata += data;
 				});
 
-				//"sample success: 898104  jprieto DONE  day        killdevil-l donor_pool2 *gmail.com Feb 14 11:16"
-				//"sample fail: Job <8981> is not found"
-
 				ps.on('close', function(code){
 
-					if(alldata && alldata.indexOf('DONE') !== -1 || allerror && allerror.indexOf('is not found') !== -1){
-						resolve({
-							status: 'DONE',
+					if(alldata.indexOf("Unknown Job Id Error") !== -1){
+						return {						
+							status: 'DONE', 
 							stat: alldata
-						});
-					}else if(alldata && alldata.indexOf('EXIT') !== -1){
-						resolve({
-							status: 'EXIT',
-							stat: alldata
-						});
-					}else if(code || allerror){
-						resolve({
-							status: 'FAIL',
-							error: allerror
-						});						
+						}
 					}else{
-						resolve({
-							jobid: jobid,
-							status: 'RUN',
-							stat: alldata
-						});	
+						getXml(alldata)
+						.then(function(jsonstat){
+							if(jsonstat && jsonstat.Data && jsonstat.Data.Job){
+								var job = jsonstat.Data.Job;
+								if(job.job_state === "C" || job.job_state === "E"){
+									return {
+										status: 'DONE',
+										stat: jsonstat
+									};
+								}else{
+									return {
+										jobid: jobid,
+										status: 'RUN',
+										stat: jsonstat
+									};
+								}
+							}else{
+								return {
+									status: 'FAIL',
+									stat: jsonstat
+								};
+							}
+						})
+						.catch(function(e){
+
+							return {
+								status: 'FAIL',
+								error: e, 
+								stat: alldata
+							}
+						})
+						.then(resolve)
+						.catch(reject);
 					}
-					
 				});
 
 			}catch(e){
@@ -196,9 +226,9 @@ module.exports = function (conf) {
 			try{
 
 				var jobid = doc.jobstatus.jobid;
-				var params = ["-J", doc.userEmail, jobid];
+				var params = [jobid];
 
-				const kill = spawn('ls', params);
+				const kill = spawn('qdel', params);
 
 				var allerror = "";
 				kill.stderr.on('data', function(data){

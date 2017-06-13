@@ -15,7 +15,20 @@ This installation step generated a conf.json file and index.js
 
 Edit conf.js with a local path to store the data in the local machine and the URL of the machine running the clusterpost-server application -> https://youripaddress:8180
 
-2.1 For versions previous to v1.1.0
+## Supported grid engines
+
+	* UNIX unix based systems
+
+	* LSF load sharing facilities
+
+	* PBS Sun Grid Engine jobs and queues
+
+
+2.1 Remote execution only
+	
+This tool allows users to execute the clusterpost-execution 
+
+2.2 For versions previous to v1.1.0
 
 If you configured the clusterpost-server with an SSL certificate, you will need a copy of the certificate.
 
