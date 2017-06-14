@@ -67,59 +67,68 @@ var clusterengine = require(path.join(__dirname, conf.engine))(conf);
 if(remote){
 
     var crontab = require('node-crontab');
-    var jobId = crontab.scheduleJob("*/1 * * * *", function(){         
-        executionmethods.getJobsQueue()
-        .then(function(jobs){
-            console.log("jobsubmit", jobs);
-            return Promise.map(jobs, function(doc){
-                return require(path.join(__dirname, "jobsubmit"))(doc, null, conf);
-            }, 
-            {
-                concurrency: 1
+    var isrunningtask = false;
+
+    var jobId = crontab.scheduleJob("*/1 * * * *", function(){
+        if(!isrunningtask){
+            isrunningtask = true;        
+            executionmethods.getJobsQueue()
+            .then(function(jobs){
+                console.log("jobsubmit", jobs);
+                return Promise.map(jobs, function(doc){
+                    return require(path.join(__dirname, "jobsubmit"))(doc, null, conf);
+                }, 
+                {
+                    concurrency: 1
+                });
+            })
+            .then(function(){
+                return Promise.all([executionmethods.getJobsUploading(), executionmethods.getJobsRun()])
+            })
+            .then(function(jobs){            
+                jobs = _.flatten(jobs);
+                console.log("jobstatus", jobs);
+                return Promise.map(jobs, function(doc){
+                    return require(path.join(__dirname, "jobstatus"))(doc, conf);
+                },
+                {
+                    concurrency: 1
+                });
+            })
+            .then(function(){
+                return executionmethods.getJobsKill()
+            })
+            .then(function(jobs){
+                console.log("jobkill", jobs);
+                return Promise.map(jobs, function(doc){                
+                    return require(path.join(__dirname, "jobkill"))(doc, conf);
+                },
+                {
+                    concurrency: 1
+                });
+            })
+            .then(function(){
+                return executionmethods.getJobsDelete();
+            })
+            .then(function(jobs){
+                jobs = _.flatten(jobs);
+                console.log("jobdelete", jobs);
+                return Promise.map(jobs, function(doc){
+                    return require(path.join(__dirname, "jobdelete"))(doc._id, conf, doc);
+                },
+                {
+                    concurrency: 1
+                });
+            })
+            .then(function(){
+                isrunningtask = false;
+            })
+            .catch(function(error){
+                console.error(error);
+                process.exit(1);
             });
-        })
-        .then(function(){
-            return Promise.all([executionmethods.getJobsUploading(), executionmethods.getJobsRun()])
-        })
-        .then(function(jobs){            
-            jobs = _.flatten(jobs);
-            console.log("jobstatus", jobs);
-            return Promise.map(jobs, function(doc){
-                return require(path.join(__dirname, "jobstatus"))(doc, conf);
-            },
-            {
-                concurrency: 1
-            });
-        })
-        .then(function(){
-            return executionmethods.getJobsKill()
-        })
-        .then(function(jobs){
-            console.log("jobkill", jobs);
-            return Promise.map(jobs, function(doc){                
-                return require(path.join(__dirname, "jobkill"))(doc, conf);
-            },
-            {
-                concurrency: 1
-            });
-        })
-        .then(function(){
-            return executionmethods.getJobsDelete();
-        })
-        .then(function(jobs){
-            jobs = _.flatten(jobs);
-            console.log("jobdelete", jobs);
-            return Promise.map(jobs, function(doc){
-                return require(path.join(__dirname, "jobdelete"))(doc._id, conf, doc);
-            },
-            {
-                concurrency: 1
-            });
-        })
-        .catch(function(error){
-            console.error(error);
-            process.exit(1);
-        });
+        }
+        
     });
 
 }else{

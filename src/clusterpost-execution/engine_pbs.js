@@ -38,8 +38,12 @@ module.exports = function (conf) {
 
 			var params = [];
 			if(doc.jobparameters){
-				params = doc.jobparameters;
+				params = _.clone(doc.jobparameters);
 			}
+
+			params.push({
+				flag: "-V"
+			});
 
 			params.push({
 				flag: "-d",
@@ -68,31 +72,31 @@ module.exports = function (conf) {
 			params.push({
 				flag: "-N",
 				name: jobname
-			});
-
-			var script = "#!/bin/bash\n####  PBS preamble\n";			
+			});						
 
 			var preamble = _.map(params, function(param){
 				return _.compact([param.flag, param.name]).join(" ");
 			}).join("\n#PBS ");
 			
+			var script = "#!/bin/bash\n####  PBS preamble\n";
 			script += "#PBS " + preamble + "\n";
 			script += "####  End PBS preamble\n";
 
-			script += 'if [ -n "$PBS_O_WORKDIR" ]; then cd $PBS_O_WORKDIR; fi'
-
-			script += doc.executable;
-
+			script += '\nif [ -n "$PBS_O_WORKDIR" ]; then cd $PBS_O_WORKDIR; fi\n\n'
+			
+			var executableparams = "";
 			if(parameters){
-				script += " " + _.map(parameters, function(param){
+				executableparams = " " + _.map(parameters, function(param){
 					return _.compact([param.flag, param.name]).join(" ");
 				}).join(" ");
 			}
-			
-			var scriptpath = path.join(cwd, scriptfilename);
-			fs.writeFileSync(scriptpath, script);
+
+			script += doc.executable + executableparams;
 
 			try{
+				var scriptpath = path.join(cwd, scriptfilename);
+				fs.writeFileSync(scriptpath, script);
+
 				const runcommand = spawn(command, [scriptpath]);
 
 				var allerror = "";
