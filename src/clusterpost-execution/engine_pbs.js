@@ -184,7 +184,17 @@ module.exports = function (conf) {
 						.then(function(jsonstat){
 							if(jsonstat && jsonstat.Data && jsonstat.Data.Job){
 								var job = jsonstat.Data.Job;
-								if(job.job_state === "C" || job.job_state === "E"){
+								var isdone = false;
+								
+								if(_.isArray(job.job_state)){
+									isdone = _.findIndexOf(job.job_state, function(state){
+										return state === "C" || state === "E";
+									}) !== -1;
+								}else{
+									isdone = job.job_state === "C" || job.job_state === "E";
+								}
+
+								if(isdone){
 									return {
 										status: 'DONE',
 										stat: jsonstat
