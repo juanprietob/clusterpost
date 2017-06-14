@@ -303,9 +303,10 @@ module.exports = function (server, conf) {
 
 			info = info[0];
 
-			var maxAge = "30m";
+			var algorithm = _.clone(conf.algorithm);
+			algorithm.expiresIn = "30m";
 
-			var token = server.methods.jwtauth.sign({ email: info.email }, maxAge);
+			var token = server.methods.jwtauth.sign({ email: info.email }, algorithm);
 			
 			var message = "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye.";
 
