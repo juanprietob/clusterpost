@@ -45,8 +45,13 @@ module.exports = function(doc, conf){
                         return executionmethods.setAllDocumentOutputs(doc)
                     })
                     .then(allUpload);
+            }else{
+                doc.jobstatus = _.extend(doc.jobstatus, status);
+                return executionmethods.uploadDocumentDataProvider(doc)
+                .then(function(){
+                    return status;
+                });
             }
-            return status;
         });
     }
 }
