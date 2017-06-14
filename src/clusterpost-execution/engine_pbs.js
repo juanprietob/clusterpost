@@ -182,10 +182,12 @@ module.exports = function (conf) {
 					}else{
 						getXmlJs(alldata)
 						.then(function(jsonstat){
-							if(jsonstat && jsonstat.Data && jsonstat.Data.Job){
-								var job = jsonstat.Data.Job;
-								var isdone = false;
+							if(jsonstat && jsonstat.Data && jsonstat.Data.Job && _.isArray(jsonstat.Data.Job) && jsonstat.Data.Job.length === 1){
+
+								var job = jsonstat.Data.Job[0];
 								
+								var isdone = false;
+
 								if(_.isArray(job.job_state)){
 									isdone = _.findIndexOf(job.job_state, function(state){
 										return state === "C" || state === "E";
