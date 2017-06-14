@@ -129,10 +129,20 @@
 	</uib-tab>
 	<uib-tab heading="Job detail" index="1">
 		<div class="panel panel-default">
-			<!-- <div class="panel-heading">
-				<h3 class="panel-title">Probabilistic tractography with FSL tools</h3>
-			</div> -->
+
 			<div class="panel-body">
+
+				<div class="col-md-12">
+		  			<div class="button-group">
+				  		<button type="button" ng-click="jobs.edit.show=!jobs.edit.show" class="btn btn-default">
+							<span class="glyphicon glyphicon-pencil"></span>
+						</button>
+						<button type="button" ng-click="saveJobEdit()" class="btn btn-default">
+							<span class="glyphicon glyphicon-floppy-save"></span>
+						</button>
+					</div>
+				</div>
+				
 				<div class="col-md-12">
 					<div class="col-md-6 alert alert-info" role="alert">
 						{{jobs.selectedJob.stdout}}
@@ -141,9 +151,16 @@
 					  	{{jobs.selectedJob.stderr}}
 					</div>
 				</div>
-				<div class="col-md-12">
-		  			<json-formatter json="jobs.selectedJob.job" open="4"></json-formatter>
+
+				<div class="col-md-12 alert alert-danger" role="alert" ng-if="jobs.edit.showerror">
+					{{jobs.edit.error}}
+				</div>
+
+		  		<div class="col-md-12">		  			
+	  				<textarea class="form-control" rows="100" ng-model="jobs.edit.jobtext" ng-if="jobs.edit.show"></textarea>					
+		  			<json-formatter json="jobs.selectedJob.job" open="4" ng-if="!jobs.edit.show"></json-formatter>
 		  		</div>
+			  	
 		  	</div>
 		</div>
 	</uib-tab>

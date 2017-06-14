@@ -6,7 +6,12 @@ angular.module('clusterpost-list')
 		
 
 		$scope.jobs = {
-			selectedJob: {}
+			selectedJob: {
+				job: {}
+			}, 
+			edit: {
+				show: false
+			}
 		};
 
 		$scope.jobs.onFilter = function(filtered){
@@ -21,7 +26,7 @@ angular.module('clusterpost-list')
 	          console.error(e);
 	          throw e;
 	        })
-	    }    
+	    }
 
 	    $scope.killJob = function(job){
 
@@ -76,7 +81,7 @@ angular.module('clusterpost-list')
 		}
 
 		$scope.showJobDetail = function(job){
-			$scope.jobs.selectedJob.job = job;
+			$scope.jobs.selectedJob.job = job;			
 			$scope.activeTab = 1;
 			clusterpostService.getAttachment(job._id, "stdout.out", "text")
 			.then(function(res){
@@ -142,6 +147,33 @@ angular.module('clusterpost-list')
 			}
 		}
 
+		$scope.saveJobEdit = function(){
+			$scope.jobs.edit.showerror = false;			
+			try{
+				var job = JSON.parse($scope.jobs.edit.jobtext);
+				clusterpostService.updateJob(job)
+				.then(function(res){					
+					$scope.jobs.edit.show = false;
+					$scope.jobs.selectedJob.job = job;
+					for(var i = 0; i < $scope.jobs.data.length; i++){
+						if(job._id === $scope.jobs.data[i]._id){
+							$scope.jobs.data[i] = job;
+						}
+					}
+				})
+				.catch(function(e){
+					$scope.jobs.edit.error = e.message;
+					$scope.jobs.edit.showerror = true;					
+				})
+
+			}catch(e){
+
+				$scope.jobs.edit.error = e.message;
+				$scope.jobs.edit.showerror = true;
+			}
+			
+		}
+
 		$scope.numJobsInPage = [ {id: '0', value: '10'},
 							      {id: '1', value: '50'},
 							      {id: '2', value: '100'}];
@@ -150,6 +182,12 @@ angular.module('clusterpost-list')
 		$scope.getDB();
 		$scope.forceRunJob = false;
 		$scope.activeTab = 0;
+
+		$scope.$watch("jobs.edit.show", function(){
+			if($scope.jobs.edit.show){
+				$scope.jobs.edit.jobtext = JSON.stringify($scope.jobs.selectedJob.job, null, 4);
+			}
+		})
 	}
 
 	return {
