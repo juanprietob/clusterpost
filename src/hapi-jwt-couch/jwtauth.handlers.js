@@ -313,9 +313,15 @@ module.exports = function (server, conf) {
 			if(conf.mailer.message){
 				message = conf.mailer.message;
 			}
+
+			var uri = server.info.uri;
+
+			if(conf.mailer.uri){
+				uri = conf.mailer.uri;
+			}
 			
 			message = message.replace("@USERNAME@", info.name);
-			message = message.replace("@SERVER@", server.info.uri);
+			message = message.replace("@SERVER@", uri);
 			message = message.replace("@TOKEN@", token.token);
 
 			var mailOptions = {
