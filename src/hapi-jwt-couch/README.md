@@ -40,7 +40,8 @@ Edit the "message" portion of the configuration. The strings @USERNAME@, @SERVER
 				    }
 				},
 				"from": "Hapi jwt couch <hapi.jwt.couch@gmail.com>",
-				"message": "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye."
+				"message": "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye.",
+				"uri": "http://your.public.ip"
 	        },
 	        "userdb" : {
 	            "hostname": "http://localhost:5984",
