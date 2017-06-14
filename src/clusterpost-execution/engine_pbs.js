@@ -189,7 +189,7 @@ module.exports = function (conf) {
 								var isdone = false;
 
 								if(_.isArray(job.job_state)){
-									isdone = _.findIndexOf(job.job_state, function(state){
+									isdone = _.findIndex(job.job_state, function(state){
 										return state === "C" || state === "E";
 									}) !== -1;
 								}else{
