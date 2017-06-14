@@ -20,7 +20,7 @@ module.exports = function (conf) {
 				if(err){
 					reject(err)
 				}else{
-					resolve(resolve);
+					resolve(xml);
 				}
 			})
 		})
