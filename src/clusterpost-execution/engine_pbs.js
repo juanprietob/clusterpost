@@ -176,7 +176,7 @@ module.exports = function (conf) {
 							stat: alldata
 						}
 					}else{
-						getXml(alldata)
+						getXmlJs(alldata)
 						.then(function(jsonstat){
 							if(jsonstat && jsonstat.Data && jsonstat.Data.Job){
 								var job = jsonstat.Data.Job;
