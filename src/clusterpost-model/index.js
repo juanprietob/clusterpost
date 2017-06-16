@@ -7,7 +7,8 @@ exports.parameter = Joi.object().keys({
 
 exports.output = Joi.object().keys({
 	type: Joi.string().valid('file', 'directory', 'tar.gz'), 
-  	name: Joi.string()
+  	name: Joi.string(),
+  	path: Joi.string().optional()
 });
 
 exports.input = Joi.object().keys({
