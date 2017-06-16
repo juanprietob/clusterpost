@@ -232,7 +232,13 @@ module.exports = function (conf) {
 		if(output.type === 'file'){
 			return getlatestdoc
 			.then(function(latestdoc){
-				return handler.addDocumentAttachment(latestdoc, output.name, path.join(cwd, output.name));
+				var filepath;
+				if(output.path){
+					filepath = path.join(cwd, output.path)
+				}else{
+					filepath = path.join(cwd, output.name)
+				}
+				return handler.addDocumentAttachment(latestdoc, output.name, filepath);
 			});
 			
 		}else if(output.type === 'tar.gz'){
