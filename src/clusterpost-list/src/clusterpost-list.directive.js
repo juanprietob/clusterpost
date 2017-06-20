@@ -70,7 +70,7 @@ angular.module('clusterpost-list')
 		}
 
 	    $scope.getDB = function(){
-			clusterpostService.getAllJobs().then(function(res){
+			clusterpostService.getAllJobs($scope.executable).then(function(res){
 				$scope.jobs.data = res.data;
 				$scope.jobs.status = _.uniq(_.pluck(_.pluck(res.data, 'jobstatus'), 'status'));
 				$scope.jobs.executables = _.uniq(_.pluck(res.data, 'executable'));
@@ -193,7 +193,11 @@ angular.module('clusterpost-list')
 	return {
 	    restrict : 'E',
 	    link : link,
-	    templateUrl: './src/clusterpost-list.directive.html'
+	    templateUrl: './src/clusterpost-list.directive.html',
+	    scope: {
+	    	executable: "=",
+	    	jobCallback: "="
+	    }
 	}
 
 });
