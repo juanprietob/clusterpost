@@ -195,7 +195,8 @@ angular.module('clusterpost-list')
 			if($scope.downloadCallback){
 				return $scope.downloadCallback(job);
 			}else{
-				return clusterpostService.getJobDownload(function(bb){
+				return clusterpostService.getJobDownload(job._id)
+				.then(function(bb){
 
 					var name = job._id + ".tar.gz";
 
@@ -206,9 +207,9 @@ angular.module('clusterpost-list')
 					pom.setAttribute('href', window.URL.createObjectURL(bb));
 					pom.setAttribute('download', name);
 
-					pom.dataset.downloadurl = ['text/plain', pom.download, pom.href].join(':');
+					pom.dataset.downloadurl = ['application/octet-stream', pom.download, pom.href].join(':');
 					pom.click();
-				})
+				});
 			}
 		}
 
