@@ -61,6 +61,22 @@ angular.module('clusterpost-list')
         url: '/dataprovider/' + id        
       });
     },
+    getJobDownload: function(id){
+      return $http({
+        method: 'GET',
+        url: '/dataprovider/download/' + id, 
+        responseType: 'blob'
+      })
+      .then(function(res){
+        return $http({
+          method: 'DELETE',
+          url: '/dataprovider/download/' + id
+        })
+        .then(function(){
+          return res;
+        })
+      })
+    },
     //For the response type check https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType, "text", "arraybuffer", "blob", "json"
     getAttachment: function(id, filename, responseType){
     	return $http({

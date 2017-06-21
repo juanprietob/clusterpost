@@ -11,7 +11,7 @@
 							</th>
 						</tr>
 						<tr>
-							<th st-sort="_id"> Id </th>
+							<th st-sort="_id"> Detail </th>
 							<th st-sort="name"> Name </th>
 							<th st-sort="userEmail">User email</th>
 							<th st-sort="timestamp">Timestamp</th>
@@ -19,6 +19,7 @@
 							<th st-sort="row.executable"> Executable </th>
 							<th st-sort="jobstatus.jobid">Job Id</th>
 							<th st-sort="executionserver">Execution server</th>
+							<th>Download</th>
 							<th>Update</th>
 							<th>Run</th>
 							<th>Force run</th>
@@ -44,16 +45,20 @@
 			                    	<option ng-repeat="st in jobs.status">{{st}}</option>
 			                	</select>
 							</th>
-							<th>
+							<th colspan="2">
 								<select class="form-control" st-search="executable">
 			                    	<option value="">All</option>
 			                    	<option ng-repeat="ex in jobs.executables">{{ex}}</option>
 			                	</select>
-							</th>
-							<th>
-							</th>
+							</th>							
 							<th>
 								<input st-search="executionserver" placeholder="search for execution server" class="input-sm form-control" type="search"/>
+							</th>
+							<th>
+								<button type="button" ng-click="downloadAll()" class="btn btn-sm btn-success">
+								<i class="glyphicon glyphicon-download">
+									</i>
+								</button>
 							</th>
 							<th>
 								<button type="button" ng-click="updateAllJobs()" class="btn btn-sm btn-info">
@@ -95,6 +100,11 @@
 							<td>{{row.executable}}</td>
 							<td>{{row.jobstatus.jobid}}</td>
 							<td><select class="form-control" ng-model="row.executionserver" ng-options="es.name as es.name for es in executionservers" ng-change="saveJob(row)"></select></td>
+							<td>
+								<button type="button" ng-click="downloadJob(row)" class="btn btn-sm btn-success">
+									<span class="glyphicon glyphicon-download"></span>
+								</button>
+							</td>
 							<td>
 								<button type="button" ng-click="updateStatus(row)" class="btn btn-sm btn-info">
 									<i class="glyphicon glyphicon-refresh">
