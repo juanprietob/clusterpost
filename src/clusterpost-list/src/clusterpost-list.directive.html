@@ -93,7 +93,7 @@
 							<td>{{row.jobstatus.status}}</td>
 							<td>{{row.executable}}</td>
 							<td>{{row.jobstatus.jobid}}</td>
-							<td><select class="form-control" ng-model="row.executionserver" ng-options="es.name as es.name for es in executionservers"></select></td>
+							<td><select class="form-control" ng-model="row.executionserver" ng-options="es.name as es.name for es in executionservers" ng-change="saveJob(row)"></select></td>
 							<td>
 								<button type="button" ng-click="updateStatus(row)" class="btn btn-sm btn-info">
 									<i class="glyphicon glyphicon-refresh">
