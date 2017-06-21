@@ -75,6 +75,12 @@ angular.module('clusterpost-list')
 				$scope.jobs.status = _.uniq(_.pluck(_.pluck(res.data, 'jobstatus'), 'status'));
 				$scope.jobs.executables = _.uniq(_.pluck(res.data, 'executable'));
 			})
+			.then(function(){
+				return clusterpostService.getExecutionServers();
+			})
+			.then(function(res){
+				$scope.executionservers = res.data;
+			})
 			.catch(function(e){
                 console.error(e);
             });

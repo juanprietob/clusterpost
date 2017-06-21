@@ -18,6 +18,7 @@
 							<th st-sort="jobsstatus.status">Job status</th>
 							<th st-sort="row.executable"> Executable </th>
 							<th st-sort="jobstatus.jobid">Job Id</th>
+							<th st-sort="executionserver">Execution server</th>
 							<th>Update</th>
 							<th>Run</th>
 							<th>Force run</th>
@@ -50,6 +51,9 @@
 			                	</select>
 							</th>
 							<th>
+							</th>
+							<th>
+								<input st-search="executionserver" placeholder="search for execution server" class="input-sm form-control" type="search"/>
 							</th>
 							<th>
 								<button type="button" ng-click="updateAllJobs()" class="btn btn-sm btn-info">
@@ -89,6 +93,7 @@
 							<td>{{row.jobstatus.status}}</td>
 							<td>{{row.executable}}</td>
 							<td>{{row.jobstatus.jobid}}</td>
+							<td><select class="form-control" ng-model="row.executionserver" ng-options="es.name as es.name for es in executionservers"></select></td>
 							<td>
 								<button type="button" ng-click="updateStatus(row)" class="btn btn-sm btn-info">
 									<i class="glyphicon glyphicon-refresh">
