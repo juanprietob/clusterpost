@@ -280,7 +280,7 @@ module.exports = function (server, conf) {
 				jobstatus.stderr.on('data', function(data){
 					allerror += data;
 				});
-				console.log("killing")
+				
 				jobstatus.on('close', function(code){
 					if(allerror !== ""){
 						alldata += allerror;

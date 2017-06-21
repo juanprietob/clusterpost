@@ -6,6 +6,8 @@ var spawn = require('child_process').spawn;
 var couchUpdateViews = require('couch-update-views');
 var path = require('path');
 var qs = require('querystring');
+var os = require('os');
+var tarGzip = require('node-targz');
 
 module.exports = function (server, conf) {
 	
@@ -291,6 +293,118 @@ module.exports = function (server, conf) {
 		.catch(function(e){
 			rep(Boom.wrap(e));
 		});
+	}
+
+	const saveAttachment = function(options, filename){
+
+		return new Promise(function(resolve, reject){
+
+			var writestream = fs.createWriteStream(filename);
+            request(options).pipe(writestream);
+
+            writestream.on('finish', function(err){                 
+                if(err){
+                    reject({
+                        "path" : filename,
+                        "status" : false,
+                        "error": err
+                    });
+                }else{
+                    resolve({
+                        "path" : filename,
+                        "status" : true
+                    });
+                }
+            });
+		})
+	}
+
+	/*
+	*/
+	handler.getDownload = function(req, rep){
+		server.methods.clusterprovider.getDocument(req.params.id)
+		.then(function(doc){
+			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
+		})
+		.then(function(doc){
+
+			try{
+				
+				var tempdir = path.join(os.tmpdir(), doc._id);
+				fs.mkdirSync(tempdir);
+
+				var outputs = doc.outputs;
+
+				return Promise.map(outputs, function(output){
+					return saveAttachment(getDocumentURIAttachment(doc._id, output.name), output.name);
+				})
+				.then(function(){
+					return new Promise(function(resolve, reject){
+						var tarname = tempdir + ".tar.gz";
+						tarGzip.compress({
+						    source: tempdir,
+						    destination: tarname
+						}, function(){
+							resolve(tarname);
+						});
+					});
+				});
+
+			}catch(e){
+				rep(Boom.badImplementation(e));
+			}
+			
+		})
+		.then(function(tarname){
+			try{
+				if(fs.statFileSync(tarname)){
+					rep.file(tarname);
+				}
+			}catch(e){
+				throw Boom.badImplementation(e);
+			}
+		})
+		.catch(function(e){
+			rep(Boom.wrap(e));
+		});
+	}
+
+	const deleteFolderRecursive = function(dir) {
+		var dirstat;
+		try{
+			dirstat = fs.statSync(dir);
+		}catch(e){
+			//does not exist
+			dirstat = undefined;
+		}
+		if(dirstat){
+			fs.readdirSync(dir).forEach(function(file) {
+				var currentpath = path.join(dir, file);
+				if(fs.statSync(currentpath).isDirectory()) {
+					handler.deleteFolderRecursive(currentpath);
+				}else{
+					fs.unlinkSync(currentpath);
+				}
+			});
+			fs.rmdirSync(dir);
+			return true;
+	    }
+	    return false;
+	}
+
+	handler.deleteDownload = function(req, rep){
+		
+		try{
+			var tempdir = path.join(os.tmpdir(), req.params.id);
+			deleteFolderRecursive(tempdir);
+			var tarfile = tempdir + ".tar.gz");
+			if(fs.statSync(tarfile){
+				fs.unlinkSync(tarfile);
+			}
+		}catch(e){
+			console.error(e);
+		}
+		rep(true);
 	}
 
 	return handler;

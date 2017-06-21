@@ -36,4 +36,44 @@ module.exports = function (server, conf) {
 	    method: validateJobOwnership,
 	    options: {}
 	});
+
+	/*
+	*   Download and save attachment from DB
+	*   
+	*/
+	const downloadAttachment = function(options, filename){	    
+	    Joi.assert(filename, Joi.string())
+	    return new Promise(function(resolve, reject){
+
+	        try{	            
+
+	            var writestream = fs.createWriteStream(filename);
+	            request(options).pipe(writestream);
+
+	            writestream.on('finish', function(err){                 
+	                if(err){
+	                    reject({
+	                        "path" : filename,
+	                        "status" : false,
+	                        "error": err
+	                    });
+	                }else{
+	                    resolve({
+	                        "path" : filename,
+	                        "status" : true
+	                    });
+	                }
+	            });
+
+	        }catch(e){
+	            reject(e);
+	        }
+	    });
+	}
+
+	server.method({
+	    name: 'clusterprovider.downloadAttachment',
+	    method: downloadAttachment,
+	    options: {}
+	});
 }

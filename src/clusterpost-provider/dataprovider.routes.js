@@ -221,6 +221,52 @@ module.exports = function (server, conf) {
 
 	server.route({
 		method: 'GET',
+		path: "/dataprovider/download/{id}",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost', 'executionserver']
+            },
+			handler: handlers.getDownload,
+			validate: {
+			  	query: false,
+			    params: {
+			    	id: Joi.string().alphanum().required()
+			    },
+			    payload: false
+			},
+			description: 'Download job in a tar file',
+			response: {
+				schema: true
+			}
+	    }
+	});
+
+	server.route({
+		method: 'DELETE',
+		path: "/dataprovider/download/{id}",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost', 'executionserver']
+            },
+			handler: handlers.deleteDownload,
+			validate: {
+			  	query: false,
+			    params: {
+			    	id: Joi.string().alphanum().required()
+			    },
+			    payload: false
+			},
+			description: 'Delete the tar file in temp folder',
+			response: {
+				schema: true
+			}
+	    }
+	});
+
+	server.route({
+		method: 'GET',
 		path: "/dataprovider/download/{token}",
 		config: {
 			handler: handlers.downloadAttachment,
