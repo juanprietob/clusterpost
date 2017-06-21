@@ -21,8 +21,9 @@
 							<th st-sort="userEmail">User email</th>
 							<th st-sort="timestamp">Timestamp</th>
 							<th st-sort="jobsstatus.status">Job status</th>
-							<th st-sort="row.executable"> Executable </th>
+							<th st-sort="executable"> Executable </th>
 							<th st-sort="jobstatus.jobid">Job Id</th>
+							<th st-sort="executionserver">Execution server</th>
 							<th>Download</th>
 							<th>Update</th>
 							<th>Run</th>
@@ -51,6 +52,9 @@
 			                    	<option value="">All</option>
 			                    	<option ng-repeat="ex in jobs.executables">{{ex}}</option>
 			                	</select>
+							</th>
+							<th>
+								<input st-search="executionserver" placeholder="search for execution server" class="input-sm form-control" type="search"/>
 							</th>
 							<th>
 								<button type="button" ng-click="downloadAllJobs()" class="btn btn-sm btn-success">
@@ -95,6 +99,7 @@
 							<td>{{row.jobstatus.status}}</td>
 							<td>{{row.executable}}</td>
 							<td>{{row.jobstatus.jobid}}</td>
+							<td><select class="form-control" ng-model="row.executionserver" ng-options="es.name as es.name for es in executionservers" ng-change="saveJob(row)"></select></td>
 							<td>
 								<button type="button" ng-click="downloadJob(row)" class="btn btn-sm btn-success">
 									<span class="glyphicon glyphicon-download"></span>

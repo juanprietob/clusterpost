@@ -54,6 +54,18 @@ angular.module('clusterpost-list')
 	          throw e;
 	        });
 	    }
+	    $scope.saveJob = function(job){
+			return clusterpostService.updateJob(angular.copy(job))
+			.then(function(res){
+				if(res && res.data && res.data[0] && res.data[0].rev){
+					job._rev = res.data[0].rev;
+				}
+				
+			})
+			.catch(function(e){
+                console.error(e);
+            });
+		}
 	    $scope.runJob = function(job,force){
 			clusterpostService.submitJob(job._id,force).then(function(res){
 				$scope.getDB();

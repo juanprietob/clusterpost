@@ -86,8 +86,9 @@
 						</thead>
 						<tbody>
 						<tr ng-repeat="row in jobs.displayedJobs">
-							<td><button class="btn btn-default" ng-click="showJobDetail(row)">{{row._id}}</button></td>
-							<td><button class="btn btn-default" ng-if="jobCallback" ng-click="jobCallback(row)"><span class="glyphicon glyphicon-eye-open"> {{row.name}}</span></button><div ng-if="!jobCallback">{{row.name}}</div></td>
+
+							<td><button class="btn btn-info" ng-click="showJobDetail(row)" title="{{row._id}}"><span class="glyphicon glyphicon-eye-open"></span></td>
+							<td><button class="btn btn-success" ng-if="jobCallback" ng-click="jobCallback(row)"><span class="glyphicon glyphicon-eye-open"> {{row.name}}</span></button><div ng-if="!jobCallback">{{row.name}}</div></td>
 							<td>{{row.userEmail}}</td>
 							<td>{{row.timestamp}}</td>
 							<td>{{row.jobstatus.status}}</td>
