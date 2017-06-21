@@ -64,13 +64,13 @@ angular.module('clusterpost-list')
     getJobDownload: function(id){
       return $http({
         method: 'GET',
-        url: '/dataprovider/download/' + id, 
+        url: '/dataprovider/download/job/' + id, 
         responseType: 'blob'
       })
       .then(function(res){
         return $http({
           method: 'DELETE',
-          url: '/dataprovider/download/' + id
+          url: '/dataprovider/download/job/' + id
         })
         .then(function(){
           return res;
