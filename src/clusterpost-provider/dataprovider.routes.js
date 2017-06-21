@@ -221,7 +221,7 @@ module.exports = function (server, conf) {
 
 	server.route({
 		method: 'GET',
-		path: "/dataprovider/download/{id}",
+		path: "/dataprovider/download/job/{id}",
 		config: {
 			auth: {
                 strategy: 'token',
@@ -244,7 +244,7 @@ module.exports = function (server, conf) {
 
 	server.route({
 		method: 'DELETE',
-		path: "/dataprovider/download/{id}",
+		path: "/dataprovider/download/job/{id}",
 		config: {
 			auth: {
                 strategy: 'token',
