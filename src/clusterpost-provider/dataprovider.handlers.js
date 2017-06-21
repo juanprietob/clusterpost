@@ -397,7 +397,7 @@ module.exports = function (server, conf) {
 		try{
 			var tempdir = path.join(os.tmpdir(), req.params.id);
 			deleteFolderRecursive(tempdir);
-			var tarfile = tempdir + ".tar.gz");
+			var tarfile = tempdir + ".tar.gz";
 			if(fs.statSync(tarfile){
 				fs.unlinkSync(tarfile);
 			}
