@@ -12,7 +12,7 @@ module.exports = function(grunt) {
                         }
                     }
                 },
-                src: ['clusterpost-list/Gruntfile.js']
+                src: ['node_modules/clusterpost-list/Gruntfile.js']
             },
             dev: {
                 options: {
@@ -25,7 +25,7 @@ module.exports = function(grunt) {
                     debugCli: true,
                     task: ['dev']
                 },
-                src: ['clusterpost-list/Gruntfile.js']
+                src: ['node_modules/clusterpost-list/Gruntfile.js']
             },
         },
         watch: {
@@ -35,15 +35,15 @@ module.exports = function(grunt) {
                 }
             },
             html: {
-                files: ['./clusterpost-list/src/*.html'],
+                files: ['node_modules/clusterpost-list/src/*.html'],
                 tasks: ['run_grunt:dev']
             },
             css: {
-                files: ['./clusterpost-list/src/*.css'],
+                files: ['node_modules/clusterpost-list/src/*.css'],
                 tasks: ['run_grunt:dev']
             },
             js: {
-                files: ['./clusterpost-list/src/*.js', '!./clusterpost-list/**/*.min.js'],
+                files: ['node_modules/clusterpost-list/src/*.js', '!node_modules/clusterpost-list/**/*.min.js'],
                 tasks: ['run_grunt:dev']
             },
         }

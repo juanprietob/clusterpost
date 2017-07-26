@@ -19,7 +19,7 @@
 							<th st-sort="row.executable"> Executable </th>
 							<th st-sort="jobstatus.jobid">Job Id</th>
 							<th st-sort="executionserver">Execution server</th>
-							<th>Download</th>
+							<th ng-if="downloadCallback">Download</th>
 							<th>Update</th>
 							<th>Run</th>
 							<th>Force run</th>
@@ -54,7 +54,7 @@
 							<th>
 								<input st-search="executionserver" placeholder="search for execution server" class="input-sm form-control" type="search"/>
 							</th>
-							<th>
+							<th ng-if="downloadCallback">
 								<button type="button" ng-click="downloadAll()" class="btn btn-sm btn-success">
 								<i class="glyphicon glyphicon-download">
 									</i>
@@ -100,7 +100,7 @@
 							<td>{{row.executable}}</td>
 							<td>{{row.jobstatus.jobid}}</td>
 							<td><select class="form-control" ng-model="row.executionserver" ng-options="es.name as es.name for es in executionservers" ng-change="saveJob(row)"></select></td>
-							<td>
+							<td ng-if="downloadCallback">
 								<button type="button" ng-click="downloadJob(row)" class="btn btn-sm btn-success">
 									<span class="glyphicon glyphicon-download"></span>
 								</button>

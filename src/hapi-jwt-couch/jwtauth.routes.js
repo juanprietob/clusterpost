@@ -26,6 +26,16 @@ module.exports = function (server, conf) {
         type: Joi.string().valid('user').required()
     }).unknown();
 
+    var userinfobasic = Joi.object().keys({
+        _id: Joi.string().alphanum().required(),
+        _rev: Joi.string().required(),
+        name: Joi.string().required(),
+        email: Joi.string().email().required(), 
+        scope: Joi.forbidden(),
+        password: Joi.forbidden(),
+        type: Joi.string().valid('user').required()
+    }).unknown();
+
     var scopes = Joi.object().keys({
         _id: Joi.string().alphanum().required(),
         _rev: Joi.string().required(),
@@ -176,7 +186,7 @@ module.exports = function (server, conf) {
             handler: handlers.updateUser,
             validate: {
                 query: false,
-                payload: userinfo,
+                payload: userinfobasic,
                 params: false
             },
             response: {
