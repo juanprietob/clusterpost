@@ -281,6 +281,27 @@ var updateUser = function(userinfo){
     });
 }
 
+var updateUsers = function(userinfo){
+
+    return new Promise(function(resolve, reject){
+        var options = {
+            url: getClusterPostServer() + "/auth/users",
+            method: 'PUT',
+            json: userinfo,
+            auth: clusterpost.auth,
+            agentOptions: clusterpost.agentOptions
+        }
+
+        request(options, function(err, res, body){
+            if(err){
+                reject(err);
+            }else{
+                resolve(body);
+            }
+        });
+    });
+}
+
 var deleteUser = function(){
     return new Promise(function(resolve, reject){
         var options = {
@@ -835,6 +856,7 @@ exports.setUserToken = setUserToken
 exports.getUser =   getUser;
 exports.getUsers    =   getUsers;
 exports.updateUser  =   updateUser;
+exports.updateUsers  =   updateUsers;
 exports.deleteUser  =   deleteUser;
 exports.deleteUsers  =   deleteUsers;
 exports.getExecutionServers =   getExecutionServers;
