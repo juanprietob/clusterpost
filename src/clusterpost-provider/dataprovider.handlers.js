@@ -267,6 +267,25 @@ module.exports = function (server, conf) {
 		.then(function(rows){
 			return _.pluck(rows, 'doc');
 		})
+		.then(function(docs){
+			return Promise.map(credentials.scope, function(sc){
+				var key = {
+					key: JSON.stringify(sc),
+					include_docs: true
+				}
+				var v = '_design/searchJob/_view/scope?' + qs.stringify(key);					
+				return server.methods.clusterprovider.getView(v)
+				.then(function(rows){					
+					return _.pluck(rows, 'doc');
+				});
+			})
+			.then(function(res){				
+				return _.uniq(_.compact(_.flatten(res)));
+			})
+			.then(function(docssp){				
+				return _.union(docs, docssp);
+			});
+		})
 		.then(rep)
 		.catch(function(e){
 			rep(Boom.wrap(e));

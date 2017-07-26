@@ -22,6 +22,9 @@
         },
         "executionserverjobstatus": {
             "map": "function(doc) {\n\tif(doc.type === 'job' && doc.jobstatus && doc.jobstatus.status){\n\t\t  emit([doc.executionserver, doc.jobstatus.status], { _id : doc._id });\n\t}\n}"
+        },
+        "scope": {
+            "map": "function(doc) {\n\tif(doc.type === 'job' && doc.scope){\n\t\tdoc.scope.forEach(function(sc){\n\t\t\temit(sc, doc.jobstatus);\n\t\t})\n\t}\n}"
         }
     }
 }

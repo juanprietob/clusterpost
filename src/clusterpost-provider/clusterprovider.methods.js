@@ -19,11 +19,18 @@ module.exports = function (server, conf) {
 	    method: isJobDocument,
 	    options: {}
 	});
-	
+
+	const validateUserScopes = function(userscope, docscope){
+		if(userscope && docscope){
+			var intersection = _.intersection(userscope, docscope);
+			return intersection.length > 0;
+		}
+		return false;
+	}
 
 	const validateJobOwnership = function(doc, credentials){
 		return new Promise(function(resolve, reject){
-			if(doc.userEmail === credentials.email || credentials.scope.indexOf('admin') >= 0 || (credentials.scope.indexOf("executionserver") >= 0)){
+			if(doc.userEmail === credentials.email || credentials.scope.indexOf('admin') >= 0 || (credentials.scope.indexOf("executionserver") >= 0) || validateUserScopes(credentials.scope, doc.scope)){
 				resolve(doc);
 			}else{
 				reject(Boom.unauthorized("You are not allowed to access this job document!"));
