@@ -242,6 +242,10 @@ module.exports = function (server, conf) {
 
 				Promise.map(jobs, function(job){					
 		    		return server.methods.executionserver.jobDelete(job)
+		    		.catch(function(e){
+				    	console.error("Error while deleting job", job._id, e);
+				    	console.error("Deleting from the DB now.");
+				    })
 		    		.then(function(){
 		    			return server.methods.dataprovider.jobDelete(job);
 		    		})
