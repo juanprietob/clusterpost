@@ -11,8 +11,21 @@ angular.module('clusterpost-list')
 			}, 
 			edit: {
 				show: false
-			}
+			},
+			showScopes: false
 		};
+
+		clusterauth.getScopes()
+		.then(function(res){
+			if(res.data && res.data[0]){
+				$scope.clusterScopes = _.filter(res.data[0].scopes, function(sc){
+					return sc != 'default' && sc != 'admin' && sc != 'clusterpost';
+				});
+			}else{
+				console.error("No scopes found!");
+			}			
+			
+		})
 
 		$scope.jobs.onFilter = function(filtered){
 			$scope.jobs.filteredJobs = filtered;
@@ -26,6 +39,36 @@ angular.module('clusterpost-list')
 	          console.error(e);
 	          throw e;
 	        })
+	    }
+
+	    $scope.removeJobScope = function(job, sc){	    	
+	    	if(job.scope){
+	    		var index = job.scope.indexOf(sc);
+	    		if(index != -1){
+	    			job.scope.splice(index, 1);
+	    			return $scope.saveJob(job);
+	    		}
+	    	}
+	    }
+
+	    $scope.addJobScope = function(job){	    	
+	    	if($scope.jobs.selectedScope){
+	    		if(!job.scope){
+	    			job.scope = [];
+	    		}
+	    		job.scope.push($scope.jobs.selectedScope);
+    			job.scope = _.uniq(job.scope);
+    			return $scope.saveJob(job);
+	    	}
+	    }
+
+	    $scope.addJobsScope = function(job){	    	
+    		_.each($scope.jobs.filteredJobs, $scope.addJobScope);	    	
+	    }
+	    $scope.removeJobsScope = function(job){	    	
+    		_.each($scope.jobs.filteredJobs, function(job){
+    			$scope.removeJobScope(job, $scope.jobs.selectedScope)
+    		});
 	    }
 
 	    $scope.killJob = function(job){
