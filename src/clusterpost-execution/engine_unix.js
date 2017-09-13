@@ -40,9 +40,15 @@ module.exports = function (conf) {
 				var out = fs.openSync(path.join(cwd, "stdout.out"), 'a');
 		    	var err = fs.openSync(path.join(cwd, "stderr.err"), 'a');
 
+		    	var detached = true;
+
+		    	if(conf.detached != undefined){
+		    		detached = conf.detached;
+		    	}
+
 				const runcommand = spawn(command, params, {
 					cwd: cwd,
-					detached: true,
+					detached: detached,
 					stdio: [ 'ignore', out, err ]
 				});
 
@@ -53,17 +59,32 @@ module.exports = function (conf) {
 					});
 				});
 
-				runcommand.unref();
+				if(detached){
+					runcommand.unref();
 
-				if(runcommand.pid){
-					resolve({
-						jobid : runcommand.pid,
-						status: "RUN"
-					});
-				}else{
-					reject({						
-						status: "FAIL", 
-						error: "nopid"
+					if(runcommand.pid){
+						resolve({
+							jobid : runcommand.pid,
+							status: "RUN"
+						});
+					}else{
+						reject({						
+							status: "FAIL", 
+							error: "nopid"
+						});
+					}
+				}else{				
+
+					runcommand.on('close', function(code){
+						if(code){
+							reject({						
+								status: "FAIL"
+							});
+						}else{
+							resolve({
+								status: 'DONE'
+							});
+						}
 					});
 				}
 			}catch(e){
