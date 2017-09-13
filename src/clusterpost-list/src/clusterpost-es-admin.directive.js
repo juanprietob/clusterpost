@@ -2,7 +2,7 @@
 angular.module('clusterpost-list')
 .directive('clusterpostEsAdmin', function($routeParams,$location, clusterpostService){
 
-	function link($scope,$attrs){
+	function link($scope, $element, $attrs){
 
 
 		clusterpostService.getExecutionServerTokens()
@@ -12,11 +12,12 @@ angular.module('clusterpost-list')
 
 		$scope.downloadToken = function(token){
 
+			var filename = "token.json";			
+			var bb = new Blob([angular.toJson(token)], {type: 'text/plain'});
+
 			var pom = document.createElement('a');
 
-			var filename = "token.json";
-			var pom = document.createElement('a');
-			var bb = new Blob([angular.toJson(token)], {type: 'text/plain'});
+			$element.append(pom);
 
 			pom.setAttribute('href', window.URL.createObjectURL(bb));
 			pom.setAttribute('download', filename);
