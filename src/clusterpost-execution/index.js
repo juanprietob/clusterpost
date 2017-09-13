@@ -53,8 +53,14 @@ if(module.parent && module.parent.filename){
 var conf = getConfigFile(confpath);
 
 try{
-    var tokenfile = path.join(confpath, ".token");
-    _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
+    if(!conf.token){
+        var tokenfile = path.join(confpath, ".token");
+        if(conf.tokenfile){
+            tokenfile = conf.tokenfile;
+        }
+        _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
+    }
+    
 }catch(e){    
     console.error(e);
     process.exit(1);

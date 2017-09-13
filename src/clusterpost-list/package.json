@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-list",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "List jobs running in clusterpost",
   "main": "clusterpost-list.module.js",
   "scripts": {
