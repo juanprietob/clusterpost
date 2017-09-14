@@ -319,7 +319,7 @@ module.exports = function (server, conf) {
         config: {
             auth: {
                 strategy: 'token',
-                scope: ['admin']
+                scope: ['default']
             },
             handler: handlers.getScopes,
             validate: {
@@ -344,7 +344,7 @@ module.exports = function (server, conf) {
         config: {
             auth: {
                 strategy: 'token',
-                scope: ['default']
+                scope: ['admin']
             },
             handler: handlers.updateScopes,
             validate: {
