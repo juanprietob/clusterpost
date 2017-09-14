@@ -275,8 +275,22 @@ module.exports = function (server, conf) {
 				}
 				var v = '_design/searchJob/_view/scope?' + qs.stringify(key);					
 				return server.methods.clusterprovider.getView(v)
-				.then(function(rows){					
-					return _.pluck(rows, 'doc');
+				.then(function(rows){
+					var docs = _.pluck(rows, 'doc');
+					if(executable){
+						docs = _.filter(docs, function(doc){
+							return doc.executable == executable;
+						});
+					}
+					if(jobstatus){
+						docs = _.filter(docs, function(doc){
+							if(doc.jobstatus && doc.jobstatus.status){
+								return doc.jobstatus.status == jobstatus;
+							}
+							return false;
+						});
+					}
+					return docs;
 				});
 			})
 			.then(function(res){				
