@@ -15,16 +15,25 @@ angular.module('clusterpost-list')
 			showScopes: false
 		};
 
-		clusterauth.getScopes()
+		clusterauth.getUser()
 		.then(function(res){
-			if(res.data && res.data[0]){
-				$scope.clusterScopes = _.filter(res.data[0].scopes, function(sc){
-					return sc != 'default' && sc != 'admin' && sc != 'clusterpost';
+			$scope.user = res;
+			if($scope.user.scope.indexOf('admin') !== -1){
+				return clusterauth.getScopes()
+				.then(function(res){
+					if(res.data && res.data[0]){
+						$scope.clusterScopes = _.filter(res.data[0].scopes, function(sc){
+							return sc != 'default' && sc != 'admin' && sc != 'clusterpost';
+						});
+					}else{
+						console.error("No scopes found!");
+					}			
+					
 				});
-			}else{
-				console.error("No scopes found!");
-			}			
-			
+			}						
+		})
+		.then(function(){
+			return $scope.getDB();
 		})
 
 		$scope.jobs.onFilter = function(filtered){
@@ -123,8 +132,23 @@ angular.module('clusterpost-list')
                 console.error(e);
             });
 		}
+
 	    $scope.getDB = function(){
-			clusterpostService.getAllJobs($scope.executable).then(function(res){
+	    	
+	    	var getjobprom = {};
+
+	    	if($scope.user.scope.indexOf('admin') !== -1){
+	    		getjobprom = clusterpostService.getAllJobs();
+	    	}else{
+	    		var params = {};
+	    		if($scope.executable){
+		    		params.executable = $scope.executable;
+		    	}
+	    		getjobprom = clusterpostService.getUserJobs(params);
+	    	}
+
+	    	getjobprom
+			.then(function(res){
 				$scope.jobs.data = res.data;
 				$scope.jobs.status = _.uniq(_.pluck(_.pluck(res.data, 'jobstatus'), 'status'));
 				$scope.jobs.executables = _.uniq(_.pluck(res.data, 'executable'));
@@ -270,8 +294,7 @@ angular.module('clusterpost-list')
 							      {id: '1', value: '50'},
 							      {id: '2', value: '100'}];
 		// $scope.itemsByPage = "10";
-		$scope.rowCollection = [];
-		$scope.getDB();
+		$scope.rowCollection = [];		
 		$scope.forceRunJob = false;
 		$scope.activeTab = 0;
 
