@@ -17,20 +17,18 @@ angular.module('clusterpost-list')
 
 		clusterauth.getUser()
 		.then(function(res){
-			$scope.user = res;
-			if($scope.user.scope.indexOf('admin') !== -1){
-				return clusterauth.getScopes()
-				.then(function(res){
-					if(res.data && res.data[0]){
-						$scope.clusterScopes = _.filter(res.data[0].scopes, function(sc){
-							return sc != 'default' && sc != 'admin' && sc != 'clusterpost';
-						});
-					}else{
-						console.error("No scopes found!");
-					}			
-					
-				});
-			}						
+			$scope.user = res;			
+			return clusterauth.getScopes()
+			.then(function(res){
+				if(res.data && res.data[0]){
+					$scope.clusterScopes = _.filter(res.data[0].scopes, function(sc){
+						return sc != 'default' && sc != 'admin' && sc != 'clusterpost';
+					});
+				}else{
+					console.error("No scopes found!");
+				}			
+				
+			});
 		})
 		.then(function(){
 			return $scope.getDB();
