@@ -34,7 +34,8 @@ exports.jobpost = Joi.object().keys({
 		outputdir: Joi.string().optional(),
 		name: Joi.string().optional(),
 		scope: Joi.array().items(Joi.string()).optional(),
-		version: Joi.string().optional()
+		version: Joi.string().optional(),
+		data: Joi.object().optional()
     });
 
 exports.jobstatus = Joi.object().keys({
@@ -63,5 +64,6 @@ exports.job = Joi.object().keys({
 		name: Joi.string().optional(),
 		_attachments: Joi.optional(),
 		scope: Joi.array().items(Joi.string()).optional(),
-		version: Joi.string().optional()
+		version: Joi.string().optional(),
+		data: Joi.object().optional()
     });
