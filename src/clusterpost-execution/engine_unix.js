@@ -37,6 +37,9 @@ module.exports = function (conf) {
 			
 
 			try{
+
+				fs.writeFileSync(path.join(cwd, "stdout.out"), command + params.toString());
+
 				var out = fs.openSync(path.join(cwd, "stdout.out"), 'a');
 		    	var err = fs.openSync(path.join(cwd, "stderr.err"), 'a');
 
@@ -135,13 +138,11 @@ module.exports = function (conf) {
 								status: 'FAIL',
 								error: 'The jobid does not match the running program'
 							});
-						}else{
-							var l = lines[1].replace(/\s\s+/g, ' ').split(' ');
+						}else{							
 							resolve({
 								jobid: jobid,
 								status: 'RUN',
-								stat: l[2],
-								time: l[3]
+								stat: lines[1]
 							});
 						}
 					}else{
