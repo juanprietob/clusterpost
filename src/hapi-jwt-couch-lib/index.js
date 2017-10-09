@@ -119,7 +119,9 @@ hapijwtcouch.setUserToken = function(token){
 }
 
 hapijwtcouch.getUserToken = function(){
-    return hapijwtcouch.auth.bearer;
+    return {
+        token: hapijwtcouch.auth.bearer
+    };
 }
 
 
@@ -224,10 +226,17 @@ hapijwtcouch.getUsers = function(){
 hapijwtcouch.updateUser = function(userinfo){
 
     return new Promise(function(resolve, reject){
+
+        var usinfo = _.clone(userinfo);
+
+        if(usinfo.scope){
+            delete usinfo.scope;
+        }
+
         var options = {
             url: hapijwtcouch.getServer() + "/auth/user",
             method: 'PUT',
-            json: userinfo,
+            json: usinfo,
             auth: hapijwtcouch.auth,
             agentOptions: hapijwtcouch.agentOptions
         }

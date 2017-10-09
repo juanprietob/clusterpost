@@ -70,7 +70,7 @@ lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
     lab.test('returns true when unauthorized user access api.', function(){
 
         return hapijwtcouch.getUsers()
-        .then(function(res){
+        .then(function(res){            
             Joi.assert(res, Joi.object().keys({ 
                 statusCode: Joi.number().valid(403),
                 error: Joi.string(),
@@ -80,11 +80,30 @@ lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
         
     });
 
-    lab.test('returns true when user scope is updated manually to admin', function(){
+    lab.test('returns true when user information is retrieved, additional information is added and additional information is retrieved', function(){
         
         return hapijwtcouch.getUser()
         .then(function(user){
+
+            user.projects = [{
+                _id: "someprojectid"
+            }]
+
+            return hapijwtcouch.updateUser(user);
             
+        })
+        .then(function(res){
+            return hapijwtcouch.getUser();
+        })
+        .then(function(user){
+            Joi.assert(user.projects, Joi.array().items(Joi.object()));            
+        });
+    });
+
+    lab.test('returns true when user scope is updated manually to admin', function(){
+        
+        return hapijwtcouch.getUser()
+        .then(function(user){            
             return new Promise(function(resolve, reject){
                 var options = { 
                     uri: "http://localhost:5984/hapijwtcouch/" + user._id,
