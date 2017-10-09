@@ -1,6 +1,6 @@
 {
   "name": "hapi-jwt-couch-lib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "API implementation to send requests to the hapi server and authenticate users, create, delete, etc.",
   "main": "index.js",
   "scripts": {
@@ -28,7 +28,7 @@
     "lab": "^14.3.1"
   },
   "dependencies": {
-    "bluebird": "^3.5.1",    
+    "bluebird": "^3.5.1",
     "jsonwebtoken": "^8.0.1",
     "prompt": "^1.0.0",
     "request": "^2.83.0",
