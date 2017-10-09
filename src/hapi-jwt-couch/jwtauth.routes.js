@@ -70,11 +70,22 @@ module.exports = function (server, conf) {
         
     }
 
-    server.auth.strategy('token', 'jwt', {
-        key: conf.privateKey,
-        validateFunc: validate,
-        verifyOptions: conf.algorithms  // only allow HS256 algorithm
-    });
+    if(conf.algorithms){
+        console.log("Please modify your configuration. Instead of field 'algorithms' change to 'verifyOptions'");
+        server.auth.strategy('token', 'jwt', {
+            key: conf.privateKey,
+            validateFunc: validate,
+            verifyOptions: conf.algorithms  // only allow HS256 algorithm
+        });
+    }else{
+        server.auth.strategy('token', 'jwt', {
+            key: conf.privateKey,
+            validateFunc: validate,
+            verifyOptions: conf.verifyOptions  // only allow HS256 algorithm
+        });
+    }
+
+    
     
 
     /*

@@ -52,7 +52,7 @@ module.exports = function (server, conf) {
 
 	var handler = {};
 
-	const sign = function(user, algorithm){
+	const sign = function(data, algorithm){
 		var token = {};
 		var algo;
 		if(algorithm){
@@ -60,7 +60,7 @@ module.exports = function (server, conf) {
 		}else{
 			algo = conf.algorithm;
 		}
-		token.token = jwt.sign(user, conf.privateKey, algo );
+		token.token = jwt.sign(data, conf.privateKey, algo );
 		return token;
 	}
 
