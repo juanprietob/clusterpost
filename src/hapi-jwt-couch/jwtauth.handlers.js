@@ -189,12 +189,12 @@ module.exports = function (server, conf) {
 		if(user.email !== updateinfo.email && user.scope.indexOf('admin') === -1){
 			rep(Boom.unauthorized('You cannot modify the user information'));
 		}else{
-			couchprovider.getView('_design/user/_view/hash?key=' + JSON.stringify(updateinfo.email))
-			.then(function(hash){
-				return _.pluck(hash, "value")[0];
-			})
-			.then(function(hash){
-				updateinfo.password = hash;
+			couchprovider.getDocument(updateinfo._id)			
+			.then(function(userindb){
+				updateinfo.password = userindb.password;
+				if(updateinfo.scope === undefined){
+					updateinfo.scope = userindb.scope;
+				}
 
 				return couchprovider.uploadDocuments(updateinfo)
 				.then(function(res){
