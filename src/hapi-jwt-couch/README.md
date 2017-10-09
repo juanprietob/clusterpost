@@ -24,9 +24,10 @@ Edit the "message" portion of the configuration. The strings @USERNAME@, @SERVER
 	        "privateKey": "SomeRandomKey123",
 	        "saltRounds": 10,
 	        "algorithm": { 
-	            "algorithm": "HS256"
+	            "algorithm": "HS256",
+	            "expiresIn": "7d"
 	        },
-	        "algorithms": { 
+	        "validateOptions": { 
 	            "algorithms": [ "HS256" ] 
 	        },
 	        "mailer": {
