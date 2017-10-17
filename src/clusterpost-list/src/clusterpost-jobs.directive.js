@@ -136,13 +136,44 @@ angular.module('clusterpost-list')
 	    	var getjobprom = {};
 
 	    	if($scope.user.scope.indexOf('admin') !== -1){
-	    		getjobprom = clusterpostService.getAllJobs();
+	    		if($scope.executable){
+	    			if(_.isArray($scope.executable)){
+	    				getjobprom = Promise.all(_.map($scope.executable, function(exe){
+	    					return clusterpostService.getAllJobs(exe);
+	    				}))
+	    				.then(function(res){
+	    					return {
+	    						data: _.flatten(_.pluck(res, 'data'))
+	    					};
+	    				});
+	    			}else{
+	    				getjobprom = clusterpostService.getAllJobs();
+	    			}
+	    		}else{
+	    			getjobprom = clusterpostService.getAllJobs($scope.executable);
+	    		}
+	    		
 	    	}else{
 	    		var params = {};
 	    		if($scope.executable){
-		    		params.executable = $scope.executable;
+	    			if(_.isArray($scope.executable)){
+	    				getjobprom = Promise.all(_.map($scope.executable, function(exe){
+	    					params.executable = exe;
+	    					return clusterpostService.getUserJobs(params);
+	    				}))
+	    				.then(function(res){
+	    					return {
+	    						data: _.flatten(_.pluck(res, 'data'))
+	    					};
+	    				});
+	    			}else{
+	    				params.executable = $scope.executable;
+	    				getjobprom = clusterpostService.getUserJobs(params);
+	    			}
+		    	}else{
+		    		getjobprom = clusterpostService.getUserJobs(params);
 		    	}
-	    		getjobprom = clusterpostService.getUserJobs(params);
+	    		
 	    	}
 
 	    	getjobprom
@@ -306,7 +337,7 @@ angular.module('clusterpost-list')
 	return {
 	    restrict : 'E',
 	    link : link,
-	    templateUrl: './src/clusterpost-list.directive.html',
+	    templateUrl: './src/clusterpost-jobs.directive.html',
 	    scope: {
 	    	executable: "=",
 	    	jobCallback: "=",
