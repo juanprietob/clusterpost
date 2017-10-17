@@ -306,7 +306,7 @@ angular.module('clusterpost-list')
 	return {
 	    restrict : 'E',
 	    link : link,
-	    templateUrl: './src/clusterpost-jobs.directive.html',
+	    templateUrl: './src/clusterpost-list.directive.html',
 	    scope: {
 	    	executable: "=",
 	    	jobCallback: "=",
