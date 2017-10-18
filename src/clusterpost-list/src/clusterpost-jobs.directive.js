@@ -198,12 +198,12 @@ angular.module('clusterpost-list')
 			$scope.activeTab = 1;
 			clusterpostService.getAttachment(job._id, "stdout.out", "text")
 			.then(function(res){
-				$scope.jobs.selectedJob.stdout = res.data.replace(/\n/g, '<br>');
+				$scope.jobs.selectedJob.stdout = res.data;
 			})
 			.catch(console.error);
 			clusterpostService.getAttachment(job._id, "stderr.err", "text")
 			.then(function(res){
-				$scope.jobs.selectedJob.stderr = res.data.replace(/\n/g, '<br>');
+				$scope.jobs.selectedJob.stderr = res.data;
 			})
 			.catch(console.error);
 		}

@@ -189,10 +189,14 @@
 				
 				<div class="col-md-12">
 					<div class="col-md-6 alert alert-info" role="alert">
-						{{jobs.selectedJob.stdout}}
+						<p style="white-space: pre; overflow: auto;">
+							{{jobs.selectedJob.stdout}}
+						</p>
 					</div>
 					<div class="col-md-6 alert alert-warning" role="alert">
-					  	{{jobs.selectedJob.stderr}}
+						<p style="white-space: pre; overflow: auto;">
+					  		{{jobs.selectedJob.stderr}}
+					  	</p>
 					</div>
 				</div>
 
