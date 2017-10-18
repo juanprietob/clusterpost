@@ -85,7 +85,7 @@ module.exports = function (conf) {
 							});
 						}else{
 							resolve({
-								status: 'DONE'
+								status: 'UPLOADING'
 							});
 						}
 					});

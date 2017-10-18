@@ -13,7 +13,7 @@ module.exports = function(grunt) {
             'node_modules/jsonformatter/dist/json-formatter.min.js',
             './src/clusterpost-list.module.js',
             './src/clusterpost-list.service.js',
-            './src/clusterpost-list.directive.js',
+            './src/clusterpost-jobs.directive.js',
             './src/clusterpost-app.directive.js',
             './src/clusterpost-es-admin.directive.js',
             './dist/clusterpost-list.templates.js'
