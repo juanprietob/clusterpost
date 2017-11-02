@@ -147,14 +147,7 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 					fs.mkdirSync(dirpath);
 				}
 				dirpath=path.join(dirpath, path.parse(name).base);
-				//var stats = fs.statSync(dirpath);
-				// if(stats && stats.isFile()){
-				// 	var sp=name.split('/');
-				// 	name=sp[1];
-				// 	console.log('name',name);
-				// }else{
-				// 	name='';
-				// }
+				
 				
 		    }
 			
@@ -187,12 +180,10 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 						"Content-type" : "application/octet-stream"
 					}
 				}
-				console.log("!!!!!!!!!!!??????????",options.uri);
 				stream.pipe(request(options, function(err, res, body){
 					if(err){
 						reject(err);
 					}else{
-						console.log(body);
 						resolve(body);
 
 					}
@@ -208,8 +199,7 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 
 exports.addDocumentAttachmentFolder = function(doc, pathFolder, codename, rootFolder){
 	
-	
-	//var stream = fs.createReadStream(testfile);
+
 	var files=[];
 	var file=[];
 	files=fs.readdirSync(pathFolder);
@@ -225,20 +215,16 @@ exports.addDocumentAttachmentFolder = function(doc, pathFolder, codename, rootFo
 			return that.addDocumentAttachment(doc, namefile, stream, codename)
 			.then(function(res){
 				if(_.isArray(res)){
-					console.log(res);
 					doc._rev=res[0].rev;
 				}else{
 					var result = JSON.parse(res);
-					//console.log('result',result);
 					doc._rev = result.rev;
 				}	
 				
 			});
 		}else if(stats && stats.isDirectory()){
 			return that.addDocumentAttachmentFolder(doc, path.join(pathFolder, filename), codename, rootFolder);
-			// .then(function(res){
-			// 	return res;
-			// })
+
 		}else{
 			return Promise.resolve();
 		}
@@ -273,7 +259,7 @@ exports.getDocumentURIAttachment = function(doc, name, codename){
 
 		 		var filepath = path.join(conf.datapath, doc._id, name);
 		 		var stream = fs.createReadStream(filepath);
-		 		// stream.pipe(reply);
+
 		 		reply(stream)
 		 		}
 			}
@@ -284,9 +270,7 @@ exports.getDocumentURIAttachment = function(doc, name, codename){
 }
 
 exports.getDocumentAttachment = function(doc, name, codename){
-	//TODO Check for attachment in document (attachments or _attachments)
-	//call getDocumentAttachment
-	//return file content
+
 	var conf;
 		if(codename){
 			conf = configuration[codename];
@@ -297,14 +281,11 @@ exports.getDocumentAttachment = function(doc, name, codename){
 				uri: exports.getCouchDBServer(codename) + "/" + doc._id + "?rev=" + doc._rev
 				
 			}
-	console.log("URI:   "+options.uri);
 	if(doc.attachments){
 		if(doc.attachments[name]!=null){
 			return new Promise(function(resolve, reject){
 				try{
-					// console.log(conf.datapath);
 					var pathattchment=path.join(conf.datapath,doc._id,name);
-					console.log('path', pathattchment);
 					var content=fs.readFileSync(pathattchment).toString();
 					resolve(content);
 

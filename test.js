@@ -27,7 +27,6 @@ if(!env) throw "Please set NODE_ENV variable.";
 
 var conf = getConfigFile(env, "./");
 
-console.log("??????",conf)
 
 couchProvider.setConfiguration(conf);
 
@@ -103,7 +102,6 @@ lab.experiment("Test clusterpost", function(){
         return couchProvider.uploadDocuments(couchdoc)
         .then(function(res){
             docid = res[0].id;
-            console.log(docid);
             Joi.assert(res, Joi.array().items(joiokres));
         });
     });
@@ -113,7 +111,6 @@ lab.experiment("Test clusterpost", function(){
         .then(function(doc){
             var stream = fs.createReadStream(testfile);
             var nametest='';
-            console.log('avant for');
             var j=0;
             for(var i in doc.attachments){
                 if(j==1){
@@ -144,11 +141,9 @@ lab.experiment("Test clusterpost", function(){
                 }
                 j++;
             }
-            //console.log(filecontent);
            return couchProvider.getDocumentAttachment(doc, 'folder_attachments/01R_pp_surfSPHARM.vtk')
            .then(function(dbfilecontent){
-                //TODO comparison
-               //console.log("dbfilecontent",dbfilecontent);
+
                 var index = 0,
                 length = filecontent.length,
                 match = true;
@@ -212,8 +207,7 @@ lab.experiment("Test clusterpost", function(){
                 });
             }); 
         });
-        //TODO: Create a request to your Hapi server test --> /test/{docId}/{docName}
-        //Test if the reply interface works
+
     });
 
 });
