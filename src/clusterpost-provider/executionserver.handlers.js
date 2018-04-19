@@ -33,7 +33,7 @@ module.exports = function (server, conf) {
 			.then(function(filename){
 				return new Promise(function(resolve, reject){
 					var executionserver = conf.executionservers[eskey];
-					if(!executionserver.remote){
+					if(executionserver && !executionserver.remote){
 						var destination = path.join(executionserver.sourcedir, ".token");
 					
 						const scp = spawn('scp', ['-i', executionserver.identityfile, filename, executionserver.user + "@" + executionserver.hostname + ":" + destination ]);
@@ -77,6 +77,65 @@ module.exports = function (server, conf) {
 	server.method({
 		name: "executionserver.startExecutionServers",
 		method: startExecutionServers,
+		options: {}
+	});
+
+	const startTunnel = function(executionserver){
+		if(executionserver.tunnel){
+			var params = _.flatten(_.map(executionserver.tunnel, function(val, key){
+				return [key, val];
+			}))
+
+			const tunnel = spawn('ssh', params.concat([executionserver.user + "@" + executionserver.hostname ]));
+			var alldata = "";
+			tunnel.stdout.on('data', function(data){
+				alldata += data;
+			});
+
+			var allerror = "";
+			tunnel.stderr.on('data', function(data){
+				allerror += data;
+			});
+
+			tunnel.on('close', function(code){
+				console.log(alldata);
+				console.error(allerror);
+			});
+
+			tunnel.unref();
+
+			if(tunnel.pid){
+				return Promise.resolve(tunnel);
+			}else{
+				return Promise.reject(Boom.badImplementation("Create tunnel failed"));
+			}
+		}
+		return Promise.resolve();
+	}
+
+	server.method({
+		name: "executionserver.startTunnel",
+		method: startTunnel,
+		options: {}
+	});
+
+	const startTunnels = function(){
+		if(!server.app.tunnels){
+			server.app.tunnels = {};
+		}
+		return Promise.map(_.keys(conf.executionservers), function(eskey){
+			var executionserver = conf.executionservers[eskey];
+			return startTunnel(executionserver)
+			.then(function(tunnel){
+				server.app.tunnels[eskey] = tunnel;
+				console.log("Tunnel started:", eskey);
+			});
+		})
+	}
+
+	server.method({
+		name: "executionserver.startTunnels",
+		method: startTunnels,
 		options: {}
 	});
 
