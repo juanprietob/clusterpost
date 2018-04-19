@@ -1,110 +1,86 @@
-var Hapi = require('hapi');
-var fs = require('fs');
-var good = require('good');
-var path = require('path');
+var couchProvider = require('./couch.provider');
+exports.couchProvider = couchProvider;
 
-var env = process.env.NODE_ENV;
+exports.register = function (server, conf, next) {
+	
+    couchProvider.setConfiguration(conf);
+    var namespace = 'couchprovider';
 
-if(!env) throw "Please set NODE_ENV variable.";
-
-
-const getConfigFile = function () {
-  try {
-    // Try to load the user's personal configuration file
-    return require(process.cwd() + '/conf.my.' + env + '.json');
-  } catch (e) {
-    // Else, read the default configuration file
-    return require(process.cwd() + '/conf.' + env + '.json');
-  }
-}
-
-const startServer = function(cluster){
-
-    var conf = getConfigFile();
-    
-    var server = new Hapi.Server();
-
-    var tls;
-    if(conf.tls && conf.tls.key && conf.tls.cert){
-        tls = {
-          key: fs.readFileSync(conf.tls.key),
-          cert: fs.readFileSync(conf.tls.cert)
-        };
+    if(conf.namespace){
+    	namespace = conf.namespace;
     }
-    server.connection({ 
-        host: conf.host,
-        port: conf.port,
-        tls: tls
-    });    
 
-    var plugins = [];
+    var addNameSpace = function(namespace){
+    	server.method({
+		    name: namespace + '.getCouchDBServer',
+		    method: couchProvider.getCouchDBServer,
+		    options: {}
+		});
 
-    Object.keys(conf.plugins).forEach(function(pluginName){
-        var plugin = {};
-        plugin.register = require(pluginName);
-        plugin.options = conf.plugins[pluginName];
-        plugins.push(plugin);
-    });
+		server.method({
+		    name: namespace + '.uploadDocuments',
+		    method: couchProvider.uploadDocuments,
+		    options: {}
+		});
 
-    plugins.push({
-        register: good,
-        options: {
-            reporters: [
-            {
-                reporter: require('good-console'),
-                events: { log: '*', response: '*' }
-            }, {
-                reporter: require('good-file'),
-                events: { ops: '*' },
-                config: 'all.log'
-            }]
-        }
-    });
+		server.method({
+		    name: namespace + '.getDocument',
+		    method: couchProvider.getDocument,
+		    options: {}
+		});
 
-    
-    server.method({
-        name: 'getCluster',
-        method: function(){
-            return cluster;
-        },
-        options: {}
-    });
-    
+		server.method({
+		    name: namespace + '.deleteDocument',
+		    method: couchProvider.deleteDocument,
+		    options: {}
+		});
 
-    server.register(plugins, function(err){
-        if (err) {
-            throw err; // something bad happened loading the plugin
-        }
+		server.method({
+		    name: namespace + '.addDocumentAttachment',
+		    method: couchProvider.addDocumentAttachment,
+		    options: {}
+		});
 
-    });
-    
-    server.start(function () {
-        server.connections.forEach(function(connection){
-            server.log('info', 'server is listening port: ' + connection.info.uri);
-        });
-    });
+		server.method({
+		    name: namespace + '.addDocumentAttachmentFolder',
+		    method: couchProvider.addDocumentAttachmentFolder,
+		    options: {}
+		});
 
+		server.method({
+		    name: namespace + '.getDocumentURIAttachment',
+		    method: couchProvider.getDocumentURIAttachment,
+		    options: {}
+		});
 
-}
+		server.method({
+		    name: namespace + '.getDocumentAttachment',
+		    method: couchProvider.getDocumentAttachment,
+		    options: {}
+		});
 
-if(env === 'production'){
-    const cluster = require('cluster');
-    const numCPUs = require('os').cpus().length;
+		server.method({
+		    name: namespace + '.getView',
+		    method: couchProvider.getView,
+		    options: {}
+		});
 
-    if (cluster.isMaster) {
-      // Fork workers.
-      for (var i = 0; i < 1; i++) {
-        cluster.fork();
-      }
-
-      cluster.on('exit', (worker, code, signal) => {
-        console.log("worker ", worker.process.pid,"died");
-      });
-      
-    } else {
-        startServer(cluster);
+		console.info('couch-provider namespace', namespace, 'initialized.');
     }
-}else{
 
-    startServer();
-}
+
+    if(Array.isArray(namespace)){
+    	namespace.forEach(function(ns){
+    		addNameSpace(ns);
+    	});
+    }else{
+    	addNameSpace(namespace);
+    }
+    
+
+    return next();
+};
+
+exports.register.attributes = {
+  pkg: require('./package.json')
+};
