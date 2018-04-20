@@ -110,7 +110,7 @@ module.exports = function (server, conf) {
 				return Promise.reject(Boom.badImplementation("Create tunnel failed"));
 			}
 		}
-		return Promise.resolve();
+		return Promise.resolve(null);
 	}
 
 	server.method({
@@ -127,8 +127,10 @@ module.exports = function (server, conf) {
 			var executionserver = conf.executionservers[eskey];
 			return startTunnel(executionserver)
 			.then(function(tunnel){
-				server.app.tunnels[eskey] = tunnel;
-				console.log("Tunnel started:", eskey);
+				if(tunnel){
+					server.app.tunnels[eskey] = tunnel;
+					console.log("Tunnel started:", eskey);
+				}
 			});
 		})
 	}
