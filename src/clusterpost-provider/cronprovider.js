@@ -324,8 +324,22 @@ module.exports = function (server, conf) {
 	    .catch(console.error);
 	}
 
+	const retrieveDeleteJobs = function(){
+		var params = {
+			key: JSON.stringify('DELETE')
+		}
+
+		var view = "_design/searchJob/_view/jobstatus?" + qs.stringify(params);
+		
+	    return server.methods.clusterprovider.getView(view)
+	    .then(function(docs){
+	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToDeleteQueue);
+	    })
+	    .catch(console.error);
+	}
+
 	const retrieveJobs = function(){
-		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveKillJobs()])
+		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveKillJobs(), retrieveDeleteJobs()])
 		.catch(console.error);
 	}
 
