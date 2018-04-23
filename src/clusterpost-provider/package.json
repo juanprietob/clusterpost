@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-provider",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Transfer job description and data to couchdb. Submit task to the computing grid",
   "main": "index.js",
   "scripts": {
@@ -18,6 +18,7 @@
     "clusterpost-model": "^1.5.0",
     "couch-provider": "^1.0.2",
     "couch-update-views": "^1.0.8",
+    "find-process": "^1.1.1",
     "joi": "^7.3.0",
     "linkedlist": "^1.0.1",
     "node-crontab": "0.0.8",
