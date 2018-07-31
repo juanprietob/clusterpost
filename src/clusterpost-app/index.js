@@ -32,10 +32,12 @@ const help = function(){
     console.error("--server url, set the server url. ex., https://some.server:8180");    
     console.error("\nOptional parameters:");
     console.error("--dir  Output directory, default: ./out");
-    console.error("--status one of [DONE, RUN, FAIL, EXIT, UPLOADING, CREATE], if this flag is provided, the job information will only be printed. By default, the behavior is status 'DONE' and download the results.");
+    console.error("--status one of [DONE, RUN, FAIL, EXIT, UPLOADING, CREATE], default: None");
+    console.error("--print , if provided the information is printed only");
     console.error("--delete, default false, when downloading jobs with status 'DONE', the jobs will be deleted upon completion");
     console.error("--j job id, default: all ids");
     console.error("--executable executable, default: all executables");
+    console.error("--email email, default: (authenticated user)");
 }
 
 if(argv["h"] || argv["help"]){
@@ -112,29 +114,42 @@ if(argv["delete"] !== undefined){
     deletejobs = true;
 }
 
-var userEmai = undefined;
+var userEmail = undefined;
 if(argv["email"]){
-    userEmai = argv["email"];
+    userEmail = argv["email"];
 }
+
+var outputdir = "./out";
+if(argv["dir"]){
+    outputdir = argv["dir"];
+}
+
+var status = argv["status"];
+var jobid = argv["j"];
+var executable = argv["executable"];
+var print = argv["print"];
+
+console.log("Output dir", outputdir);
+console.log("Status", status);
+if(jobid){
+    console.log("jobid", jobid);
+}
+
+if(executable){
+    console.log("executable", executable);   
+}
+
+if(print){
+    console.log("print", print);   
+}
+
 
 loginprom
 .then(function(){
 
-    var outputdir = "./out";
-    if(argv["dir"]){
-        outputdir = argv["dir"];
-    }
-
-    console.log("Using download directory:", outputdir);
-
-
-    var status = argv["status"];
-    var jobid = argv["j"];
-    var executable;
-
-    if(!status){
+    if(!print){
         if(!jobid){
-            return clusterpost.getJobs(executable, "DONE", userEmai)
+            return clusterpost.getJobs(executable, status, userEmail)
             .then(function(jobs){                
                 return Promise.map(jobs, function(job){
                     console.log(JSON.stringify(job, null, 2));
@@ -203,7 +218,7 @@ loginprom
         }
     }else{
         if(!jobid){
-            return clusterpost.getJobs(executable, status, userEmai)
+            return clusterpost.getJobs(executable, status, userEmail)
             .then(function(jobs){
                 console.log(JSON.stringify(jobs, null, 2))
             });
