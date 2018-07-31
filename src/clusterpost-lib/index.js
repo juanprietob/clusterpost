@@ -168,6 +168,7 @@ class ClusterpostLib extends HapiJWTCouch{
     getJobs(executable, jobstatus, email){
 
         var params = {};
+        var self = this;
 
         if(executable){
             params.executable = executable;
@@ -181,13 +182,14 @@ class ClusterpostLib extends HapiJWTCouch{
             params.userEmail = email;
         }
 
-        return getUserJobs(params);
+        return self.getUserJobs(params);
         
     }
 
     getExecutionServerJobs(executionserver, jobstatus){
 
         var params = {};
+        var self = this;
 
         if(executionserver){
             params.executionserver = executionserver;
@@ -197,7 +199,7 @@ class ClusterpostLib extends HapiJWTCouch{
             params.jobstatus = jobstatus;
         }        
 
-        return getUserJobs(params);
+        return self.getUserJobs(params);
         
     }
 
@@ -549,7 +551,7 @@ class ClusterpostLib extends HapiJWTCouch{
             if(outputdir){
                 var filename = path.join(outputdir, name);
                 console.log("Downloading file:", filename)
-                mkdirp(path.parse(filename).dir);//Creates directories in case the file is stored as path form
+                self.mkdirp(path.parse(filename).dir);//Creates directories in case the file is stored as path form
                 return self.getDocumentAttachmentSave(job._id, name, filename);
             }else{
                 return self.getDocumentAttachment(job._id, name);
