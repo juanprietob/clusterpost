@@ -9,18 +9,16 @@ const getConfigFile = function () {
     return require(process.cwd() + '/conf.test.json');
   }
 }
-
+var conf = getConfigFile();
 
 var server = new Hapi.Server();
 
 server.connection({ 
-    host: "localhost",
-    port: "9090"
+    host: conf.host,
+    port: conf.port
 });
 
-var conf = getConfigFile();
-
- var plugins = [];
+var plugins = [];
 
 Object.keys(conf.plugins).forEach(function(pluginName){
     var plugin = {};

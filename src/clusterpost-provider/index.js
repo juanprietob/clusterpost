@@ -10,7 +10,10 @@ exports.register = function (server, conf, next) {
     
     server.methods.executionserver.startExecutionServers()
     .then(function(){
-        console.log("Execution servers started.");
+        return server.methods.executionserver.startTunnels();
+    })
+    .then(function(){
+      console.log("Execution servers started.");
     });
   }
 

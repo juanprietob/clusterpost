@@ -8,6 +8,7 @@ const Joi = require('joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 const clustermodel = require("clusterpost-model");
+const clusterpost = require("clusterpost-lib");
 
 const getConfigFile = function (env, base_directory) {
   try {
@@ -36,68 +37,13 @@ var getClusterPostServer = function(){
     return conf.uri 
 }
 
+clusterpost.setClusterPostServer(conf.uri);
+
 var joiokres = Joi.object().keys({
                 ok: Joi.boolean().valid(true),
                 id: Joi.string(),
                 rev: Joi.string()
             });
-
-var createUser = function(user){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: getClusterPostServer() + "/clusterauth/user",
-            method: 'POST',
-            json: user,
-            agentOptions: agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-var userLogin = function(user){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: getClusterPostServer() + "/clusterauth/login",
-            method: 'POST',
-            json: user,
-            agentOptions: agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-var deleteUser = function(token){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: getClusterPostServer() + "/clusterauth/user",
-            method: 'DELETE',
-            agentOptions: agentOptions,
-            headers: { authorization: token }
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
 
 lab.experiment("Test clusterpost auth jwt", function(){
 
@@ -109,7 +55,7 @@ lab.experiment("Test clusterpost auth jwt", function(){
 
     lab.test('returns true when new user is created.', function(){
 
-        return createUser(user)
+        return clusterpost.createUser(user)
         .then(function(res){
             Joi.assert(res.token, Joi.string().required());
         });
@@ -117,9 +63,7 @@ lab.experiment("Test clusterpost auth jwt", function(){
     });
 
     lab.test('returns true if same user fails to be created.', function(){
-
-        
-        return createUser(user)
+        return clusterpost.createUser(user)
         .then(function(res){
             Joi.assert(res.token, Joi.object().keys({ 
                 statusCode: Joi.number().valid(409),
@@ -138,9 +82,10 @@ lab.experiment("Test clusterpost auth jwt", function(){
             password: "Some808Password!"
         }
 
-        return userLogin(user)
+        return clusterpost.userLogin(user)
         .then(function(res){
             Joi.assert(res.token, Joi.string().required())
+            console.log(res.token);
             token = "Bearer " + res.token;
         });
         
@@ -148,10 +93,10 @@ lab.experiment("Test clusterpost auth jwt", function(){
 
     lab.test('returns true when unauthorized user access api.', function(){
 
-        return deleteUser()
+        return clusterpost.getExecutionServers()
         .then(function(res){
             Joi.assert(res, Joi.object().keys({ 
-                statusCode: Joi.number().valid(401),
+                statusCode: Joi.number().valid(403),
                 error: Joi.string(),
                 message: Joi.string()
             }));
@@ -159,17 +104,31 @@ lab.experiment("Test clusterpost auth jwt", function(){
         
     });
 
-    lab.test('returns true when valid user deletes itself.', function(){
+    lab.test('returns true when authorized user access api.', function(){
 
-        return deleteUser(token)
+        return clusterpost.getUser()
         .then(function(res){
+            
             Joi.assert(res, Joi.object().keys({ 
-                ok: Joi.boolean(),
-                id: Joi.string(),
-                rev: Joi.string()
+                _id: Joi.string(),
+                _rev: Joi.string(),
+                name: Joi.string(),
+                email: Joi.string().email(),
+                type: Joi.string(),
+                scope: Joi.array().items(Joi.string())
             }));
         });
         
     });
+
+    lab.test('returns true when valid user deletes itself.', function(){
+
+        return clusterpost.deleteUser()
+        .then(function(res){
+            Joi.assert(res, joiokres);
+        });
+        
+    });
+
 
 });

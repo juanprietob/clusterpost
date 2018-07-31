@@ -1,4 +1,4 @@
-
+'use strict'
 var fs = require('fs');
 var path = require('path');
 var qs = require('querystring');
@@ -10,304 +10,319 @@ var _ = require('underscore');
 var prompt = require('prompt');
 var jws = require('jsonwebtoken');
 
-var hapijwtcouch = {};
-
-hapijwtcouch.auth = {};
-
-hapijwtcouch.getAuth = function(){
-    return hapijwtcouch.auth;
-}
-
-hapijwtcouch.setServer = function(uri){
-    if(_.isObject(uri)){
-        _.extend(hapijwtcouch, uri);
-    }else{
-        hapijwtcouch.uri = uri;
+module.exports = class HapiJWTCouch{
+    constructor(){
+        this.auth = {};
+        this.uri = "";
+        this.agentOptions = {};
+        this.setServerUri = this.setServer;
     }
-}
 
-hapijwtcouch.setServerUri = hapijwtcouch.setServer;
-
-hapijwtcouch.getServer = function(){
-    return hapijwtcouch.uri 
-}
-
-hapijwtcouch.agentOptions = {};
-
-hapijwtcouch.setAgentOptions = function(agentOptions){
-    hapijwtcouch.agentOptions = agentOptions;
-}
-
-hapijwtcouch.promptUsernamePassword = function(){
-    return new Promise(function(resolve, reject){
-        var schema = {
-            properties: {
-                email: {
-                    pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-                    message: 'Email address',
-                    required: true
-                },
-                password: {                    
-                    hidden: true,
-                    required: true
-                }
-            }
-        };        
-        prompt.get(schema, function (err, result) {
-            if(err){
-                reject(err)
-            }else{
-                resolve(result);
-            }
-        });
-    });
-}
-
-hapijwtcouch.promptServer = function(){
-    return new Promise(function(resolve, reject){
-        var schema = {
-            properties: {
-                uri: {
-                    message: 'Please enter the server uri',
-                    required: true
-                }
-            }
-        };        
-        prompt.get(schema, function (err, result) {
-            if(err){
-                reject(err)
-            }else{
-                resolve(result);
-            }
-        });
-    });
-}
-
-hapijwtcouch.start = function(){
-    return hapijwtcouch.promptServer()
-    .then(function(server){
-        hapijwtcouch.setServer(server);
-        return hapijwtcouch.promptUsernamePassword()
-    })
-    .then(function(user){
-        return hapijwtcouch.userLogin(user);
-    })
-}
-
-hapijwtcouch.testUserToken = function(token){
-    var jwt = jws.decode(token.token);
-
-    if(jwt.exp && jwt.exp < Date.now() / 1000){
-        return false;
-    }else if(jwt.exp === undefined){
-        console.log("WARNING! The token does not have an expiry date. Tokens without expiry date were deprecated. The server could be running an old version. Please contact the server administrator.");
+    getAuth(){
+        return this.auth;
     }
-    return true;
-}
 
-hapijwtcouch.setUserToken = function(token){
-    if(_.isObject(token)){
-        if(token.token){
-            hapijwtcouch.auth.bearer = token.token;
+    setServer(uri){
+        if(_.isObject(uri)){
+            _.extend(this, uri);
         }else{
-            console.error("hapijwtcouch.setUserToken: ", JSON.stringify(token));
-            throw "Invalid token set for auth mechanism, must be an object {'token': 'someAuthToken'}";
+            this.uri = uri;
         }
-    }else{
-        hapijwtcouch.auth.bearer = token;
+    }
+
+    getserver(){
+        return this.uri;
+    }
+
+    getServer(){
+        return this.uri 
+    }
+
+    setAgentOptions(agentOptions){
+        this.agentOptions = agentOptions;
+    }
+
+    promptUsernamePassword(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var schema = {
+                properties: {
+                    email: {
+                        pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                        message: 'Email address',
+                        required: true
+                    },
+                    password: {                    
+                        hidden: true,
+                        required: true
+                    }
+                }
+            };        
+            prompt.get(schema, function (err, result) {
+                if(err){
+                    reject(err)
+                }else{
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    promptServer(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var schema = {
+                properties: {
+                    uri: {
+                        message: 'Please enter the server uri',
+                        required: true
+                    }
+                }
+            };        
+            prompt.get(schema, function (err, result) {
+                if(err){
+                    reject(err)
+                }else{
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    start(){
+        var self = this;
+        return self.promptServer()
+        .then(function(server){
+            self.setServer(server);
+            return self.promptUsernamePassword()
+        })
+        .then(function(user){
+            return self.userLogin(user);
+        })
+    }
+
+    testUserToken(token){
+        var jwt = jws.decode(token.token);
+        var self = this;
+
+        if(jwt.exp && jwt.exp < Date.now() / 1000){
+            return false;
+        }else if(jwt.exp === undefined){
+            console.log("WARNING! The token does not have an expiry date. Tokens without expiry date were deprecated. The server could be running an old version. Please contact the server administrator.");
+        }
+        return true;
+    }
+
+    setUserToken(token){
+        var self = this;
+        if(_.isObject(token)){
+            if(token.token){
+                self.auth.bearer = token.token;
+            }else{
+                console.error("self.setUserToken: ", JSON.stringify(token));
+                throw "Invalid token set for auth mechanism, must be an object {'token': 'someAuthToken'}";
+            }
+        }else{
+            self.auth.bearer = token;
+        }
+    }
+
+    getUserToken(){
+        return {
+            token: self.auth.bearer
+        };
+    }
+
+
+    //Here the implementation of different functions starts
+    createUser(user){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/user",
+                method: 'POST',
+                json: user,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    resetPassword(user){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/reset",
+                method: 'POST',
+                json: user,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    userLogin(user){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/login",
+                method: 'POST',
+                json: user,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    self.auth.bearer = body.token
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    getUser(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/user",
+                method: 'GET',
+                auth: self.auth,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{                
+                    resolve(JSON.parse(body));
+                }
+            });
+        });
+    }
+
+    getUsers(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/users",
+                method: 'GET',
+                auth: self.auth,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    updateUser(userinfo){
+        var self = this;
+        return new Promise(function(resolve, reject){
+
+            var usinfo = _.clone(userinfo);
+
+            if(usinfo.scope){
+                delete usinfo.scope;
+            }
+
+            var options = {
+                url: self.getServer() + "/auth/user",
+                method: 'PUT',
+                json: usinfo,
+                auth: self.auth,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    updateUsers(userinfo){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/users",
+                method: 'PUT',
+                json: userinfo,
+                auth: self.auth,
+                agentOptions: self.agentOptions
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    deleteUser(){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/user",
+                method: 'DELETE',
+                agentOptions: self.agentOptions,
+                auth: self.auth
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    deleteUsers(user){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url: self.getServer() + "/auth/users",
+                method: 'DELETE',
+                agentOptions: self.agentOptions,
+                auth: self.auth,
+                json: user
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
     }
 }
-
-hapijwtcouch.getUserToken = function(){
-    return {
-        token: hapijwtcouch.auth.bearer
-    };
-}
-
-
-//Here the implementation of different functions starts
-
-hapijwtcouch.createUser = function(user){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/user",
-            method: 'POST',
-            json: user,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.resetPassword = function(user){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/reset",
-            method: 'POST',
-            json: user,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.userLogin = function(user){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/login",
-            method: 'POST',
-            json: user,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                hapijwtcouch.auth.bearer = body.token
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.getUser = function(){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/user",
-            method: 'GET',
-            auth: hapijwtcouch.auth,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{                
-                resolve(JSON.parse(body));
-            }
-        });
-    });
-}
-
-hapijwtcouch.getUsers = function(){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/users",
-            method: 'GET',
-            auth: hapijwtcouch.auth,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.updateUser = function(userinfo){
-
-    return new Promise(function(resolve, reject){
-
-        var usinfo = _.clone(userinfo);
-
-        if(usinfo.scope){
-            delete usinfo.scope;
-        }
-
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/user",
-            method: 'PUT',
-            json: usinfo,
-            auth: hapijwtcouch.auth,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.updateUsers = function(userinfo){
-
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/users",
-            method: 'PUT',
-            json: userinfo,
-            auth: hapijwtcouch.auth,
-            agentOptions: hapijwtcouch.agentOptions
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.deleteUser = function(){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/user",
-            method: 'DELETE',
-            agentOptions: hapijwtcouch.agentOptions,
-            auth: hapijwtcouch.auth
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-
-hapijwtcouch.deleteUsers = function(user){
-    return new Promise(function(resolve, reject){
-        var options = {
-            url: hapijwtcouch.getServer() + "/auth/users",
-            method: 'DELETE',
-            agentOptions: hapijwtcouch.agentOptions,
-            auth: hapijwtcouch.auth,
-            json: user
-        }
-
-        request(options, function(err, res, body){
-            if(err){
-                reject(err);
-            }else{
-                resolve(body);
-            }
-        });
-    });
-}
-_.extend(exports, hapijwtcouch);

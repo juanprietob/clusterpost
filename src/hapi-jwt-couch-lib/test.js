@@ -5,12 +5,13 @@ const lab = exports.lab = Lab.script();
 const request = require('request');
 const Promise = require('bluebird');
 const _ = require('underscore');
-const hapijwtcouch = require('./index');
+const HapiJWTCouch = require('./index');
+var hapijwtcouch = new HapiJWTCouch();
 
 lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
 
     hapijwtcouch.setServer({
-        uri: "http://localhost:9090"
+        uri: "http://localhost:9191"
     });
 
     var token = '';

@@ -27,7 +27,7 @@ var help = function(){
     console.error("--status  	get job status");
     console.error("--kill  		kill job");
     console.error("--delete  	delete job");
-    console.error("--remote     retrieve existing");
+    console.error("--remote     run as a daemon");
 }
 
 if(!remote && (!jobid || !submit && !status && !kill && !jobdelete)){
@@ -75,7 +75,7 @@ if(remote){
     var crontab = require('node-crontab');
     var isrunningtask = false;
 
-    var jobId = crontab.scheduleJob("*/1 * * * *", function(){
+    crontab.scheduleJob("*/1 * * * *", function(){
         if(!isrunningtask){
             isrunningtask = true;        
             executionmethods.getJobsQueue()
@@ -136,6 +136,8 @@ if(remote){
         }
         
     });
+
+    console.log("Starting clusterpost-execution in remote mode:");
 
 }else{
 

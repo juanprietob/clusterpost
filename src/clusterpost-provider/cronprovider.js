@@ -5,6 +5,9 @@ module.exports = function (server, conf) {
 	var Promise = require('bluebird');
 	var os = require('os');
 	var LinkedList = require('linkedlist');
+	var find_process = require('find-process');
+
+
 
 	var queue = new LinkedList();
 	var inqueue = {};
@@ -321,8 +324,22 @@ module.exports = function (server, conf) {
 	    .catch(console.error);
 	}
 
+	const retrieveDeleteJobs = function(){
+		var params = {
+			key: JSON.stringify('DELETE')
+		}
+
+		var view = "_design/searchJob/_view/jobstatus?" + qs.stringify(params);
+		
+	    return server.methods.clusterprovider.getView(view)
+	    .then(function(docs){
+	    	return Promise.map(_.pluck(docs, "value"), server.methods.cronprovider.addJobToDeleteQueue);
+	    })
+	    .catch(console.error);
+	}
+
 	const retrieveJobs = function(){
-		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveKillJobs()])
+		Promise.all([retrieveQueueJobs(), retrieveRunningJobs(), retrieveUploadingJobs(), retrieveKillJobs(), retrieveDeleteJobs()])
 		.catch(console.error);
 	}
 
@@ -362,5 +379,35 @@ module.exports = function (server, conf) {
 
 	//Run once the retrieveQueueJobs() when starting the server
 	retrieveJobs();
+
+	const verifyTunnel = function(){
+		if(server.app.tunnels){
+			_.each(server.app.tunnels, function(tunnel, eskey){
+				if(tunnel.pid){
+					find_process('pid', tunnel.pid)
+					.then(function (list) {
+						if(list.length == 0){
+							console.log("Attempting to restart the tunnel...");
+							server.methods.executionserver.startTunnel(conf.executionservers[eskey])
+							.then(function(tunnel){
+								server.app.tunnels[eskey] = tunnel;
+								console.log("Tunnel started:", eskey);
+							})
+							.catch(function(e){
+								console.error("Starting tunnel failed:", e);
+							});
+						}
+					}, function (err) {
+						console.error(err);
+					})
+				}
+			});
+		}
+	}
+
+	//every ten minutes verify if the tunnel is open
+	crontab.scheduleJob("*/10 * * * *", function(){
+		verifyTunnel();
+	})
 
 }

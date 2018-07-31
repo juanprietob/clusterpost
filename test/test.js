@@ -28,6 +28,8 @@ if(!env) throw "Please set NODE_ENV variable.";
 
 var conf = getConfigFile(env, "./");
 
+console.log("Using the following configuration for test:", JSON.stringify(conf, null, 2));
+
 var agentOptions = {};
 
 if(conf.tls && conf.tls.cert){
@@ -56,7 +58,7 @@ var updateJobStatusRec = function(jobid, validstatus){
     });
 
     return new Promise(function(resolve, reject){
-        setTimeout(resolve, 65000);
+        setTimeout(resolve, 70000);
     })
     .then(function(){
         return clusterpost.updateJobStatus(jobid)
@@ -164,6 +166,7 @@ lab.experiment("Test clusterpost", function(){
             Joi.assert(res.token, Joi.string().required())
             tokenraw = res.token;
             token = "Bearer " + res.token;
+            console.log(res.token)
         });
         
     });
@@ -182,7 +185,7 @@ lab.experiment("Test clusterpost", function(){
                 }
 
                 var options = { 
-                    uri: "http://localhost:5984/clusterjobstest/_design/user/_view/info?" + qs.stringify(params),
+                    uri: conf.couchdb + "/_design/user/_view/info?" + qs.stringify(params),
                     method: 'GET'
                 };
 
@@ -193,7 +196,7 @@ lab.experiment("Test clusterpost", function(){
                     user.scope.push('clusterpost');
 
                     var options = { 
-                        uri: "http://localhost:5984/clusterjobstest/_bulk_docs",
+                        uri: conf.couchdb + "/_bulk_docs",
                         method: 'POST', 
                         json : {
                             docs: [user]
@@ -314,8 +317,8 @@ lab.experiment("Test clusterpost", function(){
 
     lab.test('returns true if the document is deleted', function(){
         return clusterpost.deleteJob(jobid)
-        .then(function(res){
-            Joi.assert(res, joiokres);
+        .then(function(jobstatus){
+            Joi.assert(jobstatus.status, Joi.string().valid("DELETE"));
         });
     });
 
@@ -354,8 +357,8 @@ lab.experiment("Test clusterpost", function(){
 
     lab.test('returns true when second job is deleted', function(){
         return clusterpost.deleteJob(jobid)
-        .then(function(res){
-            Joi.assert(res, joiokres);
+        .then(function(jobstatus){
+            Joi.assert(jobstatus.status, Joi.string().valid("DELETE"));
         });
     });
 
@@ -374,7 +377,7 @@ lab.experiment("Test clusterpost", function(){
                 }
 
                 var options = { 
-                    uri: "http://localhost:5984/clusterjobstest/_design/user/_view/info?" + qs.stringify(params),
+                    uri: conf.couchdb + "/_design/user/_view/info?" + qs.stringify(params),
                     method: 'GET'
                 };
 
@@ -384,7 +387,7 @@ lab.experiment("Test clusterpost", function(){
                     user.scope.push('admin');
 
                     var options = { 
-                        uri: "http://localhost:5984/clusterjobstest/_bulk_docs",
+                        uri: conf.couchdb + "/_bulk_docs",
                         method: 'POST', 
                         json : {
                             docs: [user]
@@ -413,14 +416,11 @@ lab.experiment("Test clusterpost", function(){
 
         var newuser = {
                 email: "someemail@gmail.com",
+                name: "Test user",
                 password: "Some88Password!"
             }
 
-        return clusterpost.createUser({
-                email: "someemail@gmail.com",
-                name: "Test user",
-                password: "Some88Password!"
-        })
+        return clusterpost.createUser(newuser)
         .bind({})
         .then(function(res){
             return clusterpost.getUsers();
@@ -430,10 +430,11 @@ lab.experiment("Test clusterpost", function(){
             var users = JSON.parse(res);
             Joi.assert(users, Joi.array().items(Joi.object()));
 
-            var userfound = _.find(users, function(user){
-                return user.email === newuser.email;
-            });
 
+            var userfound = _.find(users, function(user){
+                return user.email == newuser.email;
+            });
+            
             userfound.scope.push('clusterpost');
 
             return clusterpost.updateUser(userfound);
@@ -449,8 +450,8 @@ lab.experiment("Test clusterpost", function(){
             
         })
         .then(function(res){
-                
-            var adminuser = JSON.parse(res);
+
+            var adminuser = _.isObject(res)? res : JSON.parse(res);
             adminuser.scope = ['default'];
 
             return clusterpost.userLogin(newuser)

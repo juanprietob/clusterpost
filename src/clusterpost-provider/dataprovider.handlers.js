@@ -215,7 +215,14 @@ module.exports = function (server, conf) {
 			//The job is added to the delete queue. The actual deleation is done in the dataprovider.jobDelete function
 			//After the job is deleted in the executionserver side, the deletion is done there.
 			//The call to these functions is done in the cronprovider that manages the queues
-			return server.methods.cronprovider.addJobToDeleteQueue(doc);
+			doc.jobstatus.status = "DELETE";
+			return server.methods.clusterprovider.uploadDocuments(doc)
+			.then(function(uploadstatus){
+				return server.methods.cronprovider.addJobToDeleteQueue(doc);
+			})
+			.then(function(){
+				return doc.jobstatus
+			});
 			
 		})
 		.then(rep)

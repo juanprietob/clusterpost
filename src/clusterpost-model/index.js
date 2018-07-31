@@ -39,7 +39,7 @@ exports.jobpost = Joi.object().keys({
     });
 
 exports.jobstatus = Joi.object().keys({
-		status: Joi.string().valid('CREATE', 'QUEUE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE'),
+		status: Joi.string().valid('CREATE', 'QUEUE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE', 'DELETE'),
 		jobid: Joi.number().optional(),
 		stat: Joi.optional(),
 		error: Joi.optional(),
