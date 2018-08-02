@@ -1,8 +1,11 @@
 var request = require('request');
 var _ = require('underscore');
 var Promise = require('bluebird');
+var mkdirp = require('mkdirp');
+var path = require('path');
+var fs = require('fs');
 
-var configuration;
+exports.configuration = {};
 
 exports.setConfiguration = function(conf){
 	if(!conf || !conf.default && !conf.hostname && !conf.database){
@@ -16,25 +19,55 @@ exports.setConfiguration = function(conf){
 		console.error("No default database name, your conf should look like:", JSON.stringify(confexample, null, 2), "or", JSON.stringify(confexample.codename, null, 2))
 		throw "Bad couchdb configuration";
 	}
-	configuration = conf;
+	exports.configuration = conf;
+}
+
+exports.createDB = function(codename){
+
+	var url = exports.getCouchDBServer(codename);
+
+    return new Promise(function(resolve, reject){
+        request.put(url, function(err, res, body){
+            if(err){
+                reject(err.message);
+            }else{
+                try{
+                    if(JSON.parse(body).error === "not_found"){
+                        request.put(url, function(err, res, body){
+                            resolve(JSON.parse(body));
+                        });
+                    }else{
+                        resolve(JSON.parse(body));
+                    }
+                }catch(e){
+                    console.error(url);
+                    console.error(e);
+                    reject(e);
+                }
+            }
+        });
+    });
+}
+
+exports.getConfiguration = function(codename){
+	if(codename){
+		return exports.configuration[codename];
+	}else if(exports.configuration.default){
+		return exports.configuration[exports.configuration.default];
+	}else{
+		return exports.configuration;
+	}
 }
 
 exports.getCouchDBServer = function(codename){
 
-	var couchserver;
-	if(codename){
-		couchserver = configuration[codename];
-	}else if(configuration.default){
-		couchserver = configuration[configuration.default];
-	}else if(configuration.hostname && configuration.database){
-		couchserver = configuration;
-	}
+	var conf = exports.getConfiguration(codename);
 
-	if(!couchserver){
+	if(!conf){
 		throw "No couchdb server found in configuration with " + codename;
 	}
 
-	var url = couchserver.hostname + "/" + couchserver.database;
+	var url = conf.hostname + "/" + conf.database;
 
 	return url;
 
@@ -96,7 +129,46 @@ exports.getDocument = function(id, codename){
 	});
 }
 
+exports.mkdirp = function(path){
+	return new Promise(function(resolve, reject){
+		mkdirp(path, function(err){
+			if(err){
+				reject(err);
+			}else{
+				resolve(true);
+			}
+		});
+	});
+}
+
+exports.removeDirectorySync = function(dirpath){
+	try{
+		if(fs.statSync(dirpath).isDirectory()){
+			_.each(fs.readdirSync(dirpath), function(filename){
+				var filename = path.join(dirpath, filename);
+				var stats = fs.statSync(filename);
+				if(stats.isFile()){
+					fs.unlinkSync(filename);
+				}else if(stats.isDirectory()){
+					exports.removeDirectorySync(filename);
+				}
+			});
+			fs.rmdirSync(dirpath);
+		}else{
+			throw "This is not a directory", dirpath;
+		}
+	}catch(e){
+		console.error(e);
+	}
+}
+
 exports.deleteDocument = function(doc, codename){
+	if(doc.attachments){
+		var conf = exports.getConfiguration(codename);
+		var dirpath = path.join(conf.datapath, doc._id);
+		exports.removeDirectorySync(dirpath);
+	}
+
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
@@ -122,56 +194,179 @@ exports.deleteDocument = function(doc, codename){
 	});
 }
 
-exports.addDocumentAttachment = function(doc, name, stream, codename){
+exports.deleteAttachment = function(doc, name, codename){
 	return new Promise(function(resolve, reject){
 
-		try{
-			var options = {
-				uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
-				method: 'PUT',
-				headers: {
-					"Content-type" : "application/octet-stream"
+		if(doc.attachments && doc.attachments[name]){
+
+			var conf = exports.getConfiguration(codename);
+			var filepath = path.join(conf.datapath, doc.attachments[name].path);
+
+			try{
+				fs.unlinkSync(filepath);
+
+				var docdir = path.normalize(path.join(conf.datapath, doc._id));
+
+				while(path.normalize(filepath) !== docdir){
+					filepath = path.dirname(filepath);
+					if(fs.statSync(filepath).isDirectory() && fs.readdirSync(filepath).length === 0){
+						fs.rmdirSync(filepath);
+					}
 				}
+
+				delete doc.attachments[name];
+				exports.uploadDocuments(doc, codename)
+				.then(function(res){
+					resolve(res);
+				});
+			}catch(e){
+				reject(e);
 			}
 
-			stream.pipe(request(options, function(err, res, body){
-				if(err){
-					reject(err);
-				}else{
-					resolve(body);
-				}
-			}));
-		}catch(e){
-			reject(e);
+		}else if(doc._attachments && doc._attachments[name]){
+			try{
+				var options = {
+					uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
+					method: 'DELETE'
+				}				
+				request(options, function(err, res, body){
+					if(err){
+						reject(err);
+					}else{
+						var doc = JSON.parse(body);
+						if(doc.error){
+							reject(doc);
+						}else{
+							resolve(doc);
+						}
+					}
+				});
+
+			}catch(e){
+				reject(e);
+			}
+		}else{
+			throw "Attachement not found";
 		}
 	});
 }
 
+exports.addDocumentAttachment = function(doc, name, stream, codename){
 
-exports.getDocumentURIAttachment = function(uri, codename){
-	return {
-		uri: exports.getCouchDBServer(codename) + "/" + uri
-	};
+
+	return new Promise(function(resolve, reject){
+
+		var conf = exports.getConfiguration(codename);
+
+		if(conf.datapath){
+			var dirpath = path.join(conf.datapath, doc._id);
+			var fullpath = path.join(dirpath, name);
+			
+			// The name may contain folders (name = dir1/dir2/actualfilename) so we need to create it recursively to be safe
+			exports.mkdirp(path.dirname(fullpath))
+			.then(function(){
+
+				var filepath = path.join(doc._id, name);
+				
+				var writestream = fs.createWriteStream(fullpath);
+				writestream.on('finish', function(err){
+
+					if(!doc.attachments){
+						doc.attachments = {};
+					}
+
+					doc.attachments[name] = {
+			            "path": filepath
+					}
+					exports.uploadDocuments(doc, codename)
+					.then(function(res){
+						resolve(res);
+					})
+					.catch(reject)
+
+				})
+				stream.pipe(writestream);
+			});
+			
+		}else{
+			try{
+				var options = {
+					uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + encodeURIComponent(name) + "?rev=" + doc._rev,
+					method: 'PUT',
+					headers: {
+						"Content-type" : "application/octet-stream"
+					}
+				}
+				stream.pipe(request(options, function(err, res, body){
+					if(err){
+						reject(err);
+					}else{
+						resolve(body);
+
+					}
+				}));
+			}catch(e){
+				reject(e);
+			}
+		}
+		
+	});
 }
 
 
-exports.getDocumentAttachment = function(uri, codename){
-	return new Promise(function(resolve, reject){
-		try{
-			var options = getDocumentURIAttachment(uri, codename);
-			request(options, function(err, res, body){
+exports.getDocumentURIAttachment = function(doc, name, codename, resolve, reject){
+
+	if(doc.attachments && doc.attachments[name]){
+
+		var conf = exports.getConfiguration(codename);
+
+		var filepath = path.join(conf.datapath, doc._id, name);
+
+		if(!fs.existsSync(filepath)){
+			throw "File not found";
+		}
+
+		return {
+		 	uri: exports.getCouchDBServer(codename) + "/" + doc._id,
+		 	onResponse: function(err, res, request, reply, settings, ttl){//This is 'onResponse' for the h2o2 proxy for hapi https://github.com/hapijs/h2o2
+	 			var stream = fs.createReadStream(filepath);
+	 			reply(stream);
+	 		},
+			callback: function(err, res, body){//This is the callback to use when using the function getDocumentAttachment in the request library call
+				if(err){
+					reject(err);
+				}else{
+					resolve(fs.readFileSync(filepath));
+				}
+			}
+		}
+		
+	}else{
+		return {
+			uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name,
+			callback: function(err, res, body){//This is the callback to use when using the function getDocumentAttachment in the request library call
 				if(err){
 					reject(err);
 				}else{
 					resolve(body);
 				}
-			});
+			}
+		};
+	}
+}
+
+exports.getDocumentAttachment = function(doc, name, codename){
+
+	return new Promise(function(resolve, reject){
+		try{
+			var options = exports.getDocumentURIAttachment(doc, name, codename, resolve, reject);
+			request(options);
 		}catch(e){
 			reject(e);
 		}
 		
 	});
-	
+
 }
 
 exports.getView = function(view, codename){
