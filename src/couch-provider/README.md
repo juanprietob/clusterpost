@@ -4,6 +4,9 @@ Provide methods to interface with couchdb and your server application.
 
 Upload documents, attachments, retrieve, modify and delete functions are provided.
 
+If you don't want to store attachments in the couchdb server you can provide a 'datapath' in the configuration. 
+The attachments will be store that location.
+
 This package can be used as an Hapi plugin. 
 
 It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Promises
@@ -20,7 +23,8 @@ It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Pro
 		"default" : "db1",
 		"db1" : {
 			"hostname": "http://localhost:5984",
-			"database": "users1"
+			"database": "users1",
+			"datapath": "/some/path/in/server"
 		},
 		"db2" : {
 			"hostname": "http://yourdomain.com",
@@ -113,9 +117,22 @@ Delete the document from couchdb, the object doc is needed since deletion requir
 
 ----
 
-5. addDocumentAttachment(doc, name, stream, codename)
+5. deleteDocumentAttachment(doc, name, codename)
 
-Add the attachment to the document. The stream parameter must implement 'pipe' method. See 'stream' documentation in node.js[nodejs.org].
+Delete the document attachment from couchdb or filesystem, the object doc is needed since deletion requires the document id and the revision number. 
+
+----
+
+	server.methods.yourserverapp.deleteDocument(doc)
+	.then(function(res){
+		console.log(res); //result of the operation
+	});
+
+----
+
+6. addDocumentAttachment(doc, name, stream, codename)
+
+Add the attachment to the document or filesystem. The stream parameter must implement 'pipe' method. See 'stream' documentation in node.js[nodejs.org].
 name is a string and it is the name of the attachment
 
 ----
@@ -127,7 +144,7 @@ name is a string and it is the name of the attachment
 
 ----
 
-6. getDocumentURIAttachment(uri, codename)
+6. getDocumentURIAttachment(doc, name, codename)
 
 Returns the full uri of an attachment. If using Hapi, you can use this method like:
 Note: If you use the proxy method in Hapi, remember to include the h2o Hapi plugin. Otherwise you will have an error. 
@@ -140,7 +157,7 @@ Note: If you use the proxy method in Hapi, remember to include the h2o Hapi plug
 		
 		server.methods.yourserverapp.getDocument(docid)
 		.then(function(doc){
-			reply.proxy(server.methods.yourserverapp.getDocumentURIAttachment(doc._id + "/" + attachmentname));
+			reply.proxy(server.methods.yourserverapp.getDocumentURIAttachment(doc, attachmentname));
 		})
 		.catch(function(e){
 			rep(Boom.wrap(e));
@@ -150,13 +167,13 @@ Note: If you use the proxy method in Hapi, remember to include the h2o Hapi plug
 
 ----
 
-7. getDocumentAttachment(uri, codenmae)
+7. getDocumentAttachment(doc, name, codename)
 
 Get the attachment data
 
 ----
 
-	server.methods.yourserverapp.getDocumentAttachment(doc._id + "/" + attachmentname)
+	server.methods.yourserverapp.getDocumentAttachment(doc, attachmentname)
 	.then(function(data){
 		console.log(data);
 	});
