@@ -13,13 +13,16 @@ module.exports = function(jobid, conf, doc){
     }else{
         promdoc = executionmethods.getDocument(jobid)
         .catch(function(err){
-            console.error("Job not found before delete.", jobid)
+            console.log("Job deleted already in the db.", jobid);
+            return null;
         });
     }
 
     return promdoc
-    .then(function(doc){        
-        return require(path.join(__dirname, "jobkill"))(doc, conf);
+    .then(function(doc){
+        if(doc){
+            return require(path.join(__dirname, "jobkill"))(doc, conf);
+        }
     })
     .then(function(){
         var cwd = path.join(conf.storagedir, jobid);
