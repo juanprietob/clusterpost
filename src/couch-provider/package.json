@@ -1,6 +1,6 @@
 {
   "name": "couch-provider",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Provide the implementation for different request methos to couchdb server. It implements, POST, GET, DELETE, PUT methods for documents and views",
   "main": "index.js",
   "dependencies": {
@@ -20,6 +20,9 @@
   },
   "keywords": [
     "Couchdb",
+    "fs",
+    "file system",
+    "attachment",
     "Hapi",
     "server",
     "interface"
