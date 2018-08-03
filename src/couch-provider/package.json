@@ -1,6 +1,6 @@
 {
   "name": "couch-provider",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Provide the implementation for different request methos to couchdb server. It implements, POST, GET, DELETE, PUT methods for documents and views",
   "main": "index.js",
   "dependencies": {
@@ -8,7 +8,6 @@
     "concat-stream": "^1.6.2",
     "mkdirp": "^0.5.1",
     "request": "^2.69.0",
-    "streamify": "^0.3.1",
     "underscore": "^1.8.3"
   },
   "scripts": {
