@@ -4,6 +4,8 @@ var Promise = require('bluebird');
 var mkdirp = require('mkdirp');
 var path = require('path');
 var fs = require('fs');
+var concat = require('concat-stream');
+const { PassThrough, Writable } = require('stream');
 
 exports.configuration = {};
 
@@ -278,9 +280,9 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 					doc.attachments[name] = {
 			            "path": filepath
 					}
-					exports.uploadDocuments(doc, codename)
+					exports.uploadDocuments([doc], codename)
 					.then(function(res){
-						resolve(res);
+						resolve(res[0]);
 					})
 					.catch(reject)
 
@@ -313,8 +315,9 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 	});
 }
 
+exports.getDocumentURIAttachment = function(doc, name, codename){
 
-exports.getDocumentURIAttachment = function(doc, name, codename, resolve, reject){
+	console.error("THIS FUNCTION IS DEPRECATED, use getDocumentStreamAttachment to get a stream and pipe the data where ever you need.");
 
 	if(doc.attachments && doc.attachments[name]){
 
@@ -325,33 +328,41 @@ exports.getDocumentURIAttachment = function(doc, name, codename, resolve, reject
 		if(!fs.existsSync(filepath)){
 			throw "File not found";
 		}
-
 		return {
 		 	uri: exports.getCouchDBServer(codename) + "/" + doc._id,
 		 	onResponse: function(err, res, request, reply, settings, ttl){//This is 'onResponse' for the h2o2 proxy for hapi https://github.com/hapijs/h2o2
 	 			var stream = fs.createReadStream(filepath);
 	 			reply(stream);
-	 		},
-			callback: function(err, res, body){//This is the callback to use when using the function getDocumentAttachment in the request library call
-				if(err){
-					reject(err);
-				}else{
-					resolve(fs.readFileSync(filepath));
-				}
-			}
+	 		}
 		}
 		
 	}else{
 		return {
-			uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name,
-			callback: function(err, res, body){//This is the callback to use when using the function getDocumentAttachment in the request library call
-				if(err){
-					reject(err);
-				}else{
-					resolve(body);
-				}
-			}
+			uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name
 		};
+	}
+}
+
+
+exports.getDocumentStreamAttachment = function(doc, name, codename){
+
+	if(doc.attachments && doc.attachments[name]){
+
+		var conf = exports.getConfiguration(codename);
+
+		var filepath = path.join(conf.datapath, doc._id, name);
+
+		if(!fs.existsSync(filepath)){
+			throw "File not found";
+		}
+		return fs.createReadStream(filepath);
+	}else if(doc._attachments && doc._attachments[name]){
+		var pass = new PassThrough();
+		request({ uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name }).pipe(pass);
+		return pass;
+	}else{
+		console.error("Document is missing attachment");
+		throw "Document is missing attachment";
 	}
 }
 
@@ -359,8 +370,10 @@ exports.getDocumentAttachment = function(doc, name, codename){
 
 	return new Promise(function(resolve, reject){
 		try{
-			var options = exports.getDocumentURIAttachment(doc, name, codename, resolve, reject);
-			request(options);
+			var stream = exports.getDocumentStreamAttachment(doc, name, codename);
+			var concatStream = concat(resolve);
+			stream.pipe(concatStream);
+			stream.on('error', reject);
 		}catch(e){
 			reject(e);
 		}

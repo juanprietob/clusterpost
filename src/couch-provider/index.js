@@ -48,6 +48,12 @@ exports.register = function (server, conf, next) {
 		});
 
 		server.method({
+		    name: namespace + '.getDocumentStreamAttachment',
+		    method: couchProvider.getDocumentStreamAttachment,
+		    options: {}
+		});
+
+		server.method({
 		    name: namespace + '.getDocumentAttachment',
 		    method: couchProvider.getDocumentAttachment,
 		    options: {}
