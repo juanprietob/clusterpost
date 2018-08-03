@@ -8,6 +8,7 @@ var path = require('path');
 var qs = require('querystring');
 var os = require('os');
 var tarGzip = require('node-targz');
+const { PassThrough, Writable } = require('stream');
 
 module.exports = function (server, conf) {
 	
@@ -92,61 +93,76 @@ module.exports = function (server, conf) {
 		});
 	}
 
-	const getDocumentURIAttachment = function(doc, name){
-		if(doc._attachments && doc._attachments[name]){
-			return server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name);
-		}else{
-			var att = _.find(doc.inputs, function(input){
-				return input.name === name;
+	const getDocumentStreamAttachment = function(doc, name){
+		
+		var att = _.find(doc.inputs, function(input){
+			return input.name === name;
+		});
+		if(!att){
+			att = _.find(doc.outputs, function(output){
+				return output.name === name;
 			});
-			if(!att){
-				att = _.find(doc.outputs, function(output){
-					return output.name === name;
-				});
-			}
-			if(!att){
-				throw Boom.notFound("The attachment was not found -> " + name);
-			}					
+		}
+		if(att){
 			if(att.type === 'tar.gz'){
 				name += ".tar.gz";
 			}
 			if(att.remote){
+				var pass = new PassThrough();
+
 				if(att.remote.serverCodename){
-					return server.methods.clusterprovider.getDocumentURIAttachment(att.remote.uri, att.remote.serverCodename);
+
+					request({
+						uri: server.methods.clusterprovider.getCouchDBServer(att.remote.serverCodename) + "/" + att.remote.uri
+					}).pipe(pass);
+
 				}else{ //The next case is for the dataprovider-fs
-					return {
+					request({
 						uri: att.remote.uri,
-						passThrough: true,
-						rejectUnauthorized: false
-					};
+						agentOptions: {
+							rejectUnauthorized: false
+						}
+					}).pipe(pass);
 				}
+
+				return pass;
 			}else if(att.local){
-				return server.methods.clusterprovider.getDocumentURIAttachment(att.local.uri);
-			}else{
-				return server.methods.clusterprovider.getDocumentURIAttachment(doc._id + "/" + name);
+				var pass = new PassThrough();
+
+				request({
+					uri: att.local.uri 
+				}).pipe(pass);
+
+				return pass;
 			}
-			
 		}
+		try{
+			return server.methods.clusterprovider.getDocumentStreamAttachment(doc, name);
+		}catch(e){
+			throw Boom.notFound(e);
+		}
+		
 	}
 
 	/*
 	*/
 	handler.getJob = function(req, rep){
-		
+
 		server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
 			if(req.params.name){
-				rep.proxy(getDocumentURIAttachment(doc, req.params.name));
+				var stream = getDocumentStreamAttachment(doc, req.params.name);
+				rep(stream);
 			}else{
 				rep(doc);
 			}
 			
 		})
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			rep(Boom.notFound(e));
 		});
 		
 	}
@@ -177,7 +193,8 @@ module.exports = function (server, conf) {
 			
 			server.methods.clusterprovider.getDocument(decodedToken._id)
 			.then(function(doc){
-				rep.proxy(getDocumentURIAttachment(doc, decodedToken.name));
+				var stream = getDocumentStreamAttachment(doc, decodedToken.name);
+				rep(stream);
 			})
 			.catch(function(e){
 				rep(Boom.unauthorized(e));
@@ -335,12 +352,12 @@ module.exports = function (server, conf) {
 		});
 	}
 
-	const saveAttachment = function(options, filename){
+	const saveAttachment = function(stream, filename){
 
 		return new Promise(function(resolve, reject){
 
 			var writestream = fs.createWriteStream(filename);
-            request(options).pipe(writestream);
+            stream.pipe(writestream);
 
             writestream.on('finish', function(err){                 
                 if(err){
@@ -376,7 +393,7 @@ module.exports = function (server, conf) {
 				var outputs = doc.outputs;
 
 				return Promise.map(outputs, function(output){
-					return saveAttachment(getDocumentURIAttachment(doc._id, output.name), output.name);
+					return saveAttachment(getDocumentStreamAttachment(doc._id, output.name), output.name);
 				})
 				.then(function(){
 					return new Promise(function(resolve, reject){
