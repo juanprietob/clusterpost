@@ -63,6 +63,7 @@ exports.job = Joi.object().keys({
 		outputdir: Joi.string().optional(),
 		name: Joi.string().optional(),
 		_attachments: Joi.optional(),
+		attachments: Joi.optional(),
 		scope: Joi.array().items(Joi.string()).optional(),
 		version: Joi.string().optional(),
 		data: Joi.object().optional()
