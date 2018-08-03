@@ -188,9 +188,11 @@ module.exports = class HapiJWTCouch{
             request(options, function(err, res, body){
                 if(err){
                     reject(err);
-                }else{
+                }else if(body && body.token){
                     self.auth.bearer = body.token
                     resolve(body);
+                }else{
+                    reject(body);
                 }
             });
         });
