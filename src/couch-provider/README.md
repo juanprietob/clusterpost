@@ -4,12 +4,10 @@ Provide methods to interface with couchdb and your server application.
 
 Upload documents, attachments, retrieve, modify and delete functions are provided.
 
-If you don't want to store attachments in the couchdb server you can provide a 'datapath' in the configuration. 
-The attachments will be store that location.
+**If you don't want to store attachments in the couchdb server you can provide a 'datapath' in the configuration. 
+The attachments will be store in that location on your server.**
 
-This package can be used as an Hapi plugin. 
-
-It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Promises
+This package is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Promises
 
 ----
 	npm install couch-provider
@@ -17,6 +15,7 @@ It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Pro
 
 ## Usage
 
+### Standalone usage, codename is always optional, if not provided it will use the 'default' name in your configuration
 ----
 	//Multiple db configuration, namespace is optional, you can add multiple namespaces by providing an array
 	var couchdbconfig = {
@@ -40,6 +39,114 @@ It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Pro
 	//	"namespace": "yourserverapp"
 	//}
 
+	var couchProvider = require('couch-provider').couchProvider;
+	couchProvider.setConfiguration(confexample);
+
+	var url = couchProvider.getCouchDBServer(codename);
+
+---
+
+#### Create the DB 
+---
+
+    return couchProvider.createDB("users1")
+    .then(function(res){
+        console.log(res);
+    }); 
+
+---
+
+#### Upload a document
+---
+	
+	var docs = [{
+		"someinfo" : "someotherinfo"
+	}];
+
+	return couchProvider.uploadDocuments(docs, codename)
+    .then(function(res){
+        var docids = _.pluck(res, "id");//Underscore library https://underscorejs.org/
+    });
+---
+
+#### Fetch documents
+---
+
+	return Promise.map(docids, function(docid){
+        return couchProvider.getDocument(docid, codename);
+    })
+    .then(function(doc){
+        console.log(doc);
+    });
+---
+        
+#### Add attachment
+---
+    var filename = path.join(__dirname, "README.md");
+    var stream = fs.createReadStream(filename);
+
+    return Promise.map(docids, function(docid){
+        return couchProvider.getDocument(docid, codename)
+        .then(function(doc){
+            return couchProvider.addDocumentAttachment(doc, 'name/in/database.txt', stream, codename);
+        });
+    });
+---
+        
+#### Get attachment
+---
+
+	return couchProvider.getDocument(docid, codename)
+    .then(function(doc){
+        return couchProvider.getDocumentAttachment(doc, 'name/in/database.txt', codename);
+    })
+    .then(function(res){
+    	//res is a buffer with the file content
+        console.log(res.toString());
+    });
+
+---
+
+#### Get attachment stream
+---
+
+	return couchProvider.getDocument(docid, codename)
+    .then(function(doc){
+		var stream = couchProvider.getDocumentStreamAttachment(doc, 'name/in/database.txt', codename);        
+
+		//Do something with the stream, write, pipe somewhere, etc. 
+    });
+---    
+
+#### Delete attachment
+---
+	return Promise.map(docids, function(docid){
+        return couchProvider.getDocument(docid, codename)
+        .then(function(doc){
+            return couchProvider.deleteAttachment(doc, "testname/README.md", codename);
+        })
+        .then(function(res){
+            console.log(res);
+        });
+    });
+---
+
+#### Delete document
+---
+    return Promise.map(docids, function(docid){
+        return couchProvider.getDocument(docid, codename)
+        .then(function(doc){
+            return couchProvider.deleteDocument(doc, codename);
+        })
+        .then(function(res){
+            console.log("Document deleted", res);
+        });
+    });
+---
+
+###This package can be used as an Hapi plugin. 
+
+---
 	/*
 	*	To use as an Hapi plugin, the methods will be available to your server application as server.methods.yourserverapp.*
 	*	@server Hapi server object
@@ -51,32 +158,19 @@ It is implemented using [bluebird](https://github.com/petkaantonov/bluebird) Pro
 	var plugin = {};
     plugin.register = require('couch-provider');
     plugin.options = couchdbconfig;
-
-	/*
-	*	You can also use couch-provider as standalone package
-	*	All methods will be available in couchprovider
-	*/
-	//var couchprovider = require('couch-provider').couchProvider;
 ----
 
-
-### Available methods: 
-
-The parameter codename is optional, if you use a codename, you must use the multiple db configuration object.
-
-How to use couch-provider if used as an Hapi plugin:
+#### How to use couch-provider if used as an Hapi plugin:
 
 1. getCouchDBServer(codename)
 
 Returns the uri of couchdb ex. 'http://localhost:5984/users1'
 
 ----
-
+	//yourserverapp is the namespace in the configuration. The namespace is used to add methods to the server. Check Hapi doc for more //information on server methods https://hapijs.com/tutorials/server-methods
 	var uri = server.methods.yourserverapp.getCouchDBServer(codename);
 
 ----
-
-
 
 2. uploadDocuments(docs, codename)
 
