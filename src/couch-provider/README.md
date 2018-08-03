@@ -28,15 +28,13 @@ This package is implemented using [bluebird](https://github.com/petkaantonov/blu
 		"db2" : {
 			"hostname": "http://yourdomain.com",
 			"database": "users2"
-		},
-		"namespace": "yourserverapp"
+		}
 	}
 
 	//Single db configuration, namespace is optional
 	//var couchdbconfig = {
 	//	"hostname": "http://localhost:5984",
-	//	"database": "users1",
-	//	"namespace": "yourserverapp"
+	//	"database": "users1"
 	//}
 
 	var couchProvider = require('couch-provider').couchProvider;
@@ -144,6 +142,14 @@ This package is implemented using [bluebird](https://github.com/petkaantonov/blu
     });
 ---
 
+#### Get view from db
+---
+	couchProvider.getView('_design/user/_view/info')
+	.then(function(data){
+		console.log(data);//Array of documents
+	});
+---
+
 ###This package can be used as an Hapi plugin. 
 
 ---
@@ -160,19 +166,57 @@ This package is implemented using [bluebird](https://github.com/petkaantonov/blu
     plugin.options = couchdbconfig;
 ----
 
-#### How to use couch-provider if used as an Hapi plugin:
+#### How to use couch-provider if used as an Hapi plugin, add a namespace to the configuration
 
-1. getCouchDBServer(codename)
+----
+	//Multiple db configuration, namespace is optional, you can add multiple namespaces by providing an array
+	var couchdbconfig = {
+		"default" : "db1",
+		"db1" : {
+			"hostname": "http://localhost:5984",
+			"database": "users1",
+			"datapath": "/some/path/in/server"
+		},
+		"db2" : {
+			"hostname": "http://yourdomain.com",
+			"database": "users2"
+		},
+		"namespace": "yourserverapp"
+	}
+
+	var server = new Hapi.Server();
+
+	var plugins = [];
+
+    var plugin = {};
+	plugin.register = require('couch-provider');
+	plugin.options = couchdbconfig;
+	plugins.push(plugin);
+
+    server.register(plugins, function(err){
+        if (err) {
+            throw err; // something bad happened loading the plugin
+        }
+    });
+    
+    server.start(function () {
+        console.log("The server has started");
+    });
+---
+
+
+##### getCouchDBServer(codename)
 
 Returns the uri of couchdb ex. 'http://localhost:5984/users1'
 
 ----
 	//yourserverapp is the namespace in the configuration. The namespace is used to add methods to the server. Check Hapi doc for more //information on server methods https://hapijs.com/tutorials/server-methods
+
 	var uri = server.methods.yourserverapp.getCouchDBServer(codename);
 
 ----
 
-2. uploadDocuments(docs, codename)
+##### uploadDocuments(docs, codename)
 
 Add a new document, the parameter docs can be either an array of json objects or a single object
 
@@ -185,7 +229,7 @@ Add a new document, the parameter docs can be either an array of json objects or
 
 ----
 
-3. getDocument(id, codename)
+##### getDocument(id, codename)
 
 Get a document from the db given an id
 
@@ -198,7 +242,7 @@ Get a document from the db given an id
 
 ----
 
-4. deleteDocument(doc, codename)
+##### deleteDocument(doc, codename)
 
 Delete the document from couchdb, the object doc is needed since deletion requires the document id and the revision number. 
 
@@ -211,7 +255,7 @@ Delete the document from couchdb, the object doc is needed since deletion requir
 
 ----
 
-5. deleteDocumentAttachment(doc, name, codename)
+##### deleteDocumentAttachment(doc, name, codename)
 
 Delete the document attachment from couchdb or filesystem, the object doc is needed since deletion requires the document id and the revision number. 
 
@@ -224,7 +268,7 @@ Delete the document attachment from couchdb or filesystem, the object doc is nee
 
 ----
 
-6. addDocumentAttachment(doc, name, stream, codename)
+##### addDocumentAttachment(doc, name, stream, codename)
 
 Add the attachment to the document or filesystem. The stream parameter must implement 'pipe' method. See 'stream' documentation in node.js[nodejs.org].
 name is a string and it is the name of the attachment
@@ -238,51 +282,43 @@ name is a string and it is the name of the attachment
 
 ----
 
-6. getDocumentURIAttachment(doc, name, codename)
+##### getDocumentStreamAttachment(doc, name, codename)
 
-Returns the full uri of an attachment. If using Hapi, you can use this method like:
-Note: If you use the proxy method in Hapi, remember to include the h2o Hapi plugin. Otherwise you will have an error. 
-
+Returns the stream of an attachment. Example of a request, reply in Hapi
 ----
-
 	function getAttachment = function(request, reply){
 		
 		var docid = request.params.id;//If your Hapi handler method uses the doc id as parameter
+		var attachmentname = request.params.name;//If the name of the attachment is passed as a parameter
 		
 		server.methods.yourserverapp.getDocument(docid)
 		.then(function(doc){
-			reply.proxy(server.methods.yourserverapp.getDocumentURIAttachment(doc, attachmentname));
+			reply(server.methods.yourserverapp.getDocumentStreamAttachment(doc, attachmentname));
 		})
 		.catch(function(e){
 			rep(Boom.wrap(e));
 		});
-		
 	}
-
 ----
 
-7. getDocumentAttachment(doc, name, codename)
+#####  getDocumentAttachment(doc, name, codename)
 
 Get the attachment data
 
 ----
-
 	server.methods.yourserverapp.getDocumentAttachment(doc, attachmentname)
 	.then(function(data){
-		console.log(data);
+		console.log(data);//This is a buffer
 	});
-
 ----
 
-8. getView(view, codename)
+##### getView(view, codename)
 
 The view parameter is the path to the couchdb view ex. '_design/user/_view/info'. 
 
 ----
-
 	server.methods.yourserverapp.getView('_design/user/_view/info')
 	.then(function(data){
 		console.log(data);
 	});
-
 ----
