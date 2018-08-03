@@ -15,7 +15,7 @@
   "dependencies": {
     "bluebird": "^3.3.0",
     "boom": "^3.1.2",
-    "clusterpost-model": "^1.5.0",
+    "clusterpost-model": "^1.7.0",
     "couch-provider": "^2.1.0",
     "couch-update-views": "^1.0.8",
     "find-process": "^1.1.1",
