@@ -17,7 +17,8 @@ module.exports = function (server, conf) {
 			response: {
 				schema: Joi.array().items(Joi.object().keys({
 					name: Joi.string(),
-					queues: Joi.array().items(Joi.string()).optional()
+					queues: Joi.array().items(Joi.string()).optional(),
+					info: Joi.object().optional()
 				}))
 			},
 			description: 'Get execution servers code names'

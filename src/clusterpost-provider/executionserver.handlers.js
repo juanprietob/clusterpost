@@ -145,7 +145,8 @@ module.exports = function (server, conf) {
 		var executionservers = [];
 		_.each(conf.executionservers, function(es, key){
 			var obj = {
-				name: key
+				name: key,
+				info: es.info
 			};
 			if(es.queues){
 				obj.queues = es.queues;
