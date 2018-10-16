@@ -31,6 +31,7 @@
   "homepage": "https://github.com/juanprietob/clusterpost#readme",
   "dependencies": {
     "clusterpost-server": "file:src/clusterpost-server",
-    "couch-update-views": "file:src/couch-update-views"
+    "couch-update-views": "file:src/couch-update-views",
+    "joi": "^10.6.0"
   }
 }
