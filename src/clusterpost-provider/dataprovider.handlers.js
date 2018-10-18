@@ -300,28 +300,28 @@ module.exports = function (server, conf) {
 				var v = '_design/searchJob/_view/scope?' + qs.stringify(key);					
 				return server.methods.clusterprovider.getView(v)
 				.then(function(rows){
-					var docs = _.pluck(rows, 'doc');
+					var scope_docs = _.pluck(rows, 'doc');
 					if(executable){
-						docs = _.filter(docs, function(doc){
+						scope_docs = _.filter(scope_docs, function(doc){
 							return doc.executable == executable;
 						});
 					}
 					if(jobstatus){
-						docs = _.filter(docs, function(doc){
+						scope_docs = _.filter(scope_docs, function(doc){
 							if(doc.jobstatus && doc.jobstatus.status){
 								return doc.jobstatus.status == jobstatus;
 							}
 							return false;
 						});
 					}
-					return docs;
+					return scope_docs;
 				});
+			})
+			.then(function(scope_docs){				
+				return _.union(docs, scope_docs);
 			})
 			.then(function(res){				
 				return _.uniq(_.compact(_.flatten(res)));
-			})
-			.then(function(docssp){				
-				return _.union(docs, docssp);
 			});
 		})
 		.then(rep)
