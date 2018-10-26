@@ -157,6 +157,13 @@ class ClusterpostLib extends HapiJWTCouch{
         });
     }
 
+    updateDocuments(docs){
+        var self = this;
+        return Promise.map(docs, function(doc){
+            return self.updateDocument(doc);
+        }, {concurrency: 1});
+    }
+
     getUserJobs(params){
         var self = this;
         return new Promise(function(resolve, reject){
