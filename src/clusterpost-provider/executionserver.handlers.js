@@ -305,7 +305,7 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
-			if(doc.jobstatus.status === 'RUN' || doc.jobstatus.status === 'UPLOADING'){
+			if(doc.jobstatus.status === 'RUN' || doc.jobstatus.status === 'UPLOADING' || doc.jobstatus.status === 'DONE'){
 				return server.methods.cronprovider.addJobToUpdateQueue(doc)
 				.then(function(){
 					return doc.jobstatus;
