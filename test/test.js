@@ -28,6 +28,15 @@ if(!env) throw "Please set NODE_ENV variable.";
 
 var conf = getConfigFile(env, "./");
 
+if(!conf.uri || !conf.couchdb){
+    console.error("The configuration for the test is wrong. It must contain fields 'uri' and 'couchdb', example:");
+    console.error(JSON.stringify({
+        "uri": "http://localhost:8180",
+        "couchdb": "http://localhost:5984/clusterjobstest"
+    }, null, 2));
+    process.exit(1);
+}
+
 console.log("Using the following configuration for test:", JSON.stringify(conf, null, 2));
 
 var agentOptions = {};
@@ -420,7 +429,8 @@ lab.experiment("Test clusterpost", function(){
                 password: "Some88Password!"
             }
 
-        return clusterpost.createUser(newuser)
+        // This tests the admin power
+        return clusterpost.createUser(newuser)    
         .bind({})
         .then(function(res){
             return clusterpost.getUsers();
@@ -454,7 +464,12 @@ lab.experiment("Test clusterpost", function(){
             var adminuser = _.isObject(res)? res : JSON.parse(res);
             adminuser.scope = ['default'];
 
-            return clusterpost.userLogin(newuser)
+            var newuserlog = {
+                email: newuser.email,
+                password: newuser.password
+            }
+
+            return clusterpost.userLogin(newuserlog)
             .then(function(token){
                 return clusterpost.updateUser(adminuser);
             });

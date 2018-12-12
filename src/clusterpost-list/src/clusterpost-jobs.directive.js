@@ -154,12 +154,10 @@ angular.module('clusterpost-list')
 	    		}
 	    		
 	    	}else{
-	    		var params = {};
 	    		if($scope.executable){
 	    			if(_.isArray($scope.executable)){
 	    				getjobprom = Promise.all(_.map($scope.executable, function(exe){
-	    					params.executable = exe;
-	    					return clusterpostService.getUserJobs(params);
+	    					return clusterpostService.getUserJobs({"executable": exe});
 	    				}))
 	    				.then(function(res){
 	    					return {
@@ -167,11 +165,10 @@ angular.module('clusterpost-list')
 	    					};
 	    				});
 	    			}else{
-	    				params.executable = $scope.executable;
-	    				getjobprom = clusterpostService.getUserJobs(params);
+	    				getjobprom = clusterpostService.getUserJobs({"executable": $scope.executable});
 	    			}
 		    	}else{
-		    		getjobprom = clusterpostService.getUserJobs(params);
+		    		getjobprom = clusterpostService.getUserJobs();
 		    	}
 	    		
 	    	}

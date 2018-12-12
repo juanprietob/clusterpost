@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-lib",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Library implementing the API of clusterpost-server application",
   "main": "index.js",
   "scripts": {
