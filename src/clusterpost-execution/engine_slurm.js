@@ -81,8 +81,9 @@ module.exports = function (conf) {
 							error: allerror + alldata
 						});
 					}else{
-						var ind = alldata.indexOf('Submitted batch job ') + 1;
-	                    var jobid = alldata.substr(ind, alldata.length - ind);
+						var stringfind = 'Submitted batch job ';
+                        var ind = alldata.indexOf(stringfind) + stringfind.length + 1;
+						var jobid = alldata.substr(ind, alldata.length - ind);
 
 						resolve({
 							jobid : Number.parseInt(jobid),
