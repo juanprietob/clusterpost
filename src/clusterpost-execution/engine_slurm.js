@@ -23,26 +23,31 @@ module.exports = function (conf) {
 
 			var params = [];
 
-			if(doc.jobparameters){
-				for(var i = 0; i < doc.jobparameters.length; i++){
-                    var param = doc.jobparameters[i];
-                    if(param.flag){
-                            params.push(param.flag);
-                    }
-                    if(param.name){
-                            params.push(param.name);
-                    }
-                }
+			if(conf.hasbang){
+				params.push(conf.hash_bang);
+			}else{
+				params.push("#!/bin/bash");
 			}
 
-			params.push("-D");
-			params.push(cwd);
-			params.push("-e");
-			params.push(path.join(cwd, "stderr.err"));
-			params.push("-o");
-			params.push(path.join(cwd, "stdout.out"));
-			params.push("-J");
-			params.push(doc.userEmail);
+			if(doc.jobparameters){
+				for(var i = 0; i < doc.jobparameters.length; i++){
+					var param_script = ["#SBATCH"]
+					var param = doc.jobparameters[i];
+                    if(param.flag){
+                            param_script.push(param.flag);
+                    }
+                    if(param.name){
+                            param_script.push(param.name);
+                    }
+
+                    params.push(param_script.join(" "));
+				}
+			}
+
+			params.push(["#SBATCH", "-D", cwd].join(" "));
+			params.push(["#SBATCH", "-e", path.join(cwd, "stderr.err")].join(" "));
+			params.push(["#SBATCH", "-o", path.join(cwd, "stdout.out")].join(" "));
+			params.push(["#SBATCH", "-J", doc.userEmail].join(" "));
 
 			params_command = []
 			params_command.push(doc.executable);
@@ -58,10 +63,13 @@ module.exports = function (conf) {
 				}
 			}
 
-			params.push("--wrap=\"" + params_command.join(" ") + "\"");
+			params.push(params_command.join(" "));
+
+			var script_filename = path.join(cwd, "slurm_script.sh");
+			fs.writeFileSync(script_filename, params.join("\n"));
 
 			try{
-				const runcommand = spawn(command, params);
+				const runcommand = spawn(command, [script_filename]);
 
 				var allerror = "";
 				runcommand.stderr.on('data', function(data){
