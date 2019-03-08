@@ -55,6 +55,12 @@ var conf = getConfigFile(confpath);
 try{
     if(!conf.token){
         var tokenfile = path.join(confpath, ".token");
+        try{
+            fs.statSync(tokenfile);
+        }catch(e){
+            tokenfile = path.join(confpath, "token.json");
+        }
+        
         if(conf.tokenfile){
             tokenfile = conf.tokenfile;
         }
