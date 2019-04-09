@@ -90,7 +90,7 @@ module.exports = function (conf) {
 						});
 					}else{
 						var stringfind = 'Submitted batch job ';
-                        var ind = alldata.indexOf(stringfind) + stringfind.length + 1;
+                        var ind = alldata.indexOf(stringfind) + stringfind.length;
 						var jobid = alldata.substr(ind, alldata.length - ind);
 
 						resolve({
