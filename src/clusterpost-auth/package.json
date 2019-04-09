@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-auth",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "Login and authenticate users for the clusterpost application",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
   "dependencies": {
+    "bluebird": "^3.5.4",
     "boom": "^3.1.2",
     "hapi-jwt-couch": "^2.0.1"
   },
