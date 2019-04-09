@@ -61,7 +61,7 @@ module.exports = function (server, conf) {
 				try{
 					var stats = fs.statSync(filename);
 					if(stats){
-						fs.unlink(filename);
+						fs.unlinkSync(filename);
 					}
 				}catch(e){
 					console.error(e);
@@ -84,9 +84,12 @@ module.exports = function (server, conf) {
 		if(executionserver.tunnel){
 			var params = _.flatten(_.map(executionserver.tunnel, function(val, key){
 				return [key, val];
-			}))
-
-			const tunnel = spawn('ssh', params.concat([executionserver.user + "@" + executionserver.hostname ]));
+			}));
+			if(executionserver.identityfile){
+				params = params.concat('-i', executionserver.identityfile);
+			}
+			var params = params.concat(['-q', executionserver.user + "@" + executionserver.hostname ]);
+			const tunnel = spawn('ssh', params);
 			var alldata = "";
 			tunnel.stdout.on('data', function(data){
 				alldata += data;
