@@ -120,13 +120,7 @@ module.exports = function (conf) {
 			try{
 
 				var jobid = doc.jobstatus.jobid;
-				if(!jobid && doc.jobstatus.stat){
-					try{
-						jobid = doc.jobstatus.stat.split("\n")[1].split(" ")[0];
-					}catch(e){
-						console.error(e);
-					}
-				}
+				
 				var params = ["-h", "-j", jobid];
 
 				const ps = spawn('squeue', params);
@@ -229,19 +223,11 @@ module.exports = function (conf) {
 						}
 						
 					}else{
-						if(code || allerror){
-							resolve({
-								status: 'FAIL',
-								error: allerror
-							});	
-						}else{
-							resolve({
-								jobid: jobid,
-								status: 'DONE'
-							});	
-						}
+						resolve({
+							jobid: jobid,
+							status: 'DONE'
+						});
 					}
-					
 				});
 
 			}catch(e){
