@@ -1,6 +1,6 @@
 {
   "name": "hapi-jwt-couch",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "Simple user authentication for Hapi server using JWT and storing user data and encrypted passwords in couchdb.",
   "main": "index.js",
   "scripts": {
@@ -31,13 +31,13 @@
     "nodemailer-stub-transport": "^1.1.0"
   },
   "dependencies": {
-    "bcrypt": "^0.8.7",
+    "bcrypt": "^3.0.5",
     "boom": "^3.2.1",
+    "couch-provider": "^2.1.2",
+    "couch-update-views": "^1.0.5",
     "joi": "^8.4.2",
     "jsonwebtoken": "^7.2.1",
     "nodemailer": "^2.3.2",
-    "underscore": "^1.8.3",
-    "couch-provider": "^2.1.2",
-    "couch-update-views": "^1.0.5"
+    "underscore": "^1.8.3"
   }
 }
