@@ -1,7 +1,8 @@
-var couchProvider = require('./couch.provider');
-exports.couchProvider = couchProvider;
+exports.plugin = {};
 
-exports.register = function (server, conf, next) {
+exports.plugin.register = async function (server, conf) {
+		
+	var couchProvider = require('./couch.provider');
 	
     couchProvider.setConfiguration(conf);
     var namespace = 'couchprovider';
@@ -76,11 +77,6 @@ exports.register = function (server, conf, next) {
     }else{
     	addNameSpace(namespace);
     }
-    
+}
 
-    return next();
-};
-
-exports.register.attributes = {
-  pkg: require('./package.json')
-};
+exports.plugin.pkg = require('./package.json');
