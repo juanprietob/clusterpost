@@ -193,7 +193,12 @@ module.exports = function (conf) {
 						// Job has an allocation, but execution has been suspended and CPUs have been released for other jobs.
 						// TO TIMEOUT
 						if(job_status.length > 5){
-							if(job_status[4] == 'CD' || job_status[4] == 'CG'){
+							if(job_status[4] == 'R'){
+								resolve({
+									status: 'RUN',
+									stat: alldata
+								});
+							}else if(job_status[4] == 'CD' || job_status[4] == 'CG'){
 								resolve({
 									status: 'DONE',
 									stat: alldata
