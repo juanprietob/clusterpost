@@ -25,7 +25,7 @@ module.exports = function(doc, conf){
             return executionmethods.uploadDocumentDataProvider(docupdated);
         });
     }  
-    if(doc.jobstatus.status === "UPLOADING" || doc.jobstatus.status === "DONE"){
+    if(doc.jobstatus.status === "UPLOADING"){
         return executionmethods.checkAllDocumentOutputs(doc)
         .then(allUpload);
     }else{        
