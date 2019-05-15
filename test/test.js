@@ -291,14 +291,13 @@ lab.experiment("Test clusterpost", function(){
     });
     
 
-    lab.test('returns true if get attachment output stream is valid', function(done){
-        clusterpost.getDocumentAttachment(jobid, "stdout.out")
+    lab.test('returns true if get attachment output stream is valid', function(){
+        return clusterpost.getDocumentAttachment(jobid, "stdout.out")
         .then(function(stdout){
             var value = "774035995 70572 gravitational-waves-simulation.jpg";
             if(stdout.indexOf(value) === -1){
-                done("Output validation not found: " + value);
+                throw "Output validation not found: " + value;
             }
-            done();
         });
     });
 
@@ -318,9 +317,8 @@ lab.experiment("Test clusterpost", function(){
         .then(function(stdout){
             var value = "774035995 70572 gravitational-waves-simulation.jpg";
             if(stdout.indexOf(value) === -1){
-                done("Output validation not found: " + value);
+                throw "Output validation not found: " + value;
             }
-            done();
         });
     });
 

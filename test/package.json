@@ -4,9 +4,11 @@
   "description": "Test the API of clusterpost",
   "main": "test.js",
   "dependencies": {
-    "bluebird": "^3.3.0",
-    "request": "^2.69.0",
-    "underscore": "^1.8.3"
+    "bluebird": "^3.5.4",
+    "joi": "^14.3.1",
+    "lab": "^18.0.2",
+    "request": "^2.88.0",
+    "underscore": "^1.9.1"
   },
   "scripts": {
     "test": "lab -v -m 120000 test.js"
@@ -16,9 +18,5 @@
   ],
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "clusterpost-model": "1.0.3",
-    "joi": "^8.0.5",
-    "lab": "^10.9.0"
-  }
+  "devDependencies": {}
 }
