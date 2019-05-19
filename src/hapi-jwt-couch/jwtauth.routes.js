@@ -56,38 +56,6 @@ module.exports = function (server, conf) {
         login = conf.login;
     }
 
-    const validate = function (req, decodedToken, callback) {
-        
-        handlers.validateUser(req, decodedToken)
-        .then(function(res){
-            callback(undefined, true, res);
-        })
-        .catch(function(err){
-            if(conf.validate){
-                conf.validate(req, decodedToken, callback);
-            }
-        });
-        
-    }
-
-    if(conf.algorithms){
-        console.log("Please modify your configuration. Instead of field 'algorithms' change to 'verifyOptions'");
-        server.auth.strategy('token', 'jwt', {
-            key: conf.privateKey,
-            validateFunc: validate,
-            verifyOptions: conf.algorithms  // only allow HS256 algorithm
-        });
-    }else{
-        server.auth.strategy('token', 'jwt', {
-            key: conf.privateKey,
-            validateFunc: validate,
-            verifyOptions: conf.verifyOptions  // only allow HS256 algorithm
-        });
-    }
-
-    
-    
-
     /*
     *   Create user in DB. 
     */

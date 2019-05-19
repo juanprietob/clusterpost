@@ -14,6 +14,23 @@ module.exports = function (server, conf) {
 	var LinkedList = require('linkedlist');
 	var remotedeletequeue = new LinkedList();
 
+	const validate = function(req, decodedToken){
+        var exs = server.methods.executionserver.getExecutionServer(decodedToken.executionserver);
+		if(exs){
+			exs.scope = ['executionserver'];
+			return Promise.resolve(exs);
+		}else{
+			return Promise.reject(Boom.unauthorized(exs));
+		}
+	}
+
+	if(server.methods.jwtauth){
+		server.methods.jwtauth.addValidationFunction(validate);	
+	}else{
+		throw "Please update hapi-jwt-couch to version >= 3.0.0";
+	}
+	
+
 	const startExecutionServers = function(){
 		return Promise.map(_.keys(conf.executionservers), function(eskey){
 			return new Promise(function(resolve, reject){
