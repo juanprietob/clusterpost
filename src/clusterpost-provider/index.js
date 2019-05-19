@@ -1,4 +1,5 @@
-exports.register = function (server, conf, next) {
+exports.plugin = {};
+exports.plugin.register = async function (server, conf) {
   
   require('./dataprovider.routes')(server, conf);
   require('./executionserver.routes')(server, conf);
@@ -17,9 +18,6 @@ exports.register = function (server, conf, next) {
     });
   }
 
-  return next();
 };
 
-exports.register.attributes = {
-  pkg: require('./package.json')
-};
+exports.plugin.pkg = require('./package.json');

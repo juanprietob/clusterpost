@@ -18,7 +18,7 @@ module.exports = function (server, conf) {
 			validate: {
 				query: false,
 		        payload: clustermodel.jobpost,
-		        params: false
+		        params: null
 			},
 			payload:{
 				output: 'data'
@@ -62,7 +62,7 @@ module.exports = function (server, conf) {
 			validate: {
 				query: false,
 		        payload: clustermodel.job,
-		        params: false
+		        params: null
 			},
 			payload:{
 				output: 'data'
@@ -136,7 +136,7 @@ module.exports = function (server, conf) {
 			  	query: Joi.object().keys({
 			  		executable: Joi.string().optional()
 			  	}).optional(),
-			    params: false, 
+			    params: null, 
 			    payload: false
 			},
 			response: {
@@ -162,7 +162,7 @@ module.exports = function (server, conf) {
 			  		executable: Joi.string().optional(),
 			  		executionserver: Joi.string().optional()
 			  	}), 
-			  	params: false
+			  	params: null
 			},
 			response: {
 				schema: Joi.array().items(clustermodel.job).min(0)

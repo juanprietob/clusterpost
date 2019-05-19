@@ -8,51 +8,30 @@ Cluster post is easy to deploy and will integrate well with existing application
 
 To install the server application check the documentation in [clusterpost-server](https://www.npmjs.com/package/clusterpost-server)
 
-This is a sample configuration file for the plugin:
+This is a sample configuration. It requires [couch-provider](https://www.npmjs.com/package/couch-provider) to manage access to couchdb. The namespace 'clusterprovider' is used to discover the REST api for couchdb
+in the hapi server application. 
+The configuration for 'clusterpost-provider' contains a set of access credentials to computing grids.
+For more information about the type of computing grids that are supported check [clusterpost-execution]()
 
 ----
-	{
-		"privateKey": "GenerateSomeRandomKey",
-		"saltRounds": 10,
-		"algorithm": { 
-			"algorithm": "HS256"
-		},
-		"algorithms": { 
-			"algorithms": [ "HS256" ] 
-		},
-		"mailer": {
-			"nodemailer": {
-				"host": "smtp.gmail.com",
-			    "secure": false,
-			    "port": 587,
-			    "auth": {
-			        "user": "uname",
-			        "pass": "pass"
-			    }
+	var obj_config = {
+		"couch-provider": {
+			"default" : "clusterjobstest",
+			"clusterjobstest" : {
+				"hostname": "http://localhost:5984",
+				"database": "clusterjobstest"
 			},
-			"from": "clusterpost-server <clusterpost@gmail.com>",
-			"message": "Hello @USERNAME@,<br>Somebody asked me to send you a link to reset your password, hopefully it was you.<br>Follow this <a href='@SERVER@/public/#/login/reset?token=@TOKEN@'>link</a> to reset your password.<br>The link will expire in 30 minutes.<br>Bye."
+			"namespace": ["clusterprovider"]
 		},
-		"userdb" : {
-			"hostname": "http://localhost:5984",
-			"database": "clusterjobs"
+		"clusterpost-provider":{
+			"executionservers" : {
+				"testserver" : {
+					"hostname" : "localhost", 
+					"user" : "username",
+					"identityfile" : "~/.ssh/id_rsa",
+					"sourcedir" : "/path/to/install/clusterpost-execution/"			
+				}
+			}
 		}
 	}
 ----
-
-An easy way to generate a random key:
-
-----
-	openssl genrsa 128
-----
-
-Add your email configuration to use the 'reset' password service. 
-
-This email account will be used to send a token to the user to reset the password in case they forgot it. 
-
-Check https://github.com/nodemailer/nodemailer[nodemailer] for possible configurations
-
-You can edit the message from mailer. The strings '@USERNAME@', @SERVER@ and @TOKEN@ are replaced during execution to personalize the message sent to the user.
-
-Edit the userdb configuration to store user information. 
-

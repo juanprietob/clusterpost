@@ -173,7 +173,7 @@ module.exports = function (server, conf) {
 			}
 			executionservers.push(obj);
 		});
-		rep(executionservers);
+		return executionservers;
 	}
 
 	const getExecutionServer = function(key){
@@ -249,7 +249,7 @@ module.exports = function (server, conf) {
 	*/
 	handler.submitJob = function(req, rep){
 
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
@@ -263,10 +263,8 @@ module.exports = function (server, conf) {
 				return doc.jobstatus
 			});
 		})
-		.then(function(res){
-			rep(res);
-		}).catch(function(e){
-			rep(Boom.badImplementation(e));
+		.catch(function(e){
+			return (Boom.badImplementation(e));
 		});
 	}
 
@@ -320,7 +318,7 @@ module.exports = function (server, conf) {
 
 	handler.jobStatus = function(req, rep){
 
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
@@ -333,9 +331,8 @@ module.exports = function (server, conf) {
 			}
 			return doc.jobstatus;
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 		
 	}
@@ -390,7 +387,7 @@ module.exports = function (server, conf) {
 	
 
 	handler.killJob = function(req, rep){
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
@@ -404,11 +401,8 @@ module.exports = function (server, conf) {
 				return doc.jobstatus
 			});
 		})
-		.then(function(res){
-			rep(res);
-		})
 		.catch(function(e){
-			rep(Boom.badImplementation(e));
+			return (Boom.badImplementation(e));
 		});
 	}
 
@@ -469,7 +463,7 @@ module.exports = function (server, conf) {
 		while (remotedeletequeue.length) {
 			remotedeletejobs.push(remotedeletequeue.shift());
 		}		
-		rep(remotedeletejobs);
+		return (remotedeletejobs);
 	}
 
 	handler.getExecutionServerTokens = function(req, rep){
@@ -488,7 +482,7 @@ module.exports = function (server, conf) {
 			return null;
 		});
 		
-		rep(_.compact(tokens));
+		return (_.compact(tokens));
 
 	}
 

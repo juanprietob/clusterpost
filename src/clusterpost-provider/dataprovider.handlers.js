@@ -30,7 +30,7 @@ module.exports = function (server, conf) {
 			status: 'CREATE'
 		};		
 
-		server.methods.clusterprovider.uploadDocuments(job)
+		return server.methods.clusterprovider.uploadDocuments(job)
 		.then(function(res){
 			if(res.length === 1){
 				return res[0];
@@ -38,9 +38,8 @@ module.exports = function (server, conf) {
 				return res;
 			}
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.badRequest(e));
+			return (Boom.badRequest(e));
 		});
 		
 	}
@@ -64,20 +63,19 @@ module.exports = function (server, conf) {
 		]
 
 		
-		Promise.all(prom)
+		return Promise.all(prom)
 		.then(function(){
 			return server.methods.clusterprovider.uploadDocuments(job);
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 	}
 
 	/*
 	*/
 	handler.addData = function(req, rep){
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.isJobDocument(doc);
 		})
@@ -87,9 +85,8 @@ module.exports = function (server, conf) {
 		.then(function(doc){
 			return server.methods.clusterprovider.addDocumentAttachment(doc, req.params.name, req.payload);
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 	}
 
@@ -148,39 +145,39 @@ module.exports = function (server, conf) {
 	*/
 	handler.getJob = function(req, rep){
 
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
 			if(req.params.name){
 				var stream = getDocumentStreamAttachment(doc, req.params.name);
-				rep(stream);
+				return (stream);
 			}else{
-				rep(doc);
+				return (doc);
 			}
 			
 		})
 		.catch(function(e){
-			rep(Boom.notFound(e));
+			return (Boom.notFound(e));
 		});
 		
 	}
 
 	handler.getDownloadToken = function(req, rep){
 
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){			
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
 
 			var name = req.params.name;
-			rep(server.methods.jwtauth.sign({ _id: doc._id, name: name }));
+			return (server.methods.jwtauth.sign({ _id: doc._id, name: name }));
 			
 		})
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 	}
 
@@ -191,17 +188,17 @@ module.exports = function (server, conf) {
 			
 			var decodedToken = server.methods.jwt.verify(token);
 			
-			server.methods.clusterprovider.getDocument(decodedToken._id)
+			return server.methods.clusterprovider.getDocument(decodedToken._id)
 			.then(function(doc){
 				var stream = getDocumentStreamAttachment(doc, decodedToken.name);
-				rep(stream);
+				return (stream);
 			})
 			.catch(function(e){
-				rep(Boom.unauthorized(e));
+				return (Boom.unauthorized(e));
 			});
 			
 		}catch(e){
-			rep(Boom.unauthorized(e));
+			return (Boom.unauthorized(e));
 		}
 		
 	}
@@ -221,7 +218,7 @@ module.exports = function (server, conf) {
 
 	handler.deleteJob = function(req, rep){
 
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.isJobDocument(doc);
 		})
@@ -242,9 +239,8 @@ module.exports = function (server, conf) {
 			});
 			
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 	}
 
@@ -287,7 +283,7 @@ module.exports = function (server, conf) {
 			view = '_design/searchJob/_view/useremail?include_docs=true&key=' + JSON.stringify(email);
 		}
 
-		server.methods.clusterprovider.getView(view)
+		return server.methods.clusterprovider.getView(view)
 		.then(function(rows){
 			return _.pluck(rows, 'doc');
 		})
@@ -324,9 +320,8 @@ module.exports = function (server, conf) {
 				return _.uniq(_.compact(_.flatten(res)));
 			});
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		})
 	}
 
@@ -342,13 +337,12 @@ module.exports = function (server, conf) {
 		}else{
 			view = '_design/searchJob/_view/executable?include_docs=true';
 		}
-		server.methods.clusterprovider.getView(view)
+		return server.methods.clusterprovider.getView(view)
 		.then(function(rows){
 			return _.pluck(rows, 'doc');
 		})
-		.then(rep)
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 	}
 
@@ -379,7 +373,7 @@ module.exports = function (server, conf) {
 	/*
 	*/
 	handler.getDownload = function(req, rep){
-		server.methods.clusterprovider.getDocument(req.params.id)
+		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
@@ -408,21 +402,21 @@ module.exports = function (server, conf) {
 				});
 
 			}catch(e){
-				rep(Boom.badImplementation(e));
+				throw (Boom.badImplementation(e));
 			}
 			
 		})
 		.then(function(tarname){
 			try{
 				if(fs.statFileSync(tarname)){
-					rep.file(tarname);
+					return fs.createReadStream(tarname);
 				}
 			}catch(e){
 				throw Boom.badImplementation(e);
 			}
 		})
 		.catch(function(e){
-			rep(Boom.wrap(e));
+			return (Boom.wrap(e));
 		});
 	}
 
@@ -460,8 +454,9 @@ module.exports = function (server, conf) {
 			}
 		}catch(e){
 			console.error(e);
+			return Boom.badImplementation(e);
 		}
-		rep(true);
+		return (true);
 	}
 
 	return handler;

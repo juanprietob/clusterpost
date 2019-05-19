@@ -97,7 +97,7 @@ module.exports = function (server, conf) {
 			},
 			handler: handlers.getDeleteQueue,
 			validate:{
-				params: false,
+				params: null,
 				query: false,
 				payload: false
 			},
@@ -118,7 +118,7 @@ module.exports = function (server, conf) {
 			},
 			handler: handlers.getExecutionServerTokens,
 			validate:{
-				params: false,
+				params: null,
 				query: false,
 				payload: false
 			},
