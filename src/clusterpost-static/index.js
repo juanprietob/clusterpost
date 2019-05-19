@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 exports.register = function (server, options, next) {
 	server.path(__dirname);
 	
@@ -8,17 +11,18 @@ exports.register = function (server, options, next) {
 			reply.redirect('/public');
 		}
 	});
-	
+
 	server.route({
 		path: '/public/{path*}',
 		method: 'GET',
 		config: {
 			handler: {
-				directory: { path: './clusterpost-public', listing: false, index: true }
+				directory: { path: './clusterpost-public/build', listing: false, index: true }
 			},
 			description: 'This route serves the static website of clusterpost.'
 		}
 	});
+
     next();
 };
 

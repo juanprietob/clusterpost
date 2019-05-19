@@ -1,41 +1,34 @@
 {
   "name": "clusterpost-public",
-  "version": "1.0.0",
-  "description": "Front end for clusterpost application",
-  "main": "app.module.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/juanprietob/clusterpost.git"
-  },
-  "keywords": [
-    "Front-end",
-    "civility"
-  ],
-  "author": "juanprietob@gmail.com",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/juanprietob/clusterpost/issues"
-  },
-  "homepage": "https://github.com/juanprietob/clusterpost#readme",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "angular": "^1.5.8",
-    "angular-route": "^1.5.8",
-    "angular-sanitize": "^1.5.8",
-    "angular-smart-table": "^2.1.8",
-    "angular-ui-bootstrap": "^2.2.0",
-    "bootstrap": "^3.3.7",
-    "clusterpost-list": "^1.0.8",
-    "jquery": "^3.1.1",
-    "jwt-user-login": "^1.0.3",
-    "ui-bootstrap": "^0.1.5",
-    "underscore": "^1.8.3"
+    "axios": "^0.18.0",
+    "bootstrap": "^4.3.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.0",
+    "react-scripts": "3.0.1"
   },
-  "devDependencies": {
-    "grunt": "^1.0.1",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-run-grunt": "^0.1.4"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "PUBLIC_URL=/public/ react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
