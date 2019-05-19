@@ -1,6 +1,7 @@
 
 module.exports = function (server, conf) {
 
+	var Promise = require('bluebird');
 	var jwt = require('jsonwebtoken');
 	var bcrypt = require('bcrypt');
 	const saltRounds = conf.saltRounds;
@@ -71,7 +72,7 @@ module.exports = function (server, conf) {
         })
         .catch(function(err){
         	return Promise.any(_.map(handler.validationFunctions, function(valFunc){
-        		valFunc(req, decodedToken)
+        		return valFunc(req, decodedToken);
         	}))
         	.then(function(res){
         		callback(undefined, true, res);
