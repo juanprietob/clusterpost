@@ -65,7 +65,7 @@ module.exports = function (server, conf) {
 
     const validate = function (req, decodedToken, callback) {
         
-        handlers.validateUser(req, decodedToken)
+        handler.validateUser(req, decodedToken)
         .then(function(res){
             callback(undefined, true, res);
         })

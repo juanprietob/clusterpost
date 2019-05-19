@@ -19,7 +19,7 @@ The values "user", "password" and "login" are optional. The default values are s
 
 ----
 	const Hapi = require('hapi');
-	cont Joi = require('joi');
+	cont Joi = require('@hapi/joi');
 
 	var password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/);
 
