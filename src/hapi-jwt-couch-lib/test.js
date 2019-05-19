@@ -1,5 +1,5 @@
 
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 const request = require('request');

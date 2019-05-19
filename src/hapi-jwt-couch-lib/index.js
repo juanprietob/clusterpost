@@ -129,7 +129,7 @@ module.exports = class HapiJWTCouch{
 
     getUserToken(){
         return {
-            token: self.auth.bearer
+            token: this.auth.bearer
         };
     }
 
