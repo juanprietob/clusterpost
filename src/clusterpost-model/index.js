@@ -1,4 +1,4 @@
-var Joi = require('joi');
+var Joi = require('@hapi/joi');
 
 exports.parameter = Joi.object().keys({
 	flag: Joi.string().allow(''),
