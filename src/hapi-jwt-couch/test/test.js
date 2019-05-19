@@ -8,7 +8,7 @@ const _ = require('underscore');
 var agentOptions = {};
 
 var getClusterPostServer = function(){
-    return "http://localhost:3000"
+    return "http://localhost:8180"
 }
 
 var joiokres = Joi.object().keys({
@@ -16,6 +16,7 @@ var joiokres = Joi.object().keys({
                 id: Joi.string(),
                 rev: Joi.string()
             });
+var token = "";
 
 var createUser = function(user){
     return new Promise(function(resolve, reject){
@@ -228,7 +229,6 @@ lab.experiment("Test clusterpost auth jwt", function(){
     });
 
     lab.test('returns true when unauthorized user access api.', function(){
-
         return getUsers(token)
         .then(function(res){
             Joi.assert(res, Joi.object().keys({ 
@@ -244,15 +244,16 @@ lab.experiment("Test clusterpost auth jwt", function(){
         
         return getUser(token)
         .then(function(user){
-
+            console.log(user, "dddddddd")
             return new Promise(function(resolve, reject){
                 var options = { 
-                    uri: "http://localhost:5984/hapijwtcouch/" + user._id,
+                    uri: "http://localhost:5984/clusterjobstest/" + user._id,
                     method: 'GET'
                 };
                 
                 request(options, function(err, res, body){
                     var user = JSON.parse(body);
+                    console.log(body, "dddd")
                     user.scope.push('admin');
 
                     var options = { 

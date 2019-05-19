@@ -62,13 +62,13 @@ module.exports = function (server, conf) {
     server.route({
         method: 'POST',
         path: '/auth/user',
-        config: {
+        handler: handlers.createUser,
+        options: {
             auth: false,
-            handler: handlers.createUser,
             validate: {
                 query: false,
                 payload: user,
-                params: false
+                params: null
             },
             response: {
                 schema: Joi.object().keys({
@@ -95,7 +95,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: false,
-                params: false
+                params: null
             },
             response: {
                 schema: Joi.array().items(userinfo)
@@ -119,7 +119,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: userinfo,
-                params: false
+                params: null
             },
             description: 'Admin deletes user from the db'
         }
@@ -141,7 +141,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: userinfo,
-                params: false
+                params: null
             },
             response: {
                 schema: Joi.object()
@@ -166,7 +166,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: userinfobasic,
-                params: false
+                params: null
             },
             response: {
                 schema: Joi.object()
@@ -191,7 +191,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: false,
-                params: false
+                params: null
             },
             response: {
                 schema: userinfo
@@ -215,7 +215,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: false,
-                params: false
+                params: null
             },
             description: 'Delete user from the db'
         }
@@ -232,7 +232,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: login,
-                params: false
+                params: null
             },
             handler: handlers.login,
             response: {
@@ -259,7 +259,7 @@ module.exports = function (server, conf) {
                 payload: {
                     password: password
                 },
-                params: false
+                params: null
             },
             handler: handlers.loginUpdate,
             response: {
@@ -281,7 +281,7 @@ module.exports = function (server, conf) {
                 payload: Joi.object().keys({
                     email: Joi.string().email().required()
                 }),
-                params: false
+                params: null
             },
             handler: handlers.resetPassword,
             description: 'Send user an email with a token. The token is valid for 30 min and it can be used to change the password.'
@@ -304,7 +304,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: false,
-                params: false
+                params: null
             },
             // response: {
             //     schema: Joi.array().items(scopes)
@@ -329,7 +329,7 @@ module.exports = function (server, conf) {
             validate: {
                 query: false,
                 payload: scopes,
-                params: false
+                params: null
             },
             description: 'Update scope list'
         }

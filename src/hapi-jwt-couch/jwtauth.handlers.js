@@ -64,21 +64,21 @@ module.exports = function (server, conf) {
 		options: {}
 	});
 
-    const validate = function (req, decodedToken, callback) {
+    const validate = async function (req, decodedToken) {
         
-        handler.validateUser(req, decodedToken)
+        return handler.validateUser(req, decodedToken)
         .then(function(res){
-            callback(undefined, true, res);
+            return res;
         })
         .catch(function(err){
         	return Promise.any(_.map(handler.validationFunctions, function(valFunc){
         		return valFunc(req, decodedToken);
         	}))
         	.then(function(res){
-        		callback(undefined, true, res);
+        		return res;
         	})
         	.catch(Promise.AggregateError, function(err) {
-				callback(Boom.unauthorized(err));
+        		return Promise.reject(Boom.unauthorized(err));
 			});
         });
         
@@ -177,11 +177,10 @@ module.exports = function (server, conf) {
 		var email = req.payload.email;
 		var password = req.payload.password;
 
-		couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
+		return couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
 		.then(function(info){
 
 			var info = _.pluck(info, "value");
-
 			if(info.length === 0){
 				return bcryptHash(password);
 			}else{
@@ -206,25 +205,26 @@ module.exports = function (server, conf) {
 			});
 			
 		})
-		.then(rep)
-		.catch(rep);
+		.catch(function(err){
+			return err;
+		});
 
 	}
 
 	handler.getUser = function(req, rep){
 		var credentials = req.auth.credentials;
-		rep(credentials);
+		return credentials;
 	}
 
 	handler.getUsers = function(req, rep){
-		couchprovider.getView('_design/user/_view/info')
+		return couchprovider.getView('_design/user/_view/info')
 		.then(function(info){
 			
-			rep(_.pluck(info, 'value'));
+			return _.pluck(info, 'value');
 
 		})
 		.catch(function(err){
-			rep(Boom.badImplementation(err));
+			return Boom.badImplementation(err);
 		})
 	}
 
@@ -234,9 +234,9 @@ module.exports = function (server, conf) {
 		var updateinfo = req.payload;
 
 		if(user.email !== updateinfo.email && user.scope.indexOf('admin') === -1){
-			rep(Boom.unauthorized('You cannot modify the user information'));
+			return (Boom.unauthorized('You cannot modify the user information'));
 		}else{
-			couchprovider.getDocument(updateinfo._id)			
+			return couchprovider.getDocument(updateinfo._id)			
 			.then(function(userindb){
 				updateinfo.password = userindb.password;
 				if(updateinfo.scope === undefined){
@@ -253,9 +253,8 @@ module.exports = function (server, conf) {
 					}
 				})
 			})
-			.then(rep)
 			.catch(function(err){
-				rep(Boom.badImplementation(err));
+				return Boom.badImplementation(err);
 			});
 		}
 	}
@@ -265,7 +264,7 @@ module.exports = function (server, conf) {
 		var email = req.payload.email;
 		var password = req.payload.password;
 
-		couchprovider.getView('_design/user/_view/hash?key=' + JSON.stringify(email))
+		return couchprovider.getView('_design/user/_view/hash?key=' + JSON.stringify(email))
 		.then(function(hash){
 			return _.pluck(hash, "value")[0];
 		})
@@ -280,9 +279,8 @@ module.exports = function (server, conf) {
 				});
 			});
 		})
-		.then(rep)
 		.catch(function(err){
-			rep(Boom.unauthorized(err));
+			return (Boom.unauthorized(err));
 		});
 	}
 
@@ -292,7 +290,7 @@ module.exports = function (server, conf) {
 		var email = credentials.email;
 		var password = req.payload.password;
 
-		couchprovider.getDocument(credentials._id)
+		return couchprovider.getDocument(credentials._id)
 		.then(function(user){
 			return bcryptHash(password)
 			.then(function(hash){
@@ -305,14 +303,13 @@ module.exports = function (server, conf) {
 					if(res.ok){
 						return server.methods.jwtauth.sign({ email: user.email });
 					}else{
-						throw Boom.badImplementation(res);
+						return Boom.badImplementation(res);
 					}
 				});
 			})
 		})
-		.then(rep)
 		.catch(function(err){
-			rep(Boom.unauthorized(err));
+			return (Boom.unauthorized(err));
 		});
 	}
 
@@ -326,12 +323,12 @@ module.exports = function (server, conf) {
 		}
 
 		if(user.email !== credentials.email && credentials.scope.indexOf('admin') === -1){
-			rep(Boom.unauthorized('You cannot delete the user'));
+			return (Boom.unauthorized('You cannot delete the user'));
 		}else{
-			couchprovider.deleteDocument(user)
+			return couchprovider.deleteDocument(user)
 			.then(rep)
 			.catch(function(err){
-				rep(Boom.conflict(err));
+				return (Boom.conflict(err));
 			});
 		}
 	}
@@ -340,7 +337,7 @@ module.exports = function (server, conf) {
 		
 		var email = req.payload.email;
 
-		couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
+		return couchprovider.getView('_design/user/_view/info?key=' + JSON.stringify(email))
 		.then(function(info){
 			
 			var info = _.pluck(info, "value");
@@ -378,17 +375,20 @@ module.exports = function (server, conf) {
 			    html: message
 			};
 			
-			transporter.sendMail(mailOptions, function(error, info){
-			    if(error){
-			        rep(Boom.badImplementation(error));
-			    }else{
-			    	rep("An email has been sent to recover your password.");
-			    }
-			});
+			return new Promise(function(resolve, reject){
+				transporter.sendMail(mailOptions, function(error, info){
+				    if(error){
+				        reject(Boom.badImplementation(error));
+				    }else{
+				    	resolve("An email has been sent to recover your password.");
+				    }
+				});
+			})
+			
 		})
 		.catch(function(err){
 			console.log(err)
-			rep(Boom.wrap(err));
+			return (Boom.wrap(err));
 		});
 
 		
@@ -397,12 +397,12 @@ module.exports = function (server, conf) {
 	}
 
 	handler.getScopes = function(req, rep){
-		couchprovider.getView('_design/user/_view/scopes?include_docs=true')
+		return couchprovider.getView('_design/user/_view/scopes?include_docs=true')
 		.then(function(info){
-			rep(_.pluck(info, 'doc'));
+			return (_.pluck(info, 'doc'));
 		})
 		.catch(function(err){
-			rep(Boom.badImplementation(err));
+			return (Boom.badImplementation(err));
 		})
 	}
 
@@ -412,14 +412,14 @@ module.exports = function (server, conf) {
 		var updateinfo = req.payload;
 
 		if(user.scope.indexOf('admin') === -1){
-			rep(Boom.unauthorized('You cannot modify the scopes'));
+			return (Boom.unauthorized('You cannot modify the scopes'));
 		}else{
 			return couchprovider.uploadDocuments(req.payload)
 			.then(function(res){
-				rep(res[0]);
+				return (res[0]);
 			})
 			.catch(function(e){
-				rep(Boom.wrap(e));
+				return (Boom.wrap(e));
 			});
 		}
 	}
