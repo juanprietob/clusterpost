@@ -1,7 +1,7 @@
 module.exports = function (server, conf) {
 
 	var handlers = require('./executionserver.handlers')(server, conf);
-	var Joi = require('joi');
+	var Joi = require('@hapi/joi');
 	var clustermodel = require('clusterpost-model');
 	
 

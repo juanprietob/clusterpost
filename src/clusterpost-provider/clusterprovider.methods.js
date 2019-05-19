@@ -7,7 +7,7 @@ var Boom = require('boom');
 module.exports = function (server, conf) {
 	
 	var clustermodel = require('clusterpost-model');
-	var Joi = require('joi');
+	var Joi = require('@hapi/joi');
 
 	const isJobDocument = function(doc){
 		Joi.assert(doc, clustermodel.job);
