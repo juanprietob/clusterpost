@@ -6,7 +6,7 @@ var path = require('path');
 var _ = require('underscore');
 var qs = require('querystring');
 
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 
@@ -190,7 +190,7 @@ lab.experiment("Test clusterpost", function(){
 
                 var params = {
                     key: '"algiedi85@gmail.com"',
-                    include_docs:true
+                    include_docs: true
                 }
 
                 var options = { 
@@ -369,6 +369,13 @@ lab.experiment("Test clusterpost", function(){
         });
     });
 
+    lab.test('returns true if tokens are not fetch as regular user', function(){
+        return clusterpost.getExecutionServerToken()
+        .then(function(res){
+            Joi.assert(res.statusCode, 403);
+        });
+    });
+
 
     lab.test('returns true when get all users is denied due to insufficient scope, updates scope manually to admin', function(){
 
@@ -416,6 +423,20 @@ lab.experiment("Test clusterpost", function(){
 
                 
             });
+        });
+    });
+
+    lab.test('returns true if tokens are fetch as admin user', function(){
+        return clusterpost.getExecutionServerToken()
+        .then(function(res){
+            Joi.assert(res, Joi.array().items(clustermodel.executionservertoken));
+            return Promise.map(res, function(es){
+                delete es.token;
+                return clusterpost.getExecutionServers(es);
+            })
+            .then(function(res){
+                Joi.assert(_.flatten(res), Joi.array().items(clustermodel.executionservertoken));
+            })
         });
     });
 

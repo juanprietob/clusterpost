@@ -4,6 +4,7 @@
   "description": "Test the API of clusterpost",
   "main": "test.js",
   "dependencies": {
+    "@hapi/joi": "^15.0.3",
     "bluebird": "^3.5.4",
     "joi": "^14.3.1",
     "lab": "^18.0.2",
@@ -11,12 +12,15 @@
     "underscore": "^1.9.1"
   },
   "scripts": {
-    "test": "lab -v -m 120000 test.js"
+    "test": "lab -v -m 120000 test.js",
+    "testes": "lab -v -m 120000 tokensTest.js"
   },
   "keywords": [
     "test"
   ],
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
-  "devDependencies": {}
+  "devDependencies": {
+    "prompt": "^1.0.0"
+  }
 }

@@ -6,7 +6,7 @@ var path = require('path');
 var _ = require('underscore');
 var qs = require('querystring');
 
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 

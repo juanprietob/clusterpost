@@ -4,7 +4,7 @@ var fs = require('fs');
 var Promise = require('bluebird');
 var path = require('path');
 
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 
