@@ -1,9 +1,10 @@
 {
   "name": "couch-provider",
-  "version": "2.1.4",
+  "version": "2.1.1",
   "description": "Provide the implementation for different request methos to couchdb server. It implements, POST, GET, DELETE, PUT methods for documents and views",
   "main": "index.js",
   "dependencies": {
+    "@hapi/joi": "^15.0.3",
     "bluebird": "^3.3.0",
     "concat-stream": "^1.6.2",
     "mkdirp": "^0.5.1",

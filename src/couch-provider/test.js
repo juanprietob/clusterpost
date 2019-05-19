@@ -5,7 +5,7 @@ var Promise = require('bluebird');
 var path = require('path');
 var _ = require('underscore');
 
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 const couchProvider = require("./couch.provider");
