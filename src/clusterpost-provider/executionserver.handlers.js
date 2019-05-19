@@ -34,10 +34,7 @@ module.exports = function (server, conf) {
 	const startExecutionServers = function(){
 		return Promise.map(_.keys(conf.executionservers), function(eskey){
 			return new Promise(function(resolve, reject){
-				var token = server.methods.jwtauth.sign({ executionserver: eskey }, { 
-                                "algorithm": "HS256",
-                                "expiresIn": "356d"
-                });
+				var token = server.methods.jwtauth.sign({ executionserver: eskey }, conf.algorithm);
 				var filename = path.join(os.tmpdir(), "." + eskey);
 				fs.writeFile(filename, JSON.stringify(token), function(err){
 					if(err){
@@ -468,22 +465,24 @@ module.exports = function (server, conf) {
 
 	handler.getExecutionServerTokens = function(req, rep){
 
-
-		var tokens = _.map(conf.executionservers, function(es, eskey){
-			if(es.remote){
-				var token = server.methods.jwtauth.sign({ executionserver: eskey }, { 
-                    "algorithm": "HS256",
-                    "expiresIn": "356d"
-                });
+		if(req.query && req.query.executionserver){
+			if(conf.executionservers[req.query.executionserver]){
+				var token = server.methods.jwtauth.sign({ executionserver: req.query.executionserver }, conf.algorithm);
+				token.executionserver = req.query.executionserver;
+                return [token];
+			}
+			return Boom.notFound("The executionserver was not found in the server configuration");
+		}else{
+			var tokens = _.map(conf.executionservers, function(es, eskey){
+				var token = server.methods.jwtauth.sign({ executionserver: eskey }, conf.algorithm);
 
 				token.executionserver = eskey;
                 return token;
-			}
-			return null;
-		});
-		
-		return (_.compact(tokens));
+			});
 
+		
+			return _.compact(tokens);
+		}
 	}
 
 	return handler;

@@ -119,14 +119,13 @@ module.exports = function (server, conf) {
 			handler: handlers.getExecutionServerTokens,
 			validate:{
 				params: null,
-				query: false,
+				query: Joi.object().keys({
+			  		executionserver: Joi.string()
+			  	}).optional(),
 				payload: false
 			},
 			response: {
-				schema: Joi.array().items(Joi.object().keys({
-					executionserver: Joi.string(),
-					token: Joi.string()
-				}))
+				schema: Joi.array().items(clustermodel.executionservertoken)
 			},
 			description: 'Get tokens for the remote execution servers'
 		}
