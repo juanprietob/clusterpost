@@ -15,8 +15,13 @@ Edit the "message" portion of the configuration. The strings @USERNAME@, @SERVER
 
 ### Hapi plugin
 
+The values "user", "password" and "login" are optional. The default values are shown in this example. 
+
 ----
 	const Hapi = require('hapi');
+	cont Joi = require('joi');
+
+	var password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/);
 
 	var hapijwtcouch = {};
 	hapijwtcouch.register = require("hapi-jwt-couch");
@@ -47,8 +52,19 @@ Edit the "message" portion of the configuration. The strings @USERNAME@, @SERVER
 	        "userdb" : {
 	            "hostname": "http://localhost:5984",
 	            "database": "hapijwtcouch"
-	        }
+	        },
+	        "password" = password,
+	        "user" = Joi.object().keys({
+		        "name": Joi.string().required(),
+		        "email": Joi.string().email().required(),
+		        "password": password
+	        }),
+	        "login": Joi.object().keys({
+		        "email": Joi.string().email().required(),
+		        "password": password
+		    })
 	    };
+	    
 
 	var hapiauth = {};
 	hapiauth.register = require("hapi-auth-jwt");
@@ -75,49 +91,37 @@ Edit the "message" portion of the configuration. The strings @USERNAME@, @SERVER
 	});
 ----
 
-## Create your own Hapi plugin and extend it 
+## Create your own Hapi plugin and extend it with your own validation function
 
 You can extend this plugin by adding your own validation function. You may also change the validation for user, password and login Joi objects.
-For the routes 
 
 The Joi objects shown here for password, user and login are used by default.
 
 ----
+	
+	const Promise = require('bluebird');
 
 	exports.register = function (server, conf, next) {
-		
-        conf.password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/);
-	    
 
-	    conf.user = Joi.object().keys({
-	        name: Joi.string().required(),
-	        email: Joi.string().email().required(),
-	        password: password
-	    });
-
-	    conf.login = Joi.object().keys({
-	        email: Joi.string().email().required(),
-	        password: password
-	    });
-
-		const validate = function(req, decodedToken, callback){
-			//validate your decoded token
+		//The validation function has this signature and the return value must be a Promise. 
+		const validate = function(req, decodedToken){
+			//validate your decoded token, the resulting object must have the field 'scope'
+			if(validationTrue){
+				return Promise.resolve({
+					"scope": ["custom_scope"]
+					});
+			}else{
+				return Promise.reject("Not validated");
+			}
 		}
 
-		conf.validate = validate;
-
-		server.register({
-			register: require('hapi-jwt-couch'),
-			options: conf
-		}, function(err){
-
-			if(err){
-				throw err;
-			}
-
-			//Additional logic here
-
-		});
+		try{
+			server.methods.jwtauth.addValidationFunction(validate);	
+		}catch(e){
+			console.error(e);
+		}
+		
+		//Additional logic for your plugin
 
 		return next();
 		
