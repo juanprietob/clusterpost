@@ -51,6 +51,52 @@ module.exports = function (server, conf) {
 	});
 
 	var handler = {};
+	handler.validationFunctions = [];
+
+	const addValidationFunction = function(valFunc){
+		handler.validationFunctions.push(valFunc);
+	}
+
+	server.method({
+		name: 'jwtauth.addValidationFunction',
+		method: addValidationFunction,
+		options: {}
+	});
+
+    const validate = function (req, decodedToken, callback) {
+        
+        handlers.validateUser(req, decodedToken)
+        .then(function(res){
+            callback(undefined, true, res);
+        })
+        .catch(function(err){
+        	return Promise.any(_.map(handler.validationFunctions, function(valFunc){
+        		valFunc(req, decodedToken)
+        	}))
+        	.then(function(res){
+        		callback(undefined, true, res);
+        	})
+        	.catch(Promise.AggregateError, function(err) {
+				callback(Boom.unauthorized(err));
+			});
+        });
+        
+    }
+
+    if(conf.algorithms){
+        console.log("Please modify your configuration. Instead of field 'algorithms' change to 'verifyOptions'");
+        server.auth.strategy('token', 'jwt', {
+            key: conf.privateKey,
+            validateFunc: validate,
+            verifyOptions: conf.algorithms  // only allow HS256 algorithm
+        });
+    }else{
+        server.auth.strategy('token', 'jwt', {
+            key: conf.privateKey,
+            validateFunc: validate,
+            verifyOptions: conf.verifyOptions  // only allow HS256 algorithm
+        });
+    }
 
 	const sign = function(data, algorithm){
 		var token = {};
