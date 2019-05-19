@@ -6,7 +6,7 @@ module.exports = function (conf) {
 	var _ = require("underscore");
 	var spawn = require('child_process').spawn;
 	var path = require('path');
-	var Joi = require('joi');
+	var Joi = require('@hapi/joi');
 
 	var executionmethods = require('./executionserver.methods')(conf);
 	var clustermodel = require('clusterpost-model');

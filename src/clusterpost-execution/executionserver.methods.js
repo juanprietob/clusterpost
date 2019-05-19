@@ -6,7 +6,7 @@ module.exports = function (conf) {
 	var _ = require("underscore");
 	var path = require("path");
 	var tarGzip = require('node-targz');
-	var Joi = require('joi');
+	var Joi = require('@hapi/joi');
 	var clustermodel = require('clusterpost-model');
 	var clusterpost = require('clusterpost-lib');
 
