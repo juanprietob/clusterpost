@@ -46,7 +46,7 @@ class ClusterpostLib extends HapiJWTCouch{
     getConfigFile() {
       try {
         // Try to load the user's personal configuration file in the current directory
-        var conf = require(this.configfilename);
+        var conf = JSON.parse(fs.readFileSync(this.getConfigFileName()));
         Joi.assert(conf, this.joiconf);
         return conf;
       } catch (e) {
@@ -620,6 +620,35 @@ class ClusterpostLib extends HapiJWTCouch{
                     reject(err)
                 }else{
                     resolve(result);
+                }
+            });
+        });
+    }
+
+    getExecutionServerToken(executionserver){
+        var self = this;
+
+        return new Promise(function(resolve, reject){
+
+            var queryparams = '';
+            if(executionserver){
+                Joi.assert(executionserver, Joi.object().keys({
+                    "executionserver": Joi.string()
+                }));
+                queryparams = '?' + qs.stringify(executionserver);
+            }
+            var options = {
+                url : self.getServer() + "/executionserver/tokens" + queryparams,
+                method: "GET",
+                agentOptions: self.agentOptions,
+                auth: self.auth
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(JSON.parse(body));
                 }
             });
         });
