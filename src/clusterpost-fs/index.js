@@ -1,4 +1,5 @@
-exports.register = function (server, conf, next) {
+exports.plugin = {};
+exports.plugin.register = async function (server, conf) {
 
   var _ = require('underscore');
   var fs = require('fs');
@@ -36,9 +37,6 @@ exports.register = function (server, conf, next) {
     }
   });
 
-  return next();
 };
 
-exports.register.attributes = {
-  pkg: require('./package.json')
-};
+exports.plugin.pkg = require('./package.json');

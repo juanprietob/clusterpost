@@ -1,14 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-exports.register = function (server, options, next) {
+exports.plugin = {};
+exports.plugin.register = async function (server, options) {
 	server.path(__dirname);
 	
 	server.route({
 		path: '/',
 		method: '*',
 		handler: function (request, reply) {
-			reply.redirect('/public');
+			return reply.redirect('/public');
 		}
 	});
 
@@ -23,9 +24,6 @@ exports.register = function (server, options, next) {
 		}
 	});
 
-    next();
 };
 
-exports.register.attributes = {
-    pkg: require('./package.json')
-};
+exports.plugin.pkg = require('./package.json');
