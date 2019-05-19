@@ -7,12 +7,11 @@ const Promise = require('bluebird');
 const _ = require('underscore');
 const HapiJWTCouch = require('./index');
 var hapijwtcouch = new HapiJWTCouch();
+var conf = require("./conf.test");
 
 lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
 
-    hapijwtcouch.setServer({
-        uri: "http://localhost:9191"
-    });
+    hapijwtcouch.setServer(conf.test.server);
 
     var token = '';
     var user = {
@@ -71,11 +70,13 @@ lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
     lab.test('returns true when unauthorized user access api.', function(){
 
         return hapijwtcouch.getUsers()
-        .then(function(res){            
+        .then(function(res){
+            
             Joi.assert(res, Joi.object().keys({ 
                 statusCode: Joi.number().valid(403),
                 error: Joi.string(),
-                message: Joi.string()
+                message: Joi.string(),
+                attributes: Joi.object()
             }));
         });
         
@@ -104,10 +105,11 @@ lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
     lab.test('returns true when user scope is updated manually to admin', function(){
         
         return hapijwtcouch.getUser()
-        .then(function(user){            
+        .then(function(user){    
+
             return new Promise(function(resolve, reject){
                 var options = { 
-                    uri: "http://localhost:5984/hapijwtcouch/" + user._id,
+                    uri: conf.test.userdb.hostname + "/" + conf.test.userdb.database + "/" + user._id,
                     method: 'GET'
                 };
                 
@@ -117,7 +119,7 @@ lab.experiment("Test hapi-jwt-couch-lib auth jwt", function(){
                     user.scope.push('admin');
 
                     var options = { 
-                        uri: "http://localhost:5984/hapijwtcouch/_bulk_docs",
+                        uri: conf.test.userdb.hostname + "/" + conf.test.userdb.database + "/_bulk_docs",
                         method: 'POST', 
                         json : {
                             docs: [user]
