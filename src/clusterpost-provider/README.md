@@ -13,8 +13,13 @@ in the hapi server application.
 The configuration for 'clusterpost-provider' contains a set of access credentials to computing grids.
 For more information about the type of computing grids that are supported check [clusterpost-execution]()
 
+This package depends on [hapi-jwt-couch](https://www.npmjs.com/package/hapi-jwt-couch), 
+for the route authentication and encryption of tokens. 
+The algorithm section has the parameters to encrypt the tokens that are emmited for the clusterpost-execution.
+
 ----
 	var obj_config = {
+		"hapi-jwt-couch": {"Configuration for hapi-jwt-couch"}
 		"couch-provider": {
 			"default" : "clusterjobstest",
 			"clusterjobstest" : {
@@ -24,6 +29,10 @@ For more information about the type of computing grids that are supported check 
 			"namespace": ["clusterprovider"]
 		},
 		"clusterpost-provider":{
+			"algorithm": {
+				"algorithm": "HS256",
+				"expiresIn": "7d"
+			},
 			"executionservers" : {
 				"testserver" : {
 					"hostname" : "localhost", 
