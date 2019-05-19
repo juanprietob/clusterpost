@@ -68,3 +68,8 @@ exports.job = Joi.object().keys({
 		version: Joi.string().optional(),
 		data: Joi.object().optional()
     });
+
+exports.executionservertoken = Joi.object().keys({
+		executionserver: Joi.string(),
+		token: Joi.string()
+	})
