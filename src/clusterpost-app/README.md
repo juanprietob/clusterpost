@@ -19,18 +19,19 @@ Create a script named `clusterpostapp.js` with the following content.
 ## Running the script
 
 ----
-	`node clusterpostapp.js`
+	`node clusterpostapp.js get`
+----
+or
+----
+	`node clusterpostapp.js post`
 ----
 
-To retrieve jobs: 
+
+### get: 
 
 ----
 	Help: Download tasks from the server.
-	Required parameters when login for first time:
-	--server url, set the server url. ex., https://some.server:8180
-	-u username
-	-p password
-	\nOptional parameters:
+	Optional parameters:
 	--dir  Output directory, default: ./out
 	--status one of [DONE, RUN, FAIL, EXIT, UPLOADING, CREATE], if this flag is provided, the job information will only be printed. By default, the behavior is status 'DONE' and download the results.
 	--delete, default false, when downloading jobs with status 'DONE', the jobs will be deleted upon completion
@@ -38,6 +39,15 @@ To retrieve jobs:
 	--executable executable, default: all executables
 ----
 
-The server information and token will be saved to your home directory for future use. 
+### post:
+
+---
+	Help: Submit tasks to the server. Parses a command line, uploads the data and runs the task.
+    
+    Optional parameters:
+    --parse_cli 'command as you would run it locally in your computer. It will only print the job'
+    --parse_cli_submit 'Parses cli and submits the task'
+    --executionserver 'name of computing grid, uses the first one by default'
+---
 
 

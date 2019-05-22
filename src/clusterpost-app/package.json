@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-app",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Performs tasks in your desktop. Retrieve finished jobs. ",
   "main": "index.js",
   "scripts": {
@@ -23,8 +23,8 @@
   "homepage": "https://github.com/juanprietob/clusterpost#readme",
   "dependencies": {
     "bluebird": "^3.4.7",
-    "clusterpost-lib": "^1.0.3",
+    "clusterpost-lib": "file:../clusterpost-lib",
     "minimist": "^1.2.0",
-    "prompt": "^1.0.0"
+    "underscore": "^1.9.1"
   }
 }

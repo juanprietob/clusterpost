@@ -4,7 +4,6 @@ var Promise = require('bluebird');
 var argv = require('minimist')(process.argv.slice(2));
 const os = require('os');
 const fs = require('fs');
-const prompt = require('prompt');
 
 
 var agentoptions = {
