@@ -1,8 +1,30 @@
 # clusterpost-lib
 
-It implements the API to submit jobs to [clusterpost-server](https://www.npmjs.com/package/clusterpost-server)
+It implements the API to submit jobs to [clusterpost-server](https://www.npmjs.com/package/clusterpost-server).
+This library is used by [clusterpost-app](https://www.npmjs.com/package/clusterpost-app) which implements
+submit and retrieve functionalities from the server. 
 
-An example to submit a job:
+## New way to submit jobs: 
+
+---
+	var clusterpost = require("clusterpost-lib");
+
+	# The config file is is optional, if not provided. It will store the info in your home folder. 
+	var configfile = './conf.jobCreation.json';
+
+
+	clusterpost.start(configfile)
+    .then(function(res){
+
+        return clusterpost.parseCLIFromStringAndSubmit("SomeExpensiveTask --img ./data/gravitational-waves-simulation.jpg --img2 ./data/gravitational-waves-simulation.jpg -out ./data.nii.gz")
+        .then(function(id){
+            console.log(jobid);
+        });
+    });
+---
+
+
+## An example to submit a job (The old way):
 
 ----
 	var clusterpost = require("clusterpost-lib");
@@ -67,18 +89,12 @@ An example to submit a job:
 	    "userEmail": "juanprietob@gmail.com"
 	};
 
-
-	clusterpost.setClusterPostServer("https://localhost:8180");
-
 	var agentoptions = {
 		rejectUnauthorized: false //You can also read a certificate here if you want to use https connection and remove this
 	}
 	clusterpost.setAgentOptions(agentoptions);
 
-	clusterpost.userLogin({
-		"email": "your@email.com",
-		"password": "passwd"
-		})
+	clusterpost.start()
 	.then(function(res){
 		return clusterpost.getExecutionServers();
 	})

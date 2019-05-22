@@ -10,7 +10,7 @@ var qs = require('querystring');
 var prompt = require('prompt');
 var os = require('os');
 var jws = require('jsonwebtoken');
-var HapiJWTCouch = require('hapi-jwt-couch-lib')
+var HapiJWTCouch = require('hapi-jwt-couch-lib');
 
 class ClusterpostLib extends HapiJWTCouch{
     constructor(){
@@ -504,32 +504,44 @@ class ClusterpostLib extends HapiJWTCouch{
     createAndSubmitJob(job, files, names){
         var prom;
         var self = this;
-        if(files){
-            prom = self.checkFiles(files)
-            .then(function(){
-                return self.createDocument(job);
-            })
-            .then(function(res){
-                var jobid = res.id;
-                return self.uploadFiles(jobid, files, names)
+
+        return Promise.all([this.getUser(), this.getExecutionServers()])
+        .spread(function(user, executionservers){
+            if(!job.userEmail){
+                job.userEmail = user.email;
+            }
+            if(!job.executionserver){
+                job.executionserver = executionservers[0].name;
+            }
+            if(files){
+                prom = self.checkFiles(files)
                 .then(function(){
+                    return self.createDocument(job);
+                })
+                .then(function(res){
+                    var jobid = res.id;
+                    return self.uploadFiles(jobid, files, names)
+                    .then(function(){
+                        return jobid;
+                    });
+                });
+            }else{
+                prom = self.createDocument(job)
+                .then(function(res){
+                    var jobid = res.id;
+                    return jobid;
+                });
+            }
+            return prom
+            .then(function(jobid){
+                return self.executeJob(jobid)
+                .then(function(res){
                     return jobid;
                 });
             });
-        }else{
-            prom = self.createDocument(job)
-            .then(function(res){
-                var jobid = res.id;
-                return jobid;
-            });
-        }
-        return prom
-        .then(function(jobid){
-            return self.executeJob(jobid)
-            .then(function(res){
-                return jobid;
-            });
-        });
+        })
+
+        
     }
 
     mkdirp(outputdir){
@@ -727,6 +739,93 @@ class ClusterpostLib extends HapiJWTCouch{
                 self.setConfigFile(token);
             });
         }
+    }
+
+    parseCLIFromString(cmd){
+        var splitted_cmd = cmd.split(" ");
+        return this.parseCLI(splitted_cmd);
+    }
+
+    parseCLI(splitted_cmd){
+        var executable = splitted_cmd[0];
+        var file_name_tests = {};
+
+        var inputs = [];
+        var names = [];
+        var parameters = _.map(splitted_cmd.splice(1), function(param){
+            if(fs.existsSync(param) && !fs.statSync(param).isDirectory()){
+                var filename = path.basename(param);
+
+                if(file_name_tests[filename]){
+                    filename = _.uniqueId('c_') + '_' + filename;
+                }
+
+                file_name_tests[filename] = true;
+
+                inputs.push(param);
+                names.push(filename);
+                
+                return {
+                    flag: "",
+                    name: filename
+                }
+            }
+            return {
+                flag: "",
+                name: param
+            }
+        });
+        
+
+        var job = {
+            "executable": executable,
+            "parameters": parameters, 
+            "inputs": _.map(names, name => {return {name} }),
+            "outputs": [
+                {
+                    "type": "directory",
+                    "name": "./"
+                },
+                {
+                    "type": "file",
+                    "name": "stdout.out"
+                },
+                {
+                    "type": "file",
+                    "name": "stderr.err"
+                }
+            ],
+            "type": "job",
+            "userEmail": "juanprietob@gmail.com"
+        };
+        
+        return Promise.resolve({
+            job, 
+            inputs, 
+            names
+        });
+    }
+
+    parseCLIFromStringAndSubmit(cmd, executionserver){
+        var self = this;
+        return self.parseCLIFromString(cmd)
+        .then(function(job_desc){
+            if(executionserver){
+                job_desc.job.executionserver = executionserver;
+            }
+            return self.createAndSubmitJob(job_desc.job, job_desc.inputs, job_desc.names);
+        });
+    }
+
+    parseCLIAndSubmit(splitted_cmd, executionserver){
+        var self = this;
+        return this.parseCLI(splitted_cmd)
+        .then(function(job_desc){
+            if(executionserver){
+                job_desc.job.executionserver = executionserver;
+            }
+            return self.createAndSubmitJob(job_desc.job, job_desc.inputs, job_desc.names);
+        });
     }
 
 }
