@@ -144,23 +144,18 @@ exports.mkdirp = function(path){
 }
 
 exports.removeDirectorySync = function(dirpath){
-	try{
-		if(fs.statSync(dirpath).isDirectory()){
-			_.each(fs.readdirSync(dirpath), function(filename){
-				var filename = path.join(dirpath, filename);
-				var stats = fs.statSync(filename);
-				if(stats.isFile()){
-					fs.unlinkSync(filename);
-				}else if(stats.isDirectory()){
-					exports.removeDirectorySync(filename);
+	if(fs.existsSync(dirpath) && fs.statSync(dirpath).isDirectory()){
+		_.map(fs.readdirSync(dirpath), function(filename){
+			var fullpath = path.join(dirpath, filename);
+			if(fs.existsSync(fullpath)){
+				if(fs.statSync(fullpath).isDirectory()){
+					exports.removeDirectorySync(fullpath);
+				}else{
+					fs.unlinkSync(fullpath);
 				}
-			});
-			fs.rmdirSync(dirpath);
-		}else{
-			throw "This is not a directory", dirpath;
-		}
-	}catch(e){
-		console.error(e);
+			}
+		});
+		fs.rmdirSync(dirpath);
 	}
 }
 
@@ -315,35 +310,6 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 	});
 }
 
-exports.getDocumentURIAttachment = function(doc, name, codename){
-
-	console.error("THIS FUNCTION IS DEPRECATED, use getDocumentStreamAttachment to get a stream and pipe the data where ever you need.");
-
-	if(doc.attachments && doc.attachments[name]){
-
-		var conf = exports.getConfiguration(codename);
-
-		var filepath = path.join(conf.datapath, doc._id, name);
-
-		if(!fs.existsSync(filepath)){
-			throw "File not found";
-		}
-		return {
-		 	uri: exports.getCouchDBServer(codename) + "/" + doc._id,
-		 	onResponse: function(err, res, request, reply, settings, ttl){//This is 'onResponse' for the h2o2 proxy for hapi https://github.com/hapijs/h2o2
-	 			var stream = fs.createReadStream(filepath);
-	 			reply(stream);
-	 		}
-		}
-		
-	}else{
-		return {
-			uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name
-		};
-	}
-}
-
-
 exports.getDocumentStreamAttachment = function(doc, name, codename){
 
 	if(doc.attachments && doc.attachments[name]){
@@ -355,31 +321,27 @@ exports.getDocumentStreamAttachment = function(doc, name, codename){
 		if(!fs.existsSync(filepath)){
 			throw "File not found";
 		}
-		return fs.createReadStream(filepath);
+		return Promise.resolve(fs.createReadStream(filepath));
 	}else if(doc._attachments && doc._attachments[name]){
 		var pass = new PassThrough();
 		request({ uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name }).pipe(pass);
-		return pass;
+		return Promise.resolve(pass);
 	}else{
 		console.error("Document is missing attachment");
-		throw "Document is missing attachment";
+		return Promise.reject("Document is missing attachment");
 	}
 }
 
 exports.getDocumentAttachment = function(doc, name, codename){
-
 	return new Promise(function(resolve, reject){
-		try{
-			var stream = exports.getDocumentStreamAttachment(doc, name, codename);
+		return exports.getDocumentStreamAttachment(doc, name, codename)
+		.then(function(stream){
 			var concatStream = concat(resolve);
 			stream.pipe(concatStream);
 			stream.on('error', reject);
-		}catch(e){
-			reject(e);
-		}
-		
+		})
+		.catch(reject);	
 	});
-
 }
 
 exports.getView = function(view, codename){

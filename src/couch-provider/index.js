@@ -43,12 +43,6 @@ exports.plugin.register = async function (server, conf) {
 		});
 
 		server.method({
-		    name: namespace + '.getDocumentURIAttachment',
-		    method: couchProvider.getDocumentURIAttachment,
-		    options: {}
-		});
-
-		server.method({
 		    name: namespace + '.getDocumentStreamAttachment',
 		    method: couchProvider.getDocumentStreamAttachment,
 		    options: {}
@@ -63,6 +57,18 @@ exports.plugin.register = async function (server, conf) {
 		server.method({
 		    name: namespace + '.getView',
 		    method: couchProvider.getView,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.mkdirp',
+		    method: couchProvider.mkdirp,
+		    options: {}
+		});
+
+		server.method({
+		    name: namespace + '.removeDirectorySync',
+		    method: couchProvider.removeDirectorySync,
 		    options: {}
 		});
 
