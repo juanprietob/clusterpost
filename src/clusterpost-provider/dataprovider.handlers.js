@@ -9,6 +9,7 @@ var qs = require('querystring');
 var os = require('os');
 var tarGzip = require('node-targz');
 const { PassThrough, Writable } = require('stream');
+const fs = require('fs');
 
 module.exports = function (server, conf) {
 	
@@ -68,7 +69,7 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.uploadDocuments(job);
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return (Boom.badRequest(e));
 		});
 	}
 
@@ -86,59 +87,8 @@ module.exports = function (server, conf) {
 			return server.methods.clusterprovider.addDocumentAttachment(doc, req.params.name, req.payload);
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return (Boom.badRequest(e));
 		});
-	}
-
-	const getDocumentStreamAttachment = function(doc, name){
-		
-		var att = _.find(doc.inputs, function(input){
-			return input.name === name;
-		});
-		if(!att){
-			att = _.find(doc.outputs, function(output){
-				return output.name === name;
-			});
-		}
-		if(att){
-			if(att.type === 'tar.gz'){
-				name += ".tar.gz";
-			}
-			if(att.remote){
-				var pass = new PassThrough();
-
-				if(att.remote.serverCodename){
-
-					request({
-						uri: server.methods.clusterprovider.getCouchDBServer(att.remote.serverCodename) + "/" + att.remote.uri
-					}).pipe(pass);
-
-				}else{ //The next case is for the dataprovider-fs
-					request({
-						uri: att.remote.uri,
-						agentOptions: {
-							rejectUnauthorized: false
-						}
-					}).pipe(pass);
-				}
-
-				return pass;
-			}else if(att.local){
-				var pass = new PassThrough();
-
-				request({
-					uri: att.local.uri 
-				}).pipe(pass);
-
-				return pass;
-			}
-		}
-		try{
-			return server.methods.clusterprovider.getDocumentStreamAttachment(doc, name);
-		}catch(e){
-			throw Boom.notFound(e);
-		}
-		
 	}
 
 	/*
@@ -151,8 +101,7 @@ module.exports = function (server, conf) {
 		})
 		.then(function(doc){
 			if(req.params.name){
-				var stream = getDocumentStreamAttachment(doc, req.params.name);
-				return (stream);
+				return server.methods.clusterprovider.getDocumentStreamAttachment(doc, req.params.name);
 			}else{
 				return (doc);
 			}
@@ -177,7 +126,7 @@ module.exports = function (server, conf) {
 			
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return (Boom.badRequest(e));
 		});
 	}
 
@@ -190,8 +139,8 @@ module.exports = function (server, conf) {
 			
 			return server.methods.clusterprovider.getDocument(decodedToken._id)
 			.then(function(doc){
-				var stream = getDocumentStreamAttachment(doc, decodedToken.name);
-				return (stream);
+				console.log(decodedToken.name)
+				return server.methods.clusterprovider.getDocumentStreamAttachment(doc, decodedToken.name)
 			})
 			.catch(function(e){
 				return (Boom.unauthorized(e));
@@ -240,7 +189,7 @@ module.exports = function (server, conf) {
 			
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return Boom.badRequest(e);
 		});
 	}
 
@@ -321,7 +270,7 @@ module.exports = function (server, conf) {
 			});
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return Boom.badRequest(e);
 		})
 	}
 
@@ -342,112 +291,102 @@ module.exports = function (server, conf) {
 			return _.pluck(rows, 'doc');
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return Boom.badRequest(e);
 		});
 	}
 
 	const saveAttachment = function(stream, filename){
-
 		return new Promise(function(resolve, reject){
-
 			var writestream = fs.createWriteStream(filename);
-            stream.pipe(writestream);
+	        stream.pipe(writestream);
 
-            writestream.on('finish', function(err){                 
-                if(err){
-                    reject({
-                        "path" : filename,
-                        "status" : false,
-                        "error": err
-                    });
-                }else{
-                    resolve({
-                        "path" : filename,
-                        "status" : true
-                    });
-                }
-            });
-		})
+	        writestream.on('finish', function(err){                 
+	            if(err){
+	                reject({
+	                    "path" : filename,
+	                    "status" : false,
+	                    "error": err
+	                });
+	            }else{
+	                resolve({
+	                    "path" : filename,
+	                    "status" : true
+	                });
+	            }
+	        });
+	    });
 	}
 
 	/*
 	*/
 	handler.getDownload = function(req, rep){
+		
+		var tempdir = path.join(os.tmpdir(), 'clusterpost', req.params.id);
+		var temptarfile = tempdir + ".tar.gz";
+
 		return server.methods.clusterprovider.getDocument(req.params.id)
 		.then(function(doc){
 			return server.methods.clusterprovider.validateJobOwnership(doc, req.auth.credentials);
 		})
 		.then(function(doc){
 
-			try{
-				
-				var tempdir = path.join(os.tmpdir(), doc._id);
-				fs.mkdirSync(tempdir);
+			return server.methods.clusterprovider.mkdirp(tempdir)
+			.then(function(){
 
-				var outputs = doc.outputs;
+				var allattachments = _.compact(
+				_.union(
+					_.map(doc._attachments, (att, key) => {return key}), 
+					_.map(doc.attachments, (att, key) => {return key})
+					)
+				);
 
-				return Promise.map(outputs, function(output){
-					return saveAttachment(getDocumentStreamAttachment(doc._id, output.name), output.name);
+				return Promise.map(allattachments, function(name){
+					return server.methods.clusterprovider.mkdirp(path.join(tempdir, path.dirname(name)))
+					.then(function(){
+						return server.methods.clusterprovider.getDocumentStreamAttachment(doc, name)	
+					})
+					.then(function(stream){
+						return saveAttachment(stream, path.join(tempdir, name));
+					})
+					.catch(function(e){
+						//This is ok, continue
+					});
 				})
 				.then(function(){
 					return new Promise(function(resolve, reject){
-						var tarname = tempdir + ".tar.gz";
+						
 						tarGzip.compress({
 						    source: tempdir,
-						    destination: tarname
+						    destination: temptarfile
 						}, function(){
-							resolve(tarname);
+							resolve();
 						});
 					});
+				})
+				.then(function(){
+					server.methods.clusterprovider.removeDirectorySync(tempdir);
+					var stream = fs.createReadStream(temptarfile);
+					stream.on('end', function(){
+						fs.unlinkSync(temptarfile);
+					})
+					return stream;
 				});
-
-			}catch(e){
-				throw (Boom.badImplementation(e));
-			}
-			
-		})
-		.then(function(tarname){
-			try{
-				if(fs.statFileSync(tarname)){
-					return fs.createReadStream(tarname);
-				}
-			}catch(e){
-				throw Boom.badImplementation(e);
-			}
+			});
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			server.methods.clusterprovider.removeDirectorySync(tempdir);
+			if(fs.existsSync(temptarfile)){
+				fs.unlinkSync(temptarfile);
+			}
+			return Boom.badRequest(e);
 		});
-	}
-
-	const deleteFolderRecursive = function(dir) {
-		var dirstat;
-		try{
-			dirstat = fs.statSync(dir);
-		}catch(e){
-			//does not exist
-			dirstat = undefined;
-		}
-		if(dirstat){
-			fs.readdirSync(dir).forEach(function(file) {
-				var currentpath = path.join(dir, file);
-				if(fs.statSync(currentpath).isDirectory()) {
-					handler.deleteFolderRecursive(currentpath);
-				}else{
-					fs.unlinkSync(currentpath);
-				}
-			});
-			fs.rmdirSync(dir);
-			return true;
-	    }
-	    return false;
 	}
 
 	handler.deleteDownload = function(req, rep){
 		
 		try{
-			var tempdir = path.join(os.tmpdir(), req.params.id);
-			deleteFolderRecursive(tempdir);
+			var tempdir = path.join(os.tmpdir(), 'clusterpost', req.params.id);
+			server.methods.clusterpost.removeDirectorySync(tempdir);
 			var tarfile = tempdir + ".tar.gz";
 			if(fs.statSync(tarfile)){
 				fs.unlinkSync(tarfile);

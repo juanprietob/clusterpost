@@ -231,14 +231,11 @@ module.exports = function (server, conf) {
 			validate: {
 			  	query: false,
 			    params: {
-			    	id: Joi.string().alphanum().required()
+			    	id: Joi.string().required()
 			    },
 			    payload: false
 			},
-			description: 'Download job in a tar file',
-			response: {
-				schema: true
-			}
+			description: 'Download job in a tar file'
 	    }
 	});
 
