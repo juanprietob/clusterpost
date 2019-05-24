@@ -330,6 +330,36 @@ class ClusterpostLib extends HapiJWTCouch{
         });
     }
 
+    downloadJob(jobid, filename){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            var options = {
+                url : self.getServer() + "/dataprovider/download/job/" + jobid,
+                method: "GET",
+                agentOptions: self.agentOptions,
+                auth: self.auth
+            }
+
+            var writestream = fs.createWriteStream(filename);
+            request(options).pipe(writestream);
+
+            writestream.on('finish', function(err){                 
+                if(err){
+                    reject({
+                        "path" : filename,
+                        "status" : false,
+                        "error": err
+                    });
+                }else{
+                    resolve({
+                        "path" : filename,
+                        "status" : true
+                    });
+                }
+            });
+        });
+    }
+
     /*
     *   Uploads a file to the database. 
     *   jobid is required
