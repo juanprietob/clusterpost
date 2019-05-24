@@ -259,6 +259,35 @@ module.exports = function (server, conf) {
 		}
 	}
 
+	handler.updateUserBasic = function(req, rep){
+
+		var user = req.auth.credentials;
+		var updateinfo = req.payload;
+
+		if(user.email !== updateinfo.email || user._id !== updateinfo._id){
+			return (Boom.unauthorized('You cannot modify the user information'));
+		}else{
+			return couchprovider.getDocument(updateinfo._id)			
+			.then(function(userindb){
+				updateinfo.password = userindb.password;
+				updateinfo.scope = userindb.scope;
+
+				return couchprovider.uploadDocuments(updateinfo)
+				.then(function(res){
+					res = res[0];
+					if(res.ok){
+						return res;
+					}else{
+						throw res;
+					}
+				})
+			})
+			.catch(function(err){
+				return Boom.badImplementation(err);
+			});
+		}
+	}
+
 	handler.login = function(req, rep){
 		
 		var email = req.payload.email;

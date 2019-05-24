@@ -162,7 +162,7 @@ module.exports = function (server, conf) {
                 strategy: 'token',
                 scope: ['default']
             },
-            handler: handlers.updateUser,
+            handler: handlers.updateUserBasic,
             validate: {
                 query: false,
                 payload: userinfobasic,
