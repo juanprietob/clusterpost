@@ -30,11 +30,17 @@ const startServer = async (cluster) => {
           cert: fs.readFileSync(conf.tls.cert)
         };
     }
-    var server = new Hapi.Server({ 
+    var server_options = { 
         host: conf.host,
         port: conf.port,
         tls: tls
-    });    
+    }
+    if(process.env.NODE_ENV == 'test'){
+        server_options.routes = {
+            "cors": true
+        }
+    }
+    var server = new Hapi.Server(server_options);    
 
     var plugins = _.map(conf.plugins, function(options, pluginName){
             return {
