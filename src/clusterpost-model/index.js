@@ -53,6 +53,8 @@ exports.job = Joi.object().keys({
 		type: Joi.string().required(),
 		userEmail: Joi.string().email().required(),
 		timestamp: Joi.date().required(),
+		timestampstart: Joi.date().optional(),
+		timestampend: Joi.date().optional(),
 		jobstatus: exports.jobstatus.required(),
 		executable: Joi.string().required(),
 		executionserver: Joi.string().required(),
