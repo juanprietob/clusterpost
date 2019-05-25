@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-server",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Server side application using REST api. Create/post 'job' document describing task and input data, run tasks on remote computing grids and retrive outputs. All process is done automatically.",
   "main": "index.js",
   "dependencies": {
@@ -12,7 +12,7 @@
     "@hapi/hapi": "^18.3.1",
     "@hapi/inert": "^5.2.0",
     "@hapi/vision": "^5.5.2",
-    "@tanepiper/hapi-auth-jwt": "github:tanepiper/hapi-auth-jwt#master",
+    "@juanprietob/hapi-auth-jwt": "github:juanprietob/hapi-auth-jwt#master",
     "bcrypt": "^3.0.6",
     "bluebird": "^3.5.4",
     "clusterpost-model": "^1.9.0",
