@@ -22,6 +22,7 @@ module.exports = function(doc, conf){
             }else{
                 docupdated.jobstatus.status = "FAIL";
             }
+            docupdated.timestampend = new Date();
             return executionmethods.uploadDocumentDataProvider(docupdated);
         });
     }  
