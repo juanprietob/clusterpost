@@ -113,6 +113,19 @@ module.exports = function (server, conf) {
 		
 	}
 
+	handler.getJobCount = function(req, rep){
+
+		var view = "_design/getJob/_view/count?group=true";
+
+		return server.methods.clusterprovider.getView(view)
+		.then(function(rows){
+			return rows;
+		})
+		.catch(function(e){
+			return (Boom.badRequest(e));
+		});
+	}
+
 	handler.getDownloadToken = function(req, rep){
 
 		return server.methods.clusterprovider.getDocument(req.params.id)

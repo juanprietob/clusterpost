@@ -148,6 +148,27 @@ module.exports = function (server, conf) {
 
 	server.route({
 		method: 'GET',
+		path: "/dataprovider/count",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost']
+            },
+			handler: handlers.getJobCount,
+			validate: {
+			  	query: false,
+			    params: null, 
+			    payload: false
+			},
+			response: {
+				schema: true
+			},
+			description: 'Get all document posted to the database'
+	    }
+	});
+
+	server.route({
+		method: 'GET',
 		path: "/dataprovider/user",
 		config: {
 			auth: {
