@@ -13,7 +13,10 @@
   },
   "scripts": {
     "test": "lab -v -m 120000 test.js",
-    "testes": "lab -v -m 120000 tokensTest.js"
+    "testes": "lab -v -m 120000 tokensTest.js",
+    "testcmd": "lab -v -m 120000 createJobsTest.js",
+    "testdtoken": "lab -v -m 120000 downloadTokenTest.js",
+    "testundef": "lab -v -m 120000 undefinedTest.js"
   },
   "keywords": [
     "test"
