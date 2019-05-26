@@ -12,7 +12,7 @@ exports.plugin.register = async function (server, options) {
 			return reply.redirect('/public');
 		}
 	});
-
+	
 	server.route({
 		path: '/public/{path*}',
 		method: 'GET',
@@ -23,7 +23,7 @@ exports.plugin.register = async function (server, options) {
 			description: 'This route serves the static website of clusterpost.'
 		}
 	});
-
+	
 };
 
 exports.plugin.pkg = require('./package.json');
