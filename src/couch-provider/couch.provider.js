@@ -153,6 +153,13 @@ exports.removeDirectorySync = function(dirpath){
 				}else{
 					fs.unlinkSync(fullpath);
 				}
+			}else{
+				//Does not exists try to remove anyway, probably a dead symlink
+				try{
+					fs.unlinkSync(fullpath);
+				}catch(e){
+					console.error(e);
+				}
 			}
 		});
 		fs.rmdirSync(dirpath);
@@ -163,14 +170,20 @@ exports.deleteDocument = function(doc, codename){
 	if(doc.attachments){
 		var conf = exports.getConfiguration(codename);
 		var dirpath = path.join(conf.datapath, doc._id);
+		if(dirpath === conf.datapath){
+			throw "Something is terrible wrong with the doc._id";
+		}
 		exports.removeDirectorySync(dirpath);
 	}
 
 	return new Promise(function(resolve, reject){
 		try{
 			var options = {
-				uri: exports.getCouchDBServer(codename) + "/" + doc._id + "?rev=" + doc._rev,
-				method: 'DELETE'
+				uri: exports.getCouchDBServer(codename) + "/" + doc._id,
+				method: 'DELETE',
+				qs: {
+					rev: doc._rev
+				}
 			}				
 			request(options, function(err, res, body){
 				if(err){
@@ -223,8 +236,11 @@ exports.deleteAttachment = function(doc, name, codename){
 		}else if(doc._attachments && doc._attachments[name]){
 			try{
 				var options = {
-					uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name + "?rev=" + doc._rev,
-					method: 'DELETE'
+					uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name,
+					method: 'DELETE',
+					qs: {
+						rev: doc._rev
+					}
 				}				
 				request(options, function(err, res, body){
 					if(err){
@@ -288,10 +304,13 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 		}else{
 			try{
 				var options = {
-					uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + encodeURIComponent(name) + "?rev=" + doc._rev,
+					uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + encodeURIComponent(name),
 					method: 'PUT',
 					headers: {
 						"Content-type" : "application/octet-stream"
+					},
+					qs: {
+						rev: doc._rev
 					}
 				}
 				stream.pipe(request(options, function(err, res, body){
@@ -310,8 +329,7 @@ exports.addDocumentAttachment = function(doc, name, stream, codename){
 	});
 }
 
-exports.getDocumentStreamAttachment = function(doc, name, codename){
-
+exports.getDocumentStreamAttachmentUri = function(doc, name, codename){
 	if(doc.attachments && doc.attachments[name]){
 
 		var conf = exports.getConfiguration(codename);
@@ -321,15 +339,27 @@ exports.getDocumentStreamAttachment = function(doc, name, codename){
 		if(!fs.existsSync(filepath)){
 			throw "File not found";
 		}
-		return Promise.resolve(fs.createReadStream(filepath));
+		return Promise.resolve({file: filepath});
 	}else if(doc._attachments && doc._attachments[name]){
-		var pass = new PassThrough();
-		request({ uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name }).pipe(pass);
-		return Promise.resolve(pass);
+		return Promise.resolve({uri: exports.getCouchDBServer(codename) + "/" + doc._id + "/" + name});
 	}else{
-		console.error("Document is missing attachment");
 		return Promise.reject("Document is missing attachment");
 	}
+}
+
+exports.getDocumentStreamAttachment = function(doc, name, codename){
+	return exports.getDocumentStreamAttachmentUri(doc, name, codename)
+	.then(function(uri){
+		if(uri.file){
+			return Promise.resolve(fs.createReadStream(uri.file));
+		}else if(uri.uri){
+			var pass = new PassThrough();
+			request(uri).pipe(pass);
+			return Promise.resolve(pass);
+		}else{
+			return Promise.reject("Document is missing attachment");
+		}
+	})
 }
 
 exports.getDocumentAttachment = function(doc, name, codename){
@@ -349,6 +379,28 @@ exports.getView = function(view, codename){
 		try{
 			var options = {
 				uri: exports.getCouchDBServer(codename) + "/" + view
+			}
+
+			request(options, function(err, res, body){					
+				if(err){						
+					reject(err);
+				}else{
+					var docs = JSON.parse(body);
+					resolve(docs.rows);
+				}					
+			});
+		}catch(e){
+			reject(e);
+		}
+	})
+}
+
+exports.getViewQs = function(view, query, codename){
+	return new Promise(function(resolve, reject){
+		try{
+			var options = {
+				uri: exports.getCouchDBServer(codename) + "/" + view,
+				qs: query
 			}
 
 			request(options, function(err, res, body){					
