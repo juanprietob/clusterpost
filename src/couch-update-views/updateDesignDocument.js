@@ -6,7 +6,8 @@ var path = require('path');
 
 module.exports = function(couchdb, viewsDir, design){
     
-    var uri = couchdb + "/_design/" + design.replace('.json', '');
+    design = design.replace('.json', '');
+    var uri = couchdb + "/_design/" + design;
     
     return new Promise(function(resolve, reject){
         request(uri, function(err, res, body){
@@ -16,7 +17,7 @@ module.exports = function(couchdb, viewsDir, design){
                 var jsonbody = JSON.parse(body);
                 delete jsonbody._rev;
                 var jsonstring = JSON.stringify(jsonbody, null, 4);                
-                var viewfilename = path.join(viewsDir, design);
+                var viewfilename = path.join(viewsDir, design + '.json');
                 try{
                     var write = fs.writeFileSync(viewfilename, jsonstring);
                     resolve({
