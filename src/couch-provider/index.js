@@ -1,8 +1,9 @@
 exports.plugin = {};
 
+const couchProvider = require('./couch.provider');
+exports.couchProvider = couchProvider;
+
 exports.plugin.register = async function (server, conf) {
-		
-	var couchProvider = require('./couch.provider');
 	
     couchProvider.setConfiguration(conf);
     var namespace = 'couchprovider';

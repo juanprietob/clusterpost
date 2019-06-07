@@ -34,7 +34,7 @@ module.exports = function(doc, force, conf){
             })
             .then(function(jobstatus){
                 subdoc.jobstatus = jobstatus;
-                sudbod.timestampstart = new Date();
+                sudboc.timestampstart = new Date();
                 _.extend(subdoc.jobstatus, this);                
                 return executionmethods.uploadDocumentDataProvider(subdoc);
             });
