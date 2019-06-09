@@ -5,9 +5,11 @@ import PropTypes from 'prop-types';
 import JWTAuthService from './jwt-auth-service';
 
 import _ from 'underscore';
+import qs from 'query-string';
 
 import { connect } from "react-redux";
 import { withRouter } from 'react-router-dom';
+import {Card, Button, Row, Col, Form, Container, InputGroup, Overlay, Popover} from 'react-bootstrap';
 
 class JWTAuth extends Component {
 
@@ -29,6 +31,9 @@ class JWTAuth extends Component {
     this.state = {
       isCreateUser: false,
       isLoggedIn: false,
+      loginFailed: false,
+      createFailed: false,
+      emailRequired: false,
       user: {
         email: '',
         password: ''
@@ -68,11 +73,24 @@ class JWTAuth extends Component {
     const isCreateUser = this.state.isCreateUser;
     const isLoggedIn = this.state.isLoggedIn;
 
-    if(isCreateUser){
-      userInputs = this.createUserForm();
+    const {
+      location
+    } = this.props;
+
+    var token;
+    if(location){
+      const search = qs.parse(location.search);
+      token = search.token;
+    }
+    if(token){
+      userInputs = this.resetUserPasswordForm();
     }else{
-      userInputs = this.pleaseLogin();
-    }    
+      if(isCreateUser){
+        userInputs = this.createUserForm();
+      }else{
+        userInputs = this.pleaseLogin();
+      }  
+    }   
 
     return (
       <div class="card">
@@ -115,46 +133,85 @@ class JWTAuth extends Component {
     });
   }
 
+  timeHideLoginPopover(){
+    const self = this;
+    setTimeout(function(){
+      self.setState({
+        ...self.state, 
+        loginFailed: false,
+        loginTarget: null
+      })
+    }, 10000);
+  }
+
   pleaseLogin(){
     return (
-        <div class="col">
-          <form onSubmit={this.login}>
-            <h2>{this.props.title}</h2>
-            <div class="form-group">
-              <label for="inputEmail" class="sr-only">Email address</label>
-              <input id="inputEmail" class="form-control" placeholder="Email address" required autofocus="" type="email" value={this.state.user.email} name="user.email" onChange={this.handleInputChange} data-container="#divlogin" data-toggle="popover" data-placement="right" data-content="Please enter your email address"/>
-              <label for="inputPassword" class="sr-only">Password</label>
-              <input id="inputPassword" class="form-control" placeholder="Password" required type="password" value={this.state.user.password} name="user.password" onChange={this.handleInputChange} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 6 or more characters"/>
-              <button id="loginbutton" class="btn btn-lg btn-primary btn-block" type="submit" data-container="#divlogin" data-toggle="popover" data-placement="right" data-content="Check if email and password are correct!" data-template='<div class="popover alert-danger" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content alert-danger"></div></div>'>Login</button>
-            </div>
-          </form>
-          <div class="row justify-content-center">
-            <div class="col-6">
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="basic-addon1">Forgot your password?</span>
-                </div>
-                <button class="btn btn-secondary btn-sm" onClick={this.recoverPassword}>click here</button>
-              </div>
-            </div>
-          </div>
-          <div class="row justify-content-center">
-            <div class="col-6">
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="basic-addon1">New user?</span>
-                </div>
-                <button class="btn btn-secondary btn-sm" onClick={this.switchCreateForm}>create new account</button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <Col>
+        <Row>
+          <Col>
+            <Form onSubmit={this.login} ref={(node) => {this.loginRef = node}}>
+              <Form.Control placeholder="Email address" required autofocus="" type="email" value={this.state.user.email} name="user.email" onChange={this.handleInputChange} data-container="#divlogin" data-toggle="popover" data-placement="right" data-content="Please enter your email address"/>
+              <Form.Control placeholder="Password" required type="password" value={this.state.user.password} name="user.password" onChange={this.handleInputChange} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 6 or more characters"/>
+              <Button variant="primary" size="lg" block type="submit">Login</Button>
+              <Overlay
+                show={this.state.loginFailed}
+                target={this.state.loginTarget}
+                placement="right"
+                container={()=>{return ReactDOM.findDOMNode(this.loginRef);}}
+                containerPadding={20}
+                onEntered={()=>{this.timeHideLoginPopover()}}
+              >
+                <Popover id="popover-contained" class="alert alert-warning">
+                  <strong class="text-warning">Please check your username and password!</strong>
+                </Popover>
+              </Overlay>
+            </Form>
+          </Col>
+        </Row>
+        <Row className="justify-content-md-center" style={{"margin-top": "10px"}}>
+          <Col md="auto">
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon1">Forgot your password?</InputGroup.Text>
+              </InputGroup.Prepend>
+              <InputGroup.Append>
+                <Button variant="secondary" size="sm" onClick={this.recoverPassword}>click here</Button>
+               <Overlay
+                  show={this.state.emailRequired}
+                  target={this.state.emailTarget}
+                  placement="right"
+                  container={()=>{return ReactDOM.findDOMNode(this.loginRef);}}
+                  containerPadding={20}
+                  onEntered={()=>{this.timeHideEmailRequiredPopover()}}
+                >
+                  <Popover id="popover-contained" class="alert alert-warning">
+                    <strong class="text-warning">Please type your email.</strong>
+                  </Popover>
+                </Overlay>
+              </InputGroup.Append>
+            </InputGroup>
+          </Col>
+        </Row>
+        <Row className="justify-content-md-center">
+          <Col md="auto">
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon1">New user?</InputGroup.Text>
+              </InputGroup.Prepend>
+              <InputGroup.Append>
+                <Button variant="secondary" size="sm" onClick={this.switchCreateForm}>create new account</Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </Col>
+        </Row>
+      </Col>
     );
   }
 
   login(event){
     const {history, routeLogin} = this.props;
     event.preventDefault();
+    const target = event.target;
     var self = this;
     this.jwtauth.login(this.state.user)
     .then(function(res){
@@ -163,11 +220,17 @@ class JWTAuth extends Component {
     .then(function(res){
       self.props.userFactory(res);
       history.push(routeLogin);
+    })
+    .catch(function(res){
+      if(res && res.response && res.response.status === 401){
+        self.setState({...self.state, loginFailed: true, loginTarget: target});
+      }
     });
   }
 
   recoverPassword(event){
-    if(!this.state.user.email){
+    const {target} = event;
+    if(this.state.user.email != ''){
       this.jwtauth.sendRecoverPassword({
         email: this.state.user.email
       })
@@ -175,45 +238,82 @@ class JWTAuth extends Component {
         alert(res.data);
       })
       .catch(function(e){
-        if(e.status === 401){
+        if(res && res.response && res.response.status === 401){
           alert("Account not found! You need to create an account.");
         }
       })
+    }else{
+      this.setState({...this.state, emailRequired: true, emailTarget: target});
     }
+  }
+
+  timeHideEmailRequiredPopover(){
+    const self = this;
+    setTimeout(function(){
+      self.setState({
+        ...self.state, 
+        emailRequired: false,
+        emailTarget: null
+      })
+    }, 10000);
+  }
+
+  timeHideCreatePopover(){
+    const self = this;
+    setTimeout(function(){
+      self.setState({
+        ...self.state, 
+        createFailed: false,
+        createTarget: null
+      })
+    }, 10000);
   }
   
   createUserForm(){
-    return (<div class="col">
-        <form autoComplete="new-password" onSubmit={this.createUser}>
-          <h2>Create an account</h2>
-          <div class="form-group">
-            <label for="inputNameCreate" class="sr-only">User Name</label>
-            <input id="inputNameCreate" class="form-control" placeholder="User name" required="" autofocus="" type="text" value={this.state.newUser.name} name="newUser.name" onChange={this.handleInputChange} autoComplete="new-password"/>
-            <label for="inputEmailCreate" class="sr-only">Email address</label>
-            <input id="inputEmailCreate" class="form-control" placeholder="Email address" required="" type="email" value={this.state.newUser.email} name="newUser.email" onChange={this.handleInputChange}
-            data-container="#divCreate" data-toggle="popover" data-placement="right" data-content="You have an account with that email address already." autoComplete="new-password"/>
-            <label for="inputPasswordCreate" class="sr-only" >Password</label> 
-            <input id="inputPasswordCreate" class="form-control" placeholder="Password" required type="password" value={this.state.newUser.password} name="newUser.password" onChange={this.handleInputChange} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}" title="Password must contain at least one number and one uppercase and lowercase letter, and at least 6 or more characters" autoComplete="new-password"/> 
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Create and Login</button>
-          </div>
-        </form>
-        <div class="row justify-content-center">
-          <div class="col-6">
-            <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text" id="basic-addon1">Existing user?</span>
-              </div>
-              <button class="btn btn-secondary btn-sm" onClick={this.switchCreateForm}>Login with your account</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    return (<Col>
+        <Row className="justify-content-md-center">
+          <Col>
+            <Form autoComplete="new-password" onSubmit={this.createUser} ref={(node) => {this.createUserRef = node}}>
+              <h2>Create an account</h2>
+              <Form.Control type="text" placeholder="User name" value={this.state.newUser.name} name="newUser.name" onChange={this.handleInputChange} autoComplete="new-password"/>
+              <Form.Control placeholder="Email address" required="" type="email" value={this.state.newUser.email} name="newUser.email" onChange={this.handleInputChange} autoComplete="new-password"/>
+              <Form.Control type="password" placeholder="Password" required value={this.state.newUser.password} name="newUser.password" onChange={this.handleInputChange} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}" title="Password must contain at least one number and one uppercase and lowercase letter, and at least 6 or more characters" autoComplete="new-password"/>
+              <Button variant="primary" size="lg" block type="submit">Create and Login</Button>
+              <Overlay
+                show={this.state.createFailed}
+                target={this.state.createTarget}
+                placement="right"
+                container={()=>{return ReactDOM.findDOMNode(this.createUserRef)}}
+                containerPadding={20}
+                onEntered={()=>{this.timeHideCreatePopover()}}
+              >
+                <Popover id="popover-contained">
+                  <strong class="text-warning">A user with the same account exists!</strong>
+                </Popover>
+              </Overlay>
+            </Form>
+          </Col>
+        </Row>
+        <Row className="justify-content-md-center" style={{"margin-top": "10px"}}>
+          <Col md="auto">
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon1">Existing user?</InputGroup.Text>
+              </InputGroup.Prepend>
+              <InputGroup.Append>
+                <Button variant="secondary" size="sm" onClick={this.switchCreateForm}>Login with your account</Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </Col>
+        </Row>
+      </Col>
     );
   }
 
   createUser(event){
     const {history, routeLogin} = this.props;
     const self = this;
+    const target = event.target;
     event.preventDefault();
     this.jwtauth.createUser(this.state.newUser)
     .then(function(res){
@@ -222,37 +322,53 @@ class JWTAuth extends Component {
     .then(function(res){
       self.props.userFactory(res);
       history.push(routeLogin);
-    });
+    })
+    .catch(function(res){
+      if(res && res.response && res.response.status === 409){
+        self.setState({...self.state, createFailed: true, createTarget: target});
+      }
+    });;
   }
 
 
   resetUserPasswordForm(){
     return (
-      <form autoComplete="new-password" onSubmit={this.resetUserPassword}>
-        <h2 class="form-login-heading">Reset your password</h2>
-        <div class="form-group">
-          <label for="inputPassword0" class="sr-only">Password</label>
-          <input id="inputPassword0" class="form-control" placeholder="Password" required="" type="password" value={this.state.resetUser.password0} name="resetUser.password0" onChange={this.handleInputChange} autoComplete="new-password"/>
-          <label for="inputPassword1" class="sr-only">Confirm Password</label>
-          <input id="inputPassword1" class="form-control" placeholder="Confirm assword" required="" type="password" value={this.state.resetUser.password1} name="resetUser.password1" onChange={this.handleInputChange} autoComplete="new-password"/>
-          <button class="btn btn-lg btn-primary btn-block" type="submit">Reset and Login</button>
-        </div>
-        <p> <a href="#/welcome">Login page</a> </p>
-      </form>
+      <Col>
+        <Form autoComplete="new-password" onSubmit={this.resetUserPassword}>
+          <h2 class="form-login-heading">Reset your password</h2>
+          <Form.Control type="password" placeholder="Password" required value={this.state.resetUser.password0} name="resetUser.password0" onChange={this.handleInputChange} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}" title="Password must contain at least one number and one uppercase and lowercase letter, and at least 6 or more characters" autoComplete="new-password"/>
+          <Form.Control type="password" placeholder="Confirm password" required value={this.state.resetUser.password1} name="resetUser.password1" onChange={this.handleInputChange} autoComplete="new-password"/>
+          <Button variant="primary" size="lg" block type="submit">Reset and Login</Button>
+        </Form>
+      </Col>
     );
   }
 
-  resetUserPassword(){
+  resetUserPassword(event){
     var errorMsg = "";
+    const self = this;
+    event.preventDefault();
+
+    const {
+      location, history, routeLogin
+    } = this.props;
+
+    var token;
+    if(location){
+      const search = qs.parse(location.search);
+      token = search.token;
+    }
+
     if(this.state.resetUser.password0 === this.state.resetUser.password1){
-      auth.updatePassword({
+      this.jwtauth.updatePassword({
         password: this.state.resetUser.password0
-      }, this.state.resetUser.token)
+      }, token)
       .then(function(){
-        return auth.getUser();
+        return self.jwtauth.getUser();
       })
       .then(function(res){
-        self.props.history.push('/home');
+        self.props.userFactory(res);
+        history.push(routeLogin);
       })
       .catch(function(e){
         console.error(e);

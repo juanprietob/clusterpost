@@ -13,7 +13,7 @@ import rollupNodeResolve from 'rollup-plugin-node-resolve'
 
 export default {
   input: 'src/index.js',
-  external: ['react-redux', 'react-router-dom'],
+  external: ['react-redux', 'react-router-dom', 'react-bootstrap'],
   output: [
     {
       file: pkg.main,
