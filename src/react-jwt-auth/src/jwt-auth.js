@@ -213,6 +213,7 @@ class JWTAuth extends Component {
 
   createUser(event){
     const {history, routeLogin} = this.props;
+    const self = this;
     event.preventDefault();
     this.jwtauth.createUser(this.state.newUser)
     .then(function(res){
