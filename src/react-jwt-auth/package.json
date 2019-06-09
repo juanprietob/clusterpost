@@ -1,7 +1,7 @@
 {
-  "name": "react-jwt-auth",
+  "name": "react-hapi-jwt-auth",
   "version": "1.0.0",
-  "description": "Login using JWT components",
+  "description": "Login using JWT. A react component that uses the api from hapi-jwt-couch",
   "author": "juanprietob",
   "license": "MIT",
   "repository": "juanprietob/clusterpost",
