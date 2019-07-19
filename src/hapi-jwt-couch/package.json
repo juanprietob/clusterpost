@@ -1,6 +1,6 @@
 {
   "name": "hapi-jwt-couch",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Simple user authentication for Hapi server using JWT and storing user data and encrypted passwords in couchdb.",
   "main": "index.js",
   "scripts": {
@@ -26,14 +26,13 @@
   "homepage": "https://github.com/juanprietob/clusterpost#readme",
   "devDependencies": {
     "hapi": "^13.0.0",
-    "hapi-auth-jwt": "^4.0.0",
     "lab": "^10.8.2",
     "nodemailer-stub-transport": "^1.1.0"
   },
   "dependencies": {
+    "@hapi/boom": "^7.4.2",
     "@hapi/joi": "^15.0.3",
     "bcrypt": "^3.0.5",
-    "boom": "^3.2.1",
     "couch-provider": "^2.1.2",
     "couch-update-views": "^1.0.5",
     "jsonwebtoken": "^7.4.3",
