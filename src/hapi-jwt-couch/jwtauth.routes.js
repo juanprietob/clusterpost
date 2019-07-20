@@ -4,7 +4,7 @@ module.exports = function (server, conf) {
     var handlers = require('./jwtauth.handlers')(server, conf);
     var Joi = require('@hapi/joi');
 
-    var password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d!@#$%_-]{6,40}$/);
+    var password = Joi.string().regex(/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])[\w\d/+!@#$%_-]{6,}$/);
 
     if(conf.password){
         password = conf.password;
