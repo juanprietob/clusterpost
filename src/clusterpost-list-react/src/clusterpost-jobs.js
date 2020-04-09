@@ -5,7 +5,7 @@ import ClusterpostService from './clusterpost-service';
 
 import _ from 'underscore';
 import { connect } from "react-redux";
-import {JWTAuthService} from 'react-jwt-auth';
+import {JWTAuthService} from 'react-hapi-jwt-auth';
 import { withRouter } from 'react-router-dom';
 import {Eye, DownloadCloud, RefreshCw, Play, Delete, StopCircle, ArrowLeftCircle, ArrowRightCircle} from 'react-feather';
 import qs from 'query-string';
