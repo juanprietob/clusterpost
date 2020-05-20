@@ -36,7 +36,7 @@ class ClusterpostTokens extends Component {
 
   downloadToken(token){
     var filename = "token.json";      
-    var bb = new Blob([token], {type: 'text/plain'});
+    var bb = new Blob([JSON.stringify(token)], {type: 'text/plain'});
 
     var pom = document.createElement('a');
 
