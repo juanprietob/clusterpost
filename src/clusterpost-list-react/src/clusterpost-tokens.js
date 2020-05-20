@@ -36,7 +36,10 @@ class ClusterpostTokens extends Component {
 
   downloadToken(token){
     var filename = "token.json";      
-    var bb = new Blob([JSON.stringify(token)], {type: 'text/plain'});
+
+    console.log(token)
+
+    var bb = new Blob([JSON.stringify(token)], {type: 'application/json'});
 
     var pom = document.createElement('a');
 
@@ -45,7 +48,7 @@ class ClusterpostTokens extends Component {
     pom.setAttribute('href', window.URL.createObjectURL(bb));
     pom.setAttribute('download', filename);
 
-    pom.dataset.downloadurl = ['text/plain', pom.download, pom.href].join(':');
+    pom.dataset.downloadurl = ['application/json', pom.download, pom.href].join(':');
     pom.draggable = true; 
     pom.classList.add('dragout');
 
