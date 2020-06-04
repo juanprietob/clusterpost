@@ -570,7 +570,6 @@ class ClusterpostLib extends HapiJWTCouch{
                 });
             });
         })
-
         
     }
 
@@ -772,7 +771,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     parseCLIFromString(cmd){
-        var splitted_cmd = cmd.split(" ");
+        var splitted_cmd = cmd.trim().split(" ");
         return this.parseCLI(splitted_cmd);
     }
 
@@ -825,8 +824,7 @@ class ClusterpostLib extends HapiJWTCouch{
                     "name": "stderr.err"
                 }
             ],
-            "type": "job",
-            "userEmail": "juanprietob@gmail.com"
+            "type": "job"
         };
         
         return Promise.resolve({
