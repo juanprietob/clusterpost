@@ -18,7 +18,8 @@ exports.input = Joi.object().keys({
   		uri: Joi.string()
   	}).optional(),
   	local : Joi.object().keys({
-  		uri: Joi.string()
+  		uri: Joi.string().optional(),
+  		path: Joi.string().optional()
   	}).optional()
 });
 
