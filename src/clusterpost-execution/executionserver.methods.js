@@ -113,7 +113,22 @@ module.exports = function (conf) {
 				"error": "Document is missing attachment" + input.name
 			});
 		}else{
-			return clusterpost.getDocumentAttachmentSave(doc._id, input.name, path.join(cwd, input.name));
+			if(inp && inp.local && inp.local.path){
+				if(fs.fileExists(inp.local.path)){
+					return Promise.resolve({
+                        "path" : inp.local.path,
+                        "status" : true
+                    });
+				}else{
+					return Promise.reject({
+                        "path" : inp.local.path,
+                        "status" : false,
+                        "error": "File not found!"
+                    });
+				}
+			}else{ 
+				return clusterpost.getDocumentAttachmentSave(doc._id, input.name, path.join(cwd, input.name));
+			}
 		}
 	}
 
@@ -159,8 +174,16 @@ module.exports = function (conf) {
 		return Promise.all(alldownloads);
 	}
 
+	handler.getDirectoryCWD = function(doc){
+		if(doc.cwd){
+			return doc.cwd;
+		}else{
+			return path.join(conf.storagedir, doc._id);
+		}
+	}
+
 	handler.createDirectoryCWD = function(doc){
-		var cwd = path.join(conf.storagedir, doc._id);
+		var cwd = handler.getDirectoryCWD(doc);
 		try{
 			fs.mkdirSync(cwd);
 		}catch(e){
@@ -176,9 +199,9 @@ module.exports = function (conf) {
 		return new Promise(function(resolve, reject){
 			var dirname;
 			if(name === "cwd"){
-				dirname = path.join(conf.storagedir, doc._id);
+				dirname = handler.getDirectoryCWD(doc);
 			}else{
-				dirname = path.join(conf.storagedir, doc._id, name);
+				dirname = path.join(handler.getDirectoryCWD(doc), name);
 				if(dirname.substr(-1) === '/'){
 					dirname = dirname.substr(0, dirname.length - 1);
 				}
@@ -257,7 +280,7 @@ module.exports = function (conf) {
 	}
 
 	handler.setAllDocumentOutputs = function(doc){
-		var cwd = path.join(conf.storagedir, doc._id);
+		var cwd = handler.getDirectoryCWD(doc);
 		var outputs = doc.outputs;
 
 		var promparams = [];
@@ -285,7 +308,7 @@ module.exports = function (conf) {
 	handler.checkAllDocumentOutputs = function(doc){
 		var uploadstatus = doc.jobstatus.uploadstatus;
         var outputs = doc.outputs;
-        var cwd = path.join(conf.storagedir, doc._id);
+        var cwd = handler.getDirectoryCWD(doc);
 
         var promparams = [];
 
