@@ -1,3 +1,4 @@
+import _ from 'underscore';
 
 export default class ClusterpostService{
 
@@ -187,5 +188,43 @@ export default class ClusterpostService{
        method: 'GET',
        url: '/executionserver/tokens'
      });
+  }
+
+  parseCLIFromString(cmd){
+      var splitted_cmd = cmd.trim().split(" ");
+      return this.parseCLI(splitted_cmd);
+  }
+
+  parseCLI(splitted_cmd){
+      var executable = splitted_cmd[0];
+      var parameters = _.map(splitted_cmd.splice(1), function(param){
+          return {
+              flag: "",
+              name: param
+          }
+      });
+      
+
+      var job = {
+          "executable": executable,
+          "parameters": parameters,
+          "outputs": [
+              {
+                  "type": "directory",
+                  "name": "./"
+              },
+              {
+                  "type": "file",
+                  "name": "stdout.out"
+              },
+              {
+                  "type": "file",
+                  "name": "stderr.err"
+              }
+          ],
+          "type": "job"
+      };
+      
+      return Promise.resolve(job);
   }
 }
