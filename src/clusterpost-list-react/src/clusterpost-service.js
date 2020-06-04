@@ -176,10 +176,14 @@ export default class ClusterpostService{
     .then(function(res){
       var doc = res.data;
       var job_id = doc.id;
-      return service.addAttachments(job_id, filenameArray, dataArray)
-      .then(function(res){          
+      if(filenameArray && dataArray){
+        return service.addAttachments(job_id, filenameArray, dataArray)
+        .then(function(res){          
+          return service.submitJob(job_id);
+        });  
+      }else{
         return service.submitJob(job_id);
-      });
+      }
     });
   }
 
@@ -209,10 +213,6 @@ export default class ClusterpostService{
           "executable": executable,
           "parameters": parameters,
           "outputs": [
-              {
-                  "type": "directory",
-                  "name": "./"
-              },
               {
                   "type": "file",
                   "name": "stdout.out"
