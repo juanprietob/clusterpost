@@ -202,10 +202,7 @@ export default class ClusterpostService{
   parseCLI(splitted_cmd){
       var executable = splitted_cmd[0];
       var parameters = _.map(splitted_cmd.splice(1), function(param){
-          return {
-              flag: "",
-              name: param
-          }
+          return param;
       });
       
 
