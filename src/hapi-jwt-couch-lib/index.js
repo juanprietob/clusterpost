@@ -18,6 +18,35 @@ module.exports = class HapiJWTCouch{
         this.setServerUri = this.setServer;
     }
 
+    setConfigFileName(configfilename){
+        this.configfilename = configfilename;
+    }
+
+    getConfigFileName(){
+        return this.configfilename;
+    }
+
+    saveConfig (config) {
+        try {
+            // Try to save the user's personal configuration file in the current working directory
+            var confname = this.configfilename;
+            console.log("Writing configuration file", confname);
+            fs.writeFileSync(confname, JSON.stringify(config));
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    getConfig() {
+      try {
+        // Try to load the user's personal configuration file in the current directory
+        var conf = JSON.parse(fs.readFileSync(this.getConfigFileName()));
+        return conf;
+      } catch (e) {
+        return null;
+      }
+    };
+
     getAuth(){
         return this.auth;
     }
@@ -92,12 +121,18 @@ module.exports = class HapiJWTCouch{
     start(){
         var self = this;
         return self.promptServer()
+        .bind({})
         .then(function(server){
+            _.extend(this, server);
             self.setServer(server);
             return self.promptUsernamePassword()
         })
         .then(function(user){
             return self.userLogin(user);
+        })
+        .then(function(res){
+            _.extend(this, res);
+            return this;
         })
     }
 
