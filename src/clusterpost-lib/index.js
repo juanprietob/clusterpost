@@ -387,6 +387,7 @@ class ClusterpostLib extends HapiJWTCouch{
                     headers: { 
                         "Content-Type": "application/octet-stream"
                     },
+                    json: true,
                     auth: self.auth
                 }
 
@@ -399,7 +400,7 @@ class ClusterpostLib extends HapiJWTCouch{
                             if(err){
                                 reject(err);
                             }else{
-                                resolve(JSON.parse(body));
+                                resolve(body);
                             }
                         })
                     );
@@ -795,15 +796,9 @@ class ClusterpostLib extends HapiJWTCouch{
                 inputs.push(param);
                 names.push(filename);
                 
-                return {
-                    flag: "",
-                    name: filename
-                }
+                return filename;
             }
-            return {
-                flag: "",
-                name: param
-            }
+            return param;
         });
         
 
