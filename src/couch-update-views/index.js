@@ -1,5 +1,4 @@
 
-var argv = require('minimist')(process.argv.slice(2));
 var path = require('path');
 
 const run = function(migrate, update, viewsDir, couchDB){
@@ -35,7 +34,8 @@ const help = function(){
 }
 
 exports.couchUpdateViews = function(){
-
+    var argv = require('minimist')(process.argv.slice(2));
+    
     var _migrate = argv["migrate"];
     if(argv["migrateUp"]){
         _migrate = argv["migrateUp"];
