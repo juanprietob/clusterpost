@@ -72,14 +72,15 @@ class ClusterpostLib extends HapiJWTCouch{
                 url : self.getServer() + "/executionserver",
                 method: "GET",
                 agentOptions: self.agentOptions,
-                auth: self.auth
+                auth: self.auth,
+                json: true
             }
 
             request(options, function(err, res, body){
                 if(err){
                     reject(err);
                 }else{
-                    resolve(JSON.parse(body));
+                    resolve(body);
                 }
             });
 
