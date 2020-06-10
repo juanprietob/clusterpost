@@ -29,7 +29,7 @@ module.exports = function (conf) {
 
 			try{
 
-				fs.writeFileSync(path.join(cwd, "stdout.out"), command + parameters.join(" "));
+				fs.writeFileSync(path.join(cwd, "stdout.out"), command + " " + parameters.join(" "));
 
 				var out = fs.openSync(path.join(cwd, "stdout.out"), 'a');
 		    	var err = fs.openSync(path.join(cwd, "stderr.err"), 'a');
@@ -39,10 +39,9 @@ module.exports = function (conf) {
 		    	if(conf.detached !== undefined){
 		    		detached = conf.detached;
 		    	}
-
+		    	
 				const runcommand = spawn(command, parameters, {
 					cwd: cwd,
-					detached: detached,
 					stdio: [ 'ignore', out, err ]
 				});
 
@@ -55,7 +54,7 @@ module.exports = function (conf) {
 
 				if(detached){
 					runcommand.unref();
-
+					
 					if(runcommand.pid){
 						resolve({
 							jobid : runcommand.pid,

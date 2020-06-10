@@ -93,7 +93,27 @@ module.exports = function (conf) {
 		Joi.assert(output, clustermodel.output);
 
 		if(output.local){
-
+			if(conf.local_storage === undefined){
+				return Promise.reject("No local_storage configuration");
+			}
+			try{
+				var local_path = output.local.useDefault? conf.local_storage[conf.local_storage.default].path : conf.local_storage[output.local.key].path
+				var target_file = path.join(local_path, output.name);
+				
+				if(!fs.existsSync(target_file)){
+					var target_dir = path.dirname(target_file);
+					if(!fs.existsSync(target_dir)){
+						fs.mkdirSync(target_dir, {recursive: true});
+					}
+					fs.renameSync(filename, target_file);
+					fs.symlinkSync(target_file, filename);
+				}
+			}catch(e){
+				return Promise.reject(e);
+			}
+			return Promise.resolve({
+				ok: true
+			});
 		}else{
 			return clusterpost.uploadFile(doc._id, filename, output.name);	
 		}
@@ -101,8 +121,7 @@ module.exports = function (conf) {
 
 	handler.fileExists = function(cwd, input){
 		try{
-			fs.statSync(path.join(cwd, input.name));
-			return true;
+			return fs.existsSync(path.join(cwd, input.name));
 		}catch(e){
 			return false;
 		}
@@ -127,7 +146,11 @@ module.exports = function (conf) {
 				var local_path = inp.local.useDefault? conf.local_storage[conf.local_storage.default].path : conf.local_storage[inp.local.key].path
 				var full_file_path = path.join(local_path, inp.name);
 
-				if(fs.fileExists(full_file_path)){
+				if(fs.existsSync(full_file_path)){
+					fs.mkdirSync(path.join(cwd, inp.name.replace(path.basename(inp.name), '')), {recursive: true})
+					if(!fs.existsSync(path.join(cwd, inp.name))){
+						fs.symlinkSync(full_file_path, path.join(cwd, inp.name));	
+					}
 					return Promise.resolve({
                         "path" : full_file_path,
                         "status" : true
@@ -202,6 +225,16 @@ module.exports = function (conf) {
 		}
 		
 		return cwd;
+	}
+
+	handler.createOutputDirs = function(doc){
+		var cwd = handler.getDirectoryCWD(doc);
+		_.each(doc.outputs, (output)=>{
+			var target_dir = path.dirname(path.join(cwd, output.name));
+			if(!fs.existsSync(target_dir)){
+				fs.mkdirSync(target_dir, {recursive: true});
+			}
+		});
 	}
 
 	handler.compressdirectory = function(doc, name){

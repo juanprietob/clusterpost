@@ -8,6 +8,7 @@ module.exports = function(doc, force, conf){
     var clusterengine = require("./" + conf.engine)(conf);
 
     var cwd = executionmethods.createDirectoryCWD(doc);
+    executionmethods.createOutputDirs(doc);
 
     const submitJob = function(subdoc){        
         return executionmethods.getAllDocumentInputs(subdoc, cwd)
@@ -43,7 +44,7 @@ module.exports = function(doc, force, conf){
 
     var sjprom;
     
-    if (doc.jobstatus.status === 'CREATE' || doc.jobstatus.status === 'QUEUE' || doc.jobstatus.status === 'DOWNLOADING'){
+    if (doc.jobstatus.status === 'CREATE' || doc.jobstatus.status === 'QUEUE' || doc.jobstatus.status === 'DOWNLOADING' || doc.jobstatus.status === 'FAIL'){
         sjprom = submitJob(doc);        
     } else {
         sjprom = clusterengine.getJobStatus(doc)
