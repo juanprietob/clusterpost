@@ -30,18 +30,13 @@ module.exports = function (conf) {
 			}
 
 			if(doc.jobparameters){
-				for(var i = 0; i < doc.jobparameters.length; i++){
-					var param_script = ["#SBATCH"]
-					var param = doc.jobparameters[i];
-                    if(param.flag){
-                            param_script.push(param.flag);
-                    }
-                    if(param.name){
-                            param_script.push(param.name);
-                    }
-
-                    params.push(param_script.join(" "));
-				}
+				params.concat(_.flatten(_.map(doc.jobparameters, (param)=>{
+					if(_.isObject(param)){
+						return _.compact(["#SBATCH", param.flag, param.name]).join(" ");
+	                }else{
+	                	return _.compact(["#SBATCH", param]).join(" ");
+	                }
+				})));
 			}
 
 			params.push(["#SBATCH", "-D", cwd].join(" "));
@@ -52,15 +47,13 @@ module.exports = function (conf) {
 			params_command = []
 			params_command.push(doc.executable);
 			if(parameters){
-				for(var i = 0; i < parameters.length; i++){
-					var param = parameters[i];
-					if(param.flag){
-						params_command.push(param.flag);
-					}
-					if(param.name){
-						params_command.push(param.name);
-					}
-				}
+				params_command.concat(_.flatten(_.map(parameters, (param)=>{
+					if(_.isObject(param)){
+                    	return _.compact([param.flag, param.name]);
+                    }else{
+                    	return param;
+                    }
+				})));
 			}
 
 			params.push(params_command.join(" "));

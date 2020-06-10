@@ -19,37 +19,28 @@ module.exports = function (conf) {
 
 		return new Promise(function(resolve, reject){
 			var command = doc.executable;
-			var parameters = doc.parameters;
-
-			var params = [];
-
-			if(parameters){
-				for(var i = 0; i < parameters.length; i++){
-					var param = parameters[i];
-					if(param.flag){
-						params.push(param.flag);
-					}
-					if(param.name){
-						params.push(param.name);
-					}
-				}
-			}
-			
+			var parameters = _.flatten(_.map(doc.parameters, (param)=>{
+				if(_.isObject(param)){
+                	return _.compact([param.flag, param.name]);
+                }else{
+                	return param;
+                }
+			}))
 
 			try{
 
-				fs.writeFileSync(path.join(cwd, "stdout.out"), command + params.toString());
+				fs.writeFileSync(path.join(cwd, "stdout.out"), command + parameters.join(" "));
 
 				var out = fs.openSync(path.join(cwd, "stdout.out"), 'a');
 		    	var err = fs.openSync(path.join(cwd, "stderr.err"), 'a');
 
 		    	var detached = true;
 
-		    	if(conf.detached != undefined){
+		    	if(conf.detached !== undefined){
 		    		detached = conf.detached;
 		    	}
 
-				const runcommand = spawn(command, params, {
+				const runcommand = spawn(command, parameters, {
 					cwd: cwd,
 					detached: detached,
 					stdio: [ 'ignore', out, err ]

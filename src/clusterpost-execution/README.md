@@ -20,13 +20,25 @@ For version
 ### Configuration options:
 ----
 	{
-		"uri": "https://localhost:8180",
+		"uri": "http://localhost:8180",
 		"engine" : "engine_unix", 
-		"storagedir" : "./clusterpost_storage"
+		"detached": "false",
+		"storagedir" : "./path/to/clusterpost_storage",
+		"executionserver": "some_name",
+		"tokenfile": "./path/to/token.json",
+		"local_storage": {"default": "local_test", "local_test": {"path": "./path/to/local/data/"}}
 	}
 ----
 
-#### Supported grid engines
+#### uri
+
+Web address for the clusterpost-server
+
+#### engine
+
+Engine type to run the back end. See list below for options.
+
+##### Supported grid engines
 
 	* UNIX unix based systems
 
@@ -39,6 +51,36 @@ For version
 	* PBS Sun Grid Engine jobs and queues
 
 	Change your configuration file to 'engine_pbs'
+
+	# SLURM Workload Manager
+
+	Change your configuration file to 'engine_slurm'
+
+#### detached
+
+This option is only available for 'engine_unix'.
+Run detached jobs, i.e., run the process in the background. 
+
+#### storagedir
+
+Path to a local storage, this location is used to create unique directories and run the tasks.
+
+#### executionserver
+
+Remote execution only. 
+Name of the execution server. This option is required when running with --remote flag.
+This name is used to retrieve the corresponding tasks to run. 
+
+#### tokenfile
+
+Remote execution only. 
+Token used to authenticate in the clusterpost-server. 
+Download using the web-interface if you have it installed [clusterpost-list-react](https://www.npmjs.com/package/clusterpost-list-react) or perform a get request to '/executionserver/tokens'
+
+#### local_storage
+
+If you are running the execution-server using a shared drive used by the [clusterpost-server](https://www.npmjs.com/package/clusterpost-server). Set the path of the shared drive, this 
+will avoid unnecessary data transfers. 
 
 #### Token configuration
 

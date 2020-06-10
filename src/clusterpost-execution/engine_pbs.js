@@ -74,9 +74,13 @@ module.exports = function (conf) {
 				name: jobname
 			});						
 
-			var preamble = _.map(params, function(param){
-				return _.compact([param.flag, param.name]).join(" ");
-			}).join("\n#PBS ");
+			var preamble = _.flatten(_.map(params, function(param){
+				if(_.isObject(param)){
+					return _.compact([param.flag, param.name]).join(" ");
+                }else{
+                	return param;
+                }
+			})).join("\n#PBS ");
 			
 			var script = "#!/bin/bash\n####  PBS preamble\n";
 			script += "#PBS " + preamble + "\n";
@@ -86,9 +90,13 @@ module.exports = function (conf) {
 			
 			var executableparams = "";
 			if(parameters){
-				executableparams = " " + _.map(parameters, function(param){
-					return _.compact([param.flag, param.name]).join(" ");
-				}).join(" ");
+				executableparams = " " + _.flatten(_.map(parameters, function(param){
+					if(_.isObject(param)){
+                    	return _.compact([param.flag, param.name]).join(" ");		
+                    }else{
+                    	return param;
+                    }
+				})).join(" ");
 			}
 
 			script += doc.executable + executableparams;

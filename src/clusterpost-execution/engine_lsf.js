@@ -26,11 +26,15 @@ module.exports = function (conf) {
 			if(doc.jobparameters){
 				for(var i = 0; i < doc.jobparameters.length; i++){
                     var param = doc.jobparameters[i];
-                    if(param.flag){
+                    if(_.isObject(param)){
+                    	if(param.flag){
                             params.push(param.flag);
-                    }
-                    if(param.name){
+	                    }
+	                    if(param.name){
                             params.push(param.name);
+	                    }	
+                    }else{
+                    	params.push(param);
                     }
                 }
 			}
@@ -51,12 +55,16 @@ module.exports = function (conf) {
 			if(parameters){
 				for(var i = 0; i < parameters.length; i++){
 					var param = parameters[i];
-					if(param.flag){
-						params.push(param.flag);
-					}
-					if(param.name){
-						params.push(param.name);
-					}
+					if(_.isObject(param)){
+                    	if(param.flag){
+                            params.push(param.flag);
+	                    }
+	                    if(param.name){
+                            params.push(param.name);
+	                    }	
+                    }else{
+                    	params.push(param);
+                    }
 				}
 			}
 

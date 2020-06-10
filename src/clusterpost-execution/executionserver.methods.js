@@ -48,29 +48,31 @@ module.exports = function (conf) {
 	}
 
 	//Read all files in directory and return an array with all files
-	const getAllFiles = function(dir, files){		
-		fs.readdirSync(dir).forEach(function(file){
+	const getAllFiles = function(dir){
+		return _.compact(_.flatten(_.map(fs.readdirSync(dir), (file)=>{
+			var current = path.join(dir, file);
 			try{
-				var current = path.join(dir, file);
 				var stat = fs.statSync(current);
 				if (stat && stat.isDirectory()) {
-					getAllFiles(current, files);
+					return getAllFiles(current);
 				}else {
-				    files.push(current);
-				}
+				    return current;
+				}	
 			}catch(e){
 				console.error(e);
+				return null;
 			}
-        });
+			
+		})));
 	}	
 
-	handler.addDocumentDirectoryAttachment = function(doc, cwd, dir){
-		var allfiles = [];
-		getAllFiles(path.join(cwd, dir), allfiles);
+	handler.addDocumentDirectoryAttachment = function(doc, cwd, output){
+		var dir = output.name;
+		var allfiles = getAllFiles(path.join(cwd, dir));
 
-		return Promise.map(allfiles, function(file){
-			var name = file.substr(cwd.length + 1);			
-			return handler.addDocumentAttachment(doc, name, file);
+		return Promise.map(allfiles, function(filename){
+			var name = filename.replace(path.normalize(cwd) + path.sep, '');
+			return handler.addDocumentAttachment(doc, filename, {...output, name});
 		}, {concurrency: 1})
 		.then(function(status){
 			var ok = true;
@@ -85,11 +87,16 @@ module.exports = function (conf) {
 		});
 	}
 
-	handler.addDocumentAttachment = function(doc, name, path){
+	handler.addDocumentAttachment = function(doc, filename, output){
 		Joi.assert(doc._id, Joi.string().alphanum());
-		Joi.assert(name, Joi.string());
+		Joi.assert(filename, Joi.string());
+		Joi.assert(output, clustermodel.output);
 
-		return clusterpost.uploadFile(doc._id, path, name);
+		if(output.local){
+
+		}else{
+			return clusterpost.uploadFile(doc._id, filename, output.name);	
+		}
 	}
 
 	handler.fileExists = function(cwd, input){
@@ -113,15 +120,21 @@ module.exports = function (conf) {
 				"error": "Document is missing attachment" + input.name
 			});
 		}else{
-			if(inp && inp.local && inp.local.path){
-				if(fs.fileExists(inp.local.path)){
+			if(inp && inp.local){
+				if(conf.local_storage === undefined){
+					throw "No local_storage configuration";
+				}
+				var local_path = inp.local.useDefault? conf.local_storage[conf.local_storage.default].path : conf.local_storage[inp.local.key].path
+				var full_file_path = path.join(local_path, inp.name);
+
+				if(fs.fileExists(full_file_path)){
 					return Promise.resolve({
-                        "path" : inp.local.path,
+                        "path" : full_file_path,
                         "status" : true
                     });
 				}else{
 					return Promise.reject({
-                        "path" : inp.local.path,
+                        "path" : full_file_path,
                         "status" : false,
                         "error": "File not found!"
                     });
@@ -175,11 +188,7 @@ module.exports = function (conf) {
 	}
 
 	handler.getDirectoryCWD = function(doc){
-		if(doc.cwd){
-			return doc.cwd;
-		}else{
-			return path.join(conf.storagedir, doc._id);
-		}
+		return path.join(conf.storagedir, doc._id);
 	}
 
 	handler.createDirectoryCWD = function(doc){
@@ -234,11 +243,11 @@ module.exports = function (conf) {
 		});
 	}
 
-	handler.compressAndAddAttachment = function(doc, cwd, name){
-		return handler.compressdirectory(doc, name)
+	handler.compressAndAddAttachment = function(doc, cwd, output){
+		return handler.compressdirectory(doc, output.name)
 		.then(function(compressedpath){
-			var compressedname = path.basename(compressedpath);
-			return handler.addDocumentAttachment(doc, compressedname, compressedpath)
+			output.name = path.basename(compressedpath);
+			return handler.addDocumentAttachment(doc, compressedpath, output)
 		})
 		.catch(function(e){
 			return e;
@@ -255,24 +264,19 @@ module.exports = function (conf) {
 		if(output.type === 'file'){
 			return getlatestdoc
 			.then(function(latestdoc){
-				var filepath;
-				if(output.path){
-					filepath = path.join(cwd, output.path)
-				}else{
-					filepath = path.join(cwd, output.name)
-				}
-				return handler.addDocumentAttachment(latestdoc, output.name, filepath);
+				var filepath = path.join(cwd, output.name);
+				return handler.addDocumentAttachment(latestdoc, filepath, output);
 			});
 			
 		}else if(output.type === 'tar.gz'){
 			return getlatestdoc
 			.then(function(latestdoc){
-				return handler.compressAndAddAttachment(latestdoc, cwd, output.name);
+				return handler.compressAndAddAttachment(latestdoc, cwd, output);
 			});
 		}else if(output.type === 'directory'){
 			return getlatestdoc
 			.then(function(latestdoc){
-				return handler.addDocumentDirectoryAttachment(latestdoc, cwd, output.name);
+				return handler.addDocumentDirectoryAttachment(latestdoc, cwd, output);
 			});
 		}else{
 			throw "Upload handler for " + output.type + "not available";
