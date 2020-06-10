@@ -1,7 +1,7 @@
 var Joi = require('@hapi/joi');
 
 exports.parameter = Joi.object().keys({
-	flag: Joi.string().allow(''),
+	flag: Joi.string().allow('').optional(),
   	name: Joi.string().allow('')
 });
 
@@ -30,9 +30,9 @@ exports.jobpost = Joi.object().keys({
 		type: Joi.string().required(),
 		userEmail: Joi.string().required(),			
 		executionserver: Joi.string().required(),
-		jobparameters: Joi.array().items(exports.parameter).optional(),
+		jobparameters: Joi.array().items(exports.parameter, Joi.string(), Joi.number()).optional(),
 		executable: Joi.string().required(),			
-		parameters: Joi.array().items(exports.parameter).min(1),
+		parameters: Joi.array().items(exports.parameter, Joi.string(), Joi.number()).min(1),
 		inputs: Joi.array().items(exports.input).min(1).optional(),
 		outputs: Joi.array().items(exports.output).min(1),
 		outputdir: Joi.string().optional(),
