@@ -329,7 +329,7 @@ module.exports = function (server, conf) {
 			return doc.jobstatus;
 		})
 		.catch(function(e){
-			return (Boom.wrap(e));
+			return Boom.notFound(e);
 		});
 		
 	}
