@@ -9,8 +9,9 @@ exports.output = Joi.object().keys({
 	type: Joi.string().valid('file', 'directory', 'tar.gz'), 
   	name: Joi.string(),
   	local : Joi.object({
-  		"useDefault": Joi.boolean(),
-  		"key": Joi.string()
+  		"useDefault": Joi.boolean().optional(),
+  		"key": Joi.string().optional(),
+  		"uri": Joi.string().optional()
   	}).xor("useDefault", "key").optional()
 });
 
@@ -21,8 +22,9 @@ exports.input = Joi.object().keys({
   		uri: Joi.string()
   	}).optional(),
   	local : Joi.object({
-  		"useDefault": Joi.boolean(),
-  		"key": Joi.string()
+  		"useDefault": Joi.boolean().optional(),
+  		"key": Joi.string().optional(),
+  		"uri": Joi.string().optional()
   	}).xor("useDefault", "key").optional()
 });
 
