@@ -172,19 +172,34 @@ export default class ClusterpostService{
 
   createAndSubmitJob(job, filenameArray, dataArray){
     var service = this;
-    return service.createJob(job)
-    .then(function(res){
-      var doc = res.data;
-      var job_id = doc.id;
-      if(filenameArray && dataArray){
-        return service.addAttachments(job_id, filenameArray, dataArray)
-        .then(function(res){          
+
+
+    if(job.executionserver){
+      var executionserverPromise = Promise.resolve(job);
+    }else{
+      var executionserverPromise = service.getExecutionServers()
+      .then((es)=>{
+        job.executionserver = es[0].name;
+        return job;
+      })
+    }
+
+    return executionserverPromise
+    .then((job)=>{
+      return service.createJob(job)
+      .then(function(res){
+        var doc = res.data;
+        var job_id = doc.id;
+        if(filenameArray && dataArray){
+          return service.addAttachments(job_id, filenameArray, dataArray)
+          .then(function(res){          
+            return service.submitJob(job_id);
+          });  
+        }else{
           return service.submitJob(job_id);
-        });  
-      }else{
-        return service.submitJob(job_id);
-      }
-    });
+        }
+      });
+    })
   }
 
   getExecutionServerTokens(){
