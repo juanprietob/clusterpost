@@ -178,8 +178,8 @@ export default class ClusterpostService{
       var executionserverPromise = Promise.resolve(job);
     }else{
       var executionserverPromise = service.getExecutionServers()
-      .then((es)=>{
-        job.executionserver = es[0].name;
+      .then((res)=>{
+        job.executionserver = res.data[0].name;
         return job;
       })
     }
