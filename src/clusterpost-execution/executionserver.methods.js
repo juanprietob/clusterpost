@@ -230,7 +230,12 @@ module.exports = function (conf) {
 	handler.createOutputDirs = function(doc){
 		var cwd = handler.getDirectoryCWD(doc);
 		_.each(doc.outputs, (output)=>{
-			var target_dir = path.dirname(path.join(cwd, output.name));
+			if(output.type == "directory"){
+				var target_dir = path.join(cwd, output.name);	
+			}else{
+				var target_dir = path.dirname(path.join(cwd, output.name));
+			}
+			
 			if(!fs.existsSync(target_dir)){
 				fs.mkdirSync(target_dir, {recursive: true});
 			}
