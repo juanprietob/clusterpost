@@ -116,9 +116,6 @@ module.exports = function (server, conf) {
 			    }, 
 			    payload: false
 			},
-			response: {
-				schema: clustermodel.job
-			},
 			description: 'Get the job document posted to the database'
 	    }
 	});
