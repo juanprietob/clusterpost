@@ -136,9 +136,6 @@ module.exports = function (server, conf) {
 			    params: null, 
 			    payload: false
 			},
-			response: {
-				schema: Joi.array().items(clustermodel.job).min(0)
-			},
 			description: 'Get all document posted to the database'
 	    }
 	});
