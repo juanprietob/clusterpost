@@ -160,7 +160,7 @@ module.exports = function (conf) {
 			try{
 
 				var jobid = doc.jobstatus.jobid;
-				var params = [jobid];
+				var params = ['-9', jobid];
 
 				const kill = spawn('kill', params);
 

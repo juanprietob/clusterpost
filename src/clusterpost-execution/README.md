@@ -15,14 +15,13 @@ This installation step generated a conf.json file and index.js
 
 Edit conf.js with a local path to store the data in the local machine and the URL of the machine running the clusterpost-server application -> https://youripaddress:8180
 
-For version 
-
 ### Configuration options:
 ----
 	{
 		"uri": "http://localhost:8180",
 		"engine" : "engine_unix", 
-		"detached": "false",
+		"detached": true,
+		"maxjobs": 1,
 		"storagedir" : "./path/to/clusterpost_storage",
 		"executionserver": "some_name",
 		"tokenfile": "./path/to/token.json",

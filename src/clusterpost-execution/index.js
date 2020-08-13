@@ -84,8 +84,16 @@ if(remote){
     crontab.scheduleJob("*/1 * * * *", function(){
         if(!isrunningtask){
             isrunningtask = true;        
-            executionmethods.getJobsQueue()
-            .then(function(jobs){
+            Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun()])
+            .spread(function(jobs, jobs_run){
+                if(conf.maxjobs){
+                    maxJobsAllowed = conf.maxjobs - jobs_run.length;
+                    if(maxJobsAllowed > 0){
+                        jobs = jobs.slice(0, maxJobsAllowed);
+                    }else{
+                        jobs = [];    
+                    }
+                }
                 console.log("jobsubmit", jobs);
                 return Promise.map(jobs, function(doc){
                     return require(path.join(__dirname, "jobsubmit"))(doc, null, conf);
