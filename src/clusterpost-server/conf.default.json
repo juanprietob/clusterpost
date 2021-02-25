@@ -40,6 +40,9 @@
                     "remote": true
                 }
 			}
+		},
+		"clusterpost-static": {
+			
 		}
 	}
 }

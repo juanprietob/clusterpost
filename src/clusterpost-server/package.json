@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-server",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Server side application using REST api. Create/post 'job' document describing task and input data, run tasks on remote computing grids and retrive outputs. All process is done automatically.",
   "main": "index.js",
   "dependencies": {
@@ -17,8 +17,8 @@
     "bluebird": "^3.5.4",
     "clusterpost-model": "^1.9.0",
     "clusterpost-provider": "^4.1.1",
-    "clusterpost-static": "^1.0.0",
-    "couch-provider": "2.3.1",
+    "clusterpost-static": "file:../clusterpost-static",
+    "couch-provider": "^3.0.1",
     "couch-update-views": "1.0.5",
     "hapi-jwt-couch": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
