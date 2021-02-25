@@ -120,6 +120,17 @@ Edit the userdb configuration to store user information.
 	}
 ----
 
+##### remote execution server (clusterpost-execution running as a daemon)
+
+----
+	"executionservers" : {
+		"jcpmac": {
+			"remote": true
+		}
+	}
+----
+
+
 #### Executionservers:
 
 Edit this field with the ssh configuration to connect to your computing grid.
