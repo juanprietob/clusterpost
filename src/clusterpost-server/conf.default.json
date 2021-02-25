@@ -2,13 +2,13 @@
 	"host": "localhost",
 	"port": 8180,
 	"plugins": {
-		"vision": {},
-		"inert": {},
+		"@hapi/vision": {},
+		"@hapi/inert": {},
 		"lout": {},
-		"h2o2": {},
-		"hapi-auth-jwt": {},
-		"clusterpost-auth": {
-			"privateKey": "someRandomKey",
+		"@hapi/h2o2": {},
+		"@juanprietob/hapi-auth-jwt": {},
+		"hapi-jwt-couch": {
+			"privateKey": "some_private_key",
 			"saltRounds": 10,
 			"algorithm": { 
 				"algorithm": "HS256"
@@ -36,12 +36,9 @@
 		},
 		"clusterpost-provider": {
 			"executionservers" : {
-				"testserver" : {
-					"hostname" : "localhost", 
-					"user" : "cluster",
-					"identityfile" : "/home/.ssh/someKey",
-					"sourcedir" : "/home/cluster/source/clusterpost-execution/"			
-				}
+				"some_name": {
+                    "remote": true
+                }
 			}
 		}
 	}
