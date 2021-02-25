@@ -10,10 +10,10 @@
     "react-bootstrap": "^1.0.0-beta.8",
     "react-dom": "^16.8.6",
     "react-feather": "^1.1.6",
-    "react-jwt-auth": "file:../../react-jwt-auth",
+    "react-hapi-jwt-auth": "^1.1.4",
     "react-redux": "^7.0.3",
     "react-router-dom": "^5.0.0",
-    "react-scripts": "^1.1.4",
+    "react-scripts": "^4.0.3",
     "redux": "^4.0.1"
   },
   "scripts": {
@@ -24,5 +24,17 @@
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

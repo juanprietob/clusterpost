@@ -3,7 +3,7 @@ import { Route, HashRouter } from 'react-router-dom';
 
 import './bootstrap.min.css'
 
-import JWTAuth, {JWTAuthInterceptor, JWTAuthUsers, JWTAuthProfile, JWTAuthService} from 'react-jwt-auth';
+import {JWTAuth, JWTAuthInterceptor, JWTAuthUsers, JWTAuthProfile, JWTAuthService} from 'react-hapi-jwt-auth';
 
 import NavBar from './nav-bar'
 import Carousel from 'react-bootstrap/Carousel';
