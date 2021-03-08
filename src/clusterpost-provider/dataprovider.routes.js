@@ -294,4 +294,52 @@ module.exports = function (server, conf) {
 	    }
 	});
 
+	server.route({
+		method: 'GET',
+		path: "/dataprovider/fs/{path*}",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['executionserver']
+            },
+			handler: handlers.downloadFromStorage,
+			validate: {
+			  	query: false,
+			    params: {
+			    	path: Joi.string().required()
+			    },
+			    payload: false
+			},
+			description: 'Get a file from the local storage with a path',
+			cache : { expiresIn: 60 * 30 * 1000 }
+	    }
+	});
+
+	server.route({
+		method: 'PUT',
+		path: "/dataprovider/fs/{path*}",
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['clusterpost', 'executionserver']
+            },
+			handler: handlers.uploadToStorage,
+	      	validate: {
+		      	query: false,
+		        params: {
+		        	path: Joi.string().required()
+		        },
+		        payload: true
+		    },
+		    payload: {
+	        	maxBytes: 1024 * 1024 * 1024,
+	    		output: 'stream'
+	        },
+	        response: {
+	        	schema: Joi.object()
+	        },
+		    description: 'Upload data to local storage with a path'
+	    }
+	});
+
 }

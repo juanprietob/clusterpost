@@ -165,6 +165,72 @@ module.exports = function (server, conf) {
 		
 	}
 
+	handler.downloadFromStorage = function(req, rep){
+		
+		var local_storage = conf.local_storage? conf.local_storage : "./";
+
+		try{
+
+			var full_path = path.join(confstorage, req.params.path)
+			if(fs.existsSync(full_path)){
+				return fs.createReadStream(full_path)	
+			}
+			return Promise.reject(Boom.notFound(full_path))
+			
+		}catch(e){
+			return (Boom.badRequest(e));
+		}
+	}
+
+	handler.uploadToStorage = function(req, rep){
+		
+		var local_storage = conf.local_storage? conf.local_storage : "./";
+		var payload = req.payload;
+
+		try{
+
+			var full_path = path.join(local_storage, req.params.path)
+
+			if(fs.existsSync(full_path)){
+				return Boom.conflict('File exists: ', full_path)
+			}
+
+			var dirname = path.dirname(full_path)
+
+			if(!fs.existsSync(dirname)){
+				fs.mkdirSync(dirname, {recursive: true})
+			}
+
+			return new Promise((resolve, reject)=>{
+				var writestream = fs.createWriteStream(full_path);
+
+				writestream.on('finish', function(err){
+					if(err){
+						console.error(err);
+						reject(err);
+					}else{
+						resolve();
+					}
+				})
+
+				payload.pipe(writestream);
+			})
+			.then(()=>{
+				return {
+					ok: true,
+					value: 'file uploaded'
+				}
+			})
+			.catch(function(e){
+				console.error(e);
+				return Boom.badImplementation(e);
+			});
+			
+		}catch(e){
+			return Boom.badRequest(e);
+		}
+	}
+
 	const jobDelete = function(doc){
 		return server.methods.clusterprovider.getDocument(doc._id)
 		.then(function(doc){

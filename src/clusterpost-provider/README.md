@@ -33,6 +33,7 @@ The algorithm section has the parameters to encrypt the tokens that are emmited 
 				"algorithm": "HS256",
 				"expiresIn": "7d"
 			},
+			local_storage: "./local_storage",
 			"executionservers" : {
 				"testserver" : {
 					"hostname" : "localhost", 
@@ -44,3 +45,4 @@ The algorithm section has the parameters to encrypt the tokens that are emmited 
 		}
 	}
 ----
+
