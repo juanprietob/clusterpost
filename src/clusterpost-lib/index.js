@@ -66,7 +66,7 @@ class ClusterpostLib extends HapiJWTCouch{
     };
 
     getExecutionServers(){
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/executionserver",
@@ -90,7 +90,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     createDocument(job){
 
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider",
@@ -115,7 +115,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     getDocument(id){
         Joi.assert(id, Joi.string().alphanum());
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/" + id,
@@ -136,7 +136,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     updateDocument(doc){
         Joi.assert(doc, clustermodel.job);
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             try{
                 var options = { 
@@ -159,14 +159,14 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     updateDocuments(docs){
-        var self = this;
+        const self = this;
         return Promise.map(docs, function(doc){
             return self.updateDocument(doc);
         }, {concurrency: 1});
     }
 
     getUserJobs(params){
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/user?" + qs.stringify(params),
@@ -188,7 +188,7 @@ class ClusterpostLib extends HapiJWTCouch{
     getJobs(executable, jobstatus, email){
 
         var params = {};
-        var self = this;
+        const self = this;
 
         if(executable){
             params.executable = executable;
@@ -209,7 +209,7 @@ class ClusterpostLib extends HapiJWTCouch{
     getExecutionServerJobs(executionserver, jobstatus){
 
         var params = {};
-        var self = this;
+        const self = this;
 
         if(executionserver){
             params.executionserver = executionserver;
@@ -226,7 +226,7 @@ class ClusterpostLib extends HapiJWTCouch{
     getDocumentAttachment(id, name){
         Joi.assert(id, Joi.string().alphanum())
         Joi.assert(name, Joi.string())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/" + id + "/" + name,
@@ -253,7 +253,7 @@ class ClusterpostLib extends HapiJWTCouch{
         Joi.assert(id, Joi.string().alphanum())
         Joi.assert(name, Joi.string())
         Joi.assert(filename, Joi.string())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
 
             try{
@@ -287,12 +287,12 @@ class ClusterpostLib extends HapiJWTCouch{
                 reject(e);
             }
         });
-    }
+    }    
 
     getDownloadToken(id, name){
         Joi.assert(id, Joi.string().alphanum())
         Joi.assert(name, Joi.string())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/download/" + id + "/" + name,
@@ -313,7 +313,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     downloadAttachment(token){
         Joi.assert(token, Joi.string())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/download/" + token,
@@ -332,7 +332,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     downloadJob(jobid, filename){
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/download/job/" + jobid,
@@ -370,7 +370,7 @@ class ClusterpostLib extends HapiJWTCouch{
     uploadFile(jobid, filename, name){
         Joi.assert(jobid, Joi.string().alphanum())
         Joi.assert(filename, Joi.string())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
 
             if(name === undefined){
@@ -417,7 +417,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     uploadFiles(jobid, filenames, names){
-        var self = this;
+        const self = this;
         return Promise.map(filenames, function(filename, index){
             if(names !== undefined){
                 return self.uploadFile(jobid, filename, names[index]);
@@ -429,9 +429,102 @@ class ClusterpostLib extends HapiJWTCouch{
         });
     }
 
+    uploadToStorage(filename, target_path){
+        const self = this
+
+        Joi.assert(filename, Joi.string())
+        Joi.assert(target_path, Joi.string())
+        
+        return new Promise(function(resolve, reject){
+
+            try{
+                var options = {
+                    url : self.getServer() + "/dataprovider/fs/" + encodeURIComponent(target_path),
+                    method: "PUT",
+                    agentOptions: self.agentOptions,
+                    headers: { 
+                        "Content-Type": "application/octet-stream"
+                    },
+                    json: true,
+                    auth: self.auth
+                }
+
+                var fstat = fs.statSync(filename);
+                if(fstat){
+
+                    var stream = fs.createReadStream(filename);
+
+                    stream.pipe(request(options, function(err, res, body){
+                            if(err){
+                                reject(err);
+                            }else{
+                                resolve(body);
+                            }
+                        })
+                    );
+                }else{
+                    reject({
+                        "error": "File not found: " + filename
+                    })
+                }
+            }catch(e){
+                reject(e);
+            }
+
+        });
+    }
+
+    getFromStorage(filename, target_path){
+        const self = this
+
+        Joi.assert(filename, Joi.string())
+        Joi.assert(target_path, Joi.string())
+
+
+        return new Promise(function(resolve, reject){
+
+            try{
+
+                var options = {
+                    url : self.getServer() + "/dataprovider/fs/" + encodeURIComponent(target_path),
+                    method: "GET",
+                    agentOptions: self.agentOptions,
+                    auth: self.auth
+                }
+
+                var dirname = path.dirname(filename)
+
+                if(!fs.existsSync(dirname)){
+                    fs.mkdirSync(dirname, {recursive: true})
+                }
+
+                var writestream = fs.createWriteStream(filename);
+                request(options).pipe(writestream);
+
+                writestream.on('finish', function(err){                 
+                    if(err){
+                        reject({
+                            "path" : filename,
+                            "status" : false,
+                            "error": err
+                        });
+                    }else{
+                        resolve({
+                            "path" : filename,
+                            "status" : true
+                        });
+                    }
+                });
+
+            }catch(e){
+                reject(e);
+            }
+        });
+    }
+
     executeJob(jobid, force){
         Joi.assert(jobid, Joi.string().alphanum())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             try{
                 var options = {
@@ -459,7 +552,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     updateJobStatus(jobid){
         Joi.assert(jobid, Joi.string().alphanum())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             try{
                 var options = {
@@ -484,7 +577,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     killJob(jobid){
         Joi.assert(jobid, Joi.string().alphanum())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/executionserver/" + jobid,
@@ -505,7 +598,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     deleteJob(jobid){
         Joi.assert(jobid, Joi.string().alphanum())
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             var options = {
                 url : self.getServer() + "/dataprovider/" + jobid,
@@ -535,7 +628,7 @@ class ClusterpostLib extends HapiJWTCouch{
 
     createAndSubmitJob(job, files, names){
         var prom;
-        var self = this;
+        const self = this;
 
         return Promise.all([this.getUser(), this.getExecutionServers()])
         .spread(function(user, executionservers){
@@ -598,7 +691,7 @@ class ClusterpostLib extends HapiJWTCouch{
     getJobOutputs(job, outputdir){
         
         var outputs = job.outputs;
-        var self = this;
+        const self = this;
 
         return Promise.map(outputs, function(output){
             var name = output.name;
@@ -612,7 +705,6 @@ class ClusterpostLib extends HapiJWTCouch{
             }
             if(outputdir){
                 var filename = path.join(outputdir, name);
-                console.log("Downloading file:", filename)
                 self.mkdirp(path.parse(filename).dir);//Creates directories in case the file is stored as path form
                 return self.getDocumentAttachmentSave(job._id, name, filename);
             }else{
@@ -622,7 +714,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     getDeleteQueue(){
-        var self = this;
+        const self = this;
 
         return new Promise(function(resolve, reject){
             var options = {
@@ -669,7 +761,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     getExecutionServerToken(executionserver){
-        var self = this;
+        const self = this;
 
         return new Promise(function(resolve, reject){
 
@@ -730,7 +822,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     start(configfilename){
-        var self = this;
+        const self = this;
 
         if(configfilename){
             self.setConfigFileName(configfilename);
@@ -831,7 +923,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     parseCLIFromStringAndSubmit(cmd, executionserver){
-        var self = this;
+        const self = this;
         return self.parseCLIFromString(cmd)
         .then(function(job_desc){
             if(executionserver){
@@ -842,7 +934,7 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
     parseCLIAndSubmit(splitted_cmd, executionserver){
-        var self = this;
+        const self = this;
         return this.parseCLI(splitted_cmd)
         .then(function(job_desc){
             if(executionserver){
