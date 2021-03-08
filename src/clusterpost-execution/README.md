@@ -25,7 +25,7 @@ Edit conf.js with a local path to store the data in the local machine and the UR
 		"storagedir" : "./path/to/clusterpost_storage",
 		"executionserver": "some_name",
 		"tokenfile": "./path/to/token.json",
-		"local_storage": {"default": "local_test", "local_test": {"path": "./path/to/local/data/"}}
+		"local_fs": {"default": "local_test", "local_test": {"path": "./path/to/local/data/"}}
 	}
 ----
 

@@ -102,7 +102,8 @@ if(remote){
                     concurrency: 1
                 });
             })
-            .then(function(){
+            .then(function(res){
+                console.log(res)
                 return Promise.all([executionmethods.getJobsUploading(), executionmethods.getJobsRun()])
             })
             .then(function(jobs){            
@@ -170,8 +171,7 @@ if(remote){
             }
             
         })
-        .then(function(res){
-            console.log(res);
+        .then(function(){
             process.exit();
         })
         .catch(function(error){

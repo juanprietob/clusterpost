@@ -122,12 +122,6 @@ module.exports = function (conf) {
 							resolve({
 								status: 'DONE'
 							});
-						}else if(lines[1].indexOf(doc.executable) === -1){
-							//replace multiple space by single space and split by space;							
-							resolve({
-								status: 'FAIL',
-								error: 'The jobid does not match the running program'
-							});
 						}else{							
 							resolve({
 								jobid: jobid,

@@ -75,10 +75,11 @@ module.exports = function (conf) {
 			return handler.addDocumentAttachment(doc, filename, {...output, name});
 		}, {concurrency: 1})
 		.then(function(status){
-			var ok = true;
-			_.each(status, function(s){
-				ok = ok&&s.ok;
-			});
+			var ok = _.reduce(status, function(memo, s){ 
+				return memo && (s.ok || s.statusCode == 409); 
+			}, 
+			true);
+
 			return {
 				name: dir,
 				status: status,
@@ -92,12 +93,24 @@ module.exports = function (conf) {
 		Joi.assert(filename, Joi.string());
 		Joi.assert(output, clustermodel.output);
 
-		if(output.local){
-			if(conf.local_storage === undefined){
-				return Promise.reject("No local_storage configuration");
+		if(output.local_storage){
+			//This uploads the file to the local storage in the server
+			var target_path;
+			//We check if the target path is in the current filename, if is not, we don't add it again
+			if(output.name.indexOf(output.local_storage.target_path) != -1){
+				target_path = output.name
+			}else{
+				target_path = path.join(output.local_storage.target_path, output.name)
+			}
+			return clusterpost.uploadToStorage(filename, target_path)
+		}else if(output.local){
+			//Local output this assumes the disk is mounted in both the execution server and provider. i.e., there is no file transfer. 
+			//Only links are generated
+			if(conf.local_fs === undefined){
+				return Promise.reject("No local_fs configuration in the execution server");
 			}
 			try{
-				var local_path = output.local.useDefault? conf.local_storage[conf.local_storage.default].path : conf.local_storage[output.local.key].path
+				var local_path = output.local.useDefault? conf.local_fs[conf.local_fs.default].path : conf.local_fs[output.local.key].path
 				var target_file = path.join(local_path, output.name);
 				
 				if(!fs.existsSync(target_file)){
@@ -133,17 +146,19 @@ module.exports = function (conf) {
 			return inp.name === input.name;
 		});
 
-		if(!inp || (doc._attachments && !doc._attachments[input.name] && !inp.remote && !inp.local)){
+		if(!inp || (doc._attachments && !doc._attachments[input.name] && !inp.remote && !inp.local && !inp.local_storage)){
 			return Promise.reject({					
 				"status" : false,
 				"error": "Document is missing attachment" + input.name
 			});
 		}else{
-			if(inp && inp.local){
-				if(conf.local_storage === undefined){
-					throw "No local_storage configuration";
+			if(inp.local_storage){
+				return clusterpost.getFromStorage(path.join(cwd, input.name), input.name);
+			}else if(inp && inp.local){
+				if(conf.local_fs === undefined){
+					throw "No local_fs configuration";
 				}
-				var local_path = inp.local.useDefault? conf.local_storage[conf.local_storage.default].path : conf.local_storage[inp.local.key].path
+				var local_path = inp.local.useDefault? conf.local_fs[conf.local_fs.default].path : conf.local_fs[inp.local.key].path
 				var full_file_path = path.join(local_path, inp.name);
 
 				if(fs.existsSync(full_file_path)){

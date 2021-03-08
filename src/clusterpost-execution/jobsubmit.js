@@ -59,6 +59,7 @@ module.exports = function(doc, force, conf){
             return executionmethods.uploadDocumentDataProvider(doc);
         })
         .catch(function(e){
+            console.error(e);
             return e;
         });
     }

@@ -13,7 +13,7 @@ module.exports = function(doc, conf){
             docupdated.jobstatus.uploadstatus = allupload;
             var alluploadstatus = true;
             for(var i = 0; i < allupload.length; i++){
-                if(!allupload[i].ok){
+                if(!(allupload[i].ok || allupload[i].statusCode == 409)){
                     alluploadstatus = false;
                 }
             }
