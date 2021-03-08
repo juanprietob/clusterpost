@@ -8,6 +8,9 @@ exports.parameter = Joi.object().keys({
 exports.output = Joi.object().keys({
 	type: Joi.string().valid('file', 'directory', 'tar.gz'), 
   	name: Joi.string(),
+  	local_storage: Joi.object({
+  		target_path: Joi.string()	
+  	}).optional(),
   	local : Joi.object({
   		"useDefault": Joi.boolean().optional(),
   		"key": Joi.string().optional(),
@@ -21,6 +24,7 @@ exports.input = Joi.object().keys({
   		serverCodename: Joi.string().optional(),
   		uri: Joi.string()
   	}).optional(),
+  	local_storage: Joi.boolean().optional(),
   	local : Joi.object({
   		"useDefault": Joi.boolean().optional(),
   		"key": Joi.string().optional(),
@@ -54,7 +58,7 @@ exports.jobstatus = Joi.object().keys({
 	});
 
 exports.job = Joi.object().keys({
-		_id: Joi.string().alphanum().required(),
+		_id: Joi.string().required(),
 		_rev: Joi.string().required(),
 		type: Joi.string().required(),
 		userEmail: Joi.string().email().required(),
@@ -79,5 +83,6 @@ exports.job = Joi.object().keys({
 
 exports.executionservertoken = Joi.object().keys({
 		executionserver: Joi.string(),
-		token: Joi.string()
+		token: Joi.string(),
+		name: Joi.string().optional()
 	})

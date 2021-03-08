@@ -1,7 +1,7 @@
 {
   "name": "clusterpost-model",
-  "version": "1.13.2",
-  "description": "Containt the Joi descriptions of the clusterpost server application",
+  "version": "1.14.0",
+  "description": "Contains the Joi descriptions of the clusterpost server application",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
