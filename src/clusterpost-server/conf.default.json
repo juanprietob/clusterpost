@@ -35,6 +35,7 @@
 			"namespace": "clusterprovider"
 		},
 		"clusterpost-provider": {
+			"local_storage" : "./local_storage",
 			"executionservers" : {
 				"some_name": {
                     "remote": true
