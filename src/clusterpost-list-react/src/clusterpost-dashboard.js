@@ -54,7 +54,7 @@ class ClusterpostDashboard extends Component {
       .then(function(){
         self.startTimer()  
       });
-    }, 10000);
+    }, 6000000);
   }
 
   getJobCount(){
@@ -64,20 +64,6 @@ class ClusterpostDashboard extends Component {
     .then(function(res){
       self.setState({...self.state, jobCount: _.map(res.data, (jc)=>{return {[jc.key]: jc.value}})});
     });
-    
-    // this.clusterpost.getUserJobs()
-    // .then(function(res){
-    //   return _.reduce(jobs, function(memo, job){
-    //     if(!memo[job.jobstatus.status]){
-    //       memo[job.jobstatus.status] = 0;
-    //     }
-    //     memo[job.jobstatus.status] += 1;
-    //     return memo;
-    //   }, {});
-    // })
-    // .then(function(res){
-    //   self.setState({...self.state, jobCount: res});
-    // });
   }
 
   getStyle(selector, style){
