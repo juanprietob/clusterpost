@@ -11,6 +11,9 @@ import {Eye, DownloadCloud, RefreshCw, Play, Delete, StopCircle, ArrowLeftCircle
 import qs from 'query-string';
 import ReactJson from 'react-json-view'
 
+import {ListGroup, Container, Button, Card, Alert, Col, Row, Table, Dropdown} from 'react-bootstrap'
+
+const Promise = require('bluebird')
 
 class ClusterpostJobs extends Component {
 
@@ -217,18 +220,23 @@ class ClusterpostJobs extends Component {
 
     return getjobprom
     .then(function(res){
+      return _.sortBy(res.data, (job)=>{
+        return Date(job.timestamp)
+      }).reverse()
+    })
+    .then((data)=>{
       var jobs = {
-        data: res.data, 
-        filtered: res.data,
-        status: _.uniq(_.pluck(_.pluck(res.data, 'jobstatus'), 'status')),
-        executable: _.uniq(_.pluck(res.data, 'executable'))
+        data: data, 
+        filtered: data,
+        status: _.uniq(_.pluck(_.pluck(data, 'jobstatus'), 'status')),
+        executable: _.uniq(_.pluck(data, 'executable'))
       }
       self.setState(
         {...self.state, jobs: jobs}
       );
       if(location && location.search){
         const values = qs.parse(location.search);
-        self.showJobDetail(_.find(res.data, (job)=>{return job._id == values.jobid}));
+        self.showJobDetail(_.find(data, (job)=>{return job._id == values.jobid}));
       }
     })
     .then(function(){
@@ -269,16 +277,19 @@ class ClusterpostJobs extends Component {
   }
 
   runAllJobs(){
-    return Promise.all(_.map(jobs.filtered, (job)=>{return self.updateStatus(job);}))
-    .catch(console.error);
+    return Promise.map(jobs.filtered, (job)=>{
+      return this.clusterpostService.submitJob(job._id)
+    }, {concurrency: 1})
+    .then(()=>{
+      return self.getDB()
+    })
   }
 
   updateAllJobs(){
     var {jobs} = this.state;
     var self = this;
 
-    return Promise.all(_.map(jobs.filtered, (job)=>{return self.updateStatus(job);}))
-    .catch(console.error);
+    return self.getDB();
     
   }
 
@@ -287,17 +298,12 @@ class ClusterpostJobs extends Component {
       var {jobs} = this.state;
       var self = this;
 
-      var tracker = function(next){
-        return self.deleteJob(jobs.filtered[next])
-        .then(function(){
-          next++;
-          if(next < jobs.filtered.length){
-            return tracker(next);
-          }
-        });
-      }
-    
-      return tracker(0);
+      return Promise.map(jobs.filtered, (job)=>{
+        return this.clusterpostService.deleteJob(job._id)
+      }, {concurrency: 1})
+      .then(()=>{
+        return self.getDB()
+      })
     }
   }
 
@@ -305,8 +311,12 @@ class ClusterpostJobs extends Component {
     var {jobs} = this.state;
     var self = this;
 
-    return Promise.all(_.map(jobs.filtered, (job)=>{return self.killJob(job);}))
-    .catch(console.error);
+    return Promise.map(jobs.filtered, (job)=>{
+      return this.clusterpostService.killJob(job._id)
+    }, {concurrency: 1})
+    .then(()=>{
+      return self.getDB()
+    })
   }
 
   saveJobEdit(){
@@ -366,26 +376,9 @@ class ClusterpostJobs extends Component {
     var {jobs} = this.state;
 
     var self = this;
-    var tracker = function(next){
-      return self.downloadJob(jobs.filtered[next])
-      .then(function(){
-        next++;
-        if(next < jobs.filtered.length){
-          return tracker(next);
-        }
-      });
-    }
-    
-    return tracker(0);
-    
-  }
-
-  numberOfJobsChange(e){
-    
-    this.setState({
-      ...this.state, numberOfJobs: Number(e.target.value)
-    });
-
+    return Promise.map(jobs.filtered, (job)=>{
+      return self.downloadJob(job)
+    }, {concurrency: 1})
   }
 
   getObjectPropertiesFromStrings(obj, propertiesNames){
@@ -419,9 +412,9 @@ class ClusterpostJobs extends Component {
     var propertiesNames = ["name", "userEmail", "timestamp", "jobstatus.jobid", "jobstatus.status", "executable", "executionserver"];
     var exactProperties = ["_id"];
 
-    jobs.filtered = _.filter(jobs.data, function(job){
+    jobs.filtered = _.compact(_.unique(_.filter(jobs.data, function(job){
       return self.getFilteredPropertiesFromRegex(job, propertiesNames, regexText) || self.getFilteredPropertiesFromString(job, exactProperties, searchText);
-    });
+    })));
 
     this.setState({
       ...this.state, jobs: jobs
@@ -431,66 +424,75 @@ class ClusterpostJobs extends Component {
   getGlobalSearchBar(){
     
     var self = this;
-    var {optionsDisplayedJobs} = self.state;
+    var {optionsDisplayedJobs, numberOfJobs} = self.state;
 
-    return (<tr>
-              <th colspan="5"><input class="form-control" placeholder="Global search ..." type="text" onChange={self.setTextSearch.bind(self)}/></th>             
-              <th colspan="3">Number of jobs per page 
-                <select class="form-control" onChange={self.numberOfJobsChange.bind(self)}>
-                  {
-                    _.map(optionsDisplayedJobs, function(nop){
-                      return <option value={nop}>{nop}</option>;
-                    })
-                  }
-                </select>
-              </th>
-              <th>
-                <button type="button" onClick={(e) => self.downloadAll()} class="btn btn-sm btn-primary">
-                  <DownloadCloud/>
-                </button>
-              </th>
-              <th>
-                <button type="button" onClick={(e) => self.updateAllJobs()} class="btn btn-sm btn-info">
-                  <RefreshCw/>
-                </button>
-              </th>
-              <th>
-                <button type="button" onClick={(e) => self.runAllJobs()} class="btn btn-sm btn-success">
-                  <Play/>
-                </button>
-              </th>
-              <th>
-                <button type="button" onClick={(e) => self.killAllJobs()} class="btn btn-sm btn-warning">
-                  <StopCircle/>
-                </button>
-              </th>
-              <th>
-                <button type="button" onClick={(e) => self.deleteAllJobs()} class="btn btn-sm btn-danger">
-                  <Delete/>
-                </button>
-              </th>
-            </tr>)
+    return (
+      <tr>
+        <th colspan="7">
+          <input class="form-control" placeholder="Search ..." type="text" onChange={self.setTextSearch.bind(self)}/>
+        </th>
+        <th>
+          <Dropdown>
+            <Dropdown.Toggle id="dropdown-basic">
+              {numberOfJobs}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              {
+                _.map(optionsDisplayedJobs, function(nop){
+                  return <Dropdown.Item onClick={()=>{
+                    self.setState({numberOfJobs: nop});
+                  }}>{nop}</Dropdown.Item>;
+                })
+              }
+            </Dropdown.Menu>
+          </Dropdown>
+        </th>
+        <th>
+          <Button onClick={(e) => self.downloadAll()} variant="primary">
+            <DownloadCloud/>
+          </Button>
+        </th>
+        <th>
+          <Button onClick={(e) => self.updateAllJobs()} variant="info">
+            <RefreshCw/>
+          </Button>
+        </th>
+        <th>
+          <Button onClick={(e) => self.runAllJobs()} variant="success">
+            <Play/>
+          </Button>
+        </th>
+        <th>
+          <Button onClick={(e) => self.killAllJobs()} variant="warning">
+            <StopCircle/>
+          </Button>
+        </th>
+        <th>
+          <Button onClick={(e) => self.deleteAllJobs()} variant="danger">
+            <Delete/>
+          </Button>
+        </th>
+      </tr>)
   }
 
   getHeader(){
-    
     return (
-      <thead class="thead-dark">
+      <thead>
         {this.getGlobalSearchBar()}
         <tr>
-          <th scope="col">Detail</th>
-          <th scope="col">Name</th>
-          <th scope="col">Email</th>
-          <th scope="col">Timestamp</th>
-          <th scope="col">Job status</th>
-          <th scope="col">Executable</th>
-          <th scope="col">Execution server</th>
-          <th scope="col">Job id</th>
-          <th scope="col">Download</th>
-          <th scope="col">Update</th>
-          <th scope="col">Run</th>
-          <th scope="col">Kill</th>
-          <th scope="col">Delete</th>
+          <th>Detail</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Timestamp</th>
+          <th>Job status</th>
+          <th>Executable</th>
+          <th>Execution server</th>
+          <th>Job id</th>
+          <th>Download</th>
+          <th>Update</th>
+          <th>Run</th>
+          <th>Kill</th>
+          <th>Delete</th>
         </tr>
       </thead>
       );
@@ -536,50 +538,55 @@ class ClusterpostJobs extends Component {
     var self = this;
     var params = self.getPageParams();
     
-    return _.map(_.range(params.start, params.end), function(index){
-      var job = self.state.jobs.filtered[index];
-        return (
-        <tr>
-          <td scope="row">
-            <button type="button" onClick={(e) => self.showJobDetail(job)} class="btn btn-sm btn-info">
-              <Eye/>
-            </button>
-          </td>
-          <th>{job.name}</th>
-          <th>{job.userEmail}</th>
-          <th>{job.timestamp}</th>
-          <th>{job.jobstatus.status}</th>
-          <th>{job.executable}</th>
-          <th>{job.executionserver}</th>
-          <th>{job.jobstatus.jobid}</th>
-          <td>
-            <button type="button" onClick={(e) => self.downloadJob(job)} class="btn btn-sm btn-primary">
-              <DownloadCloud/>
-            </button>
-          </td>
-          <td>
-            <button type="button" onClick={(e) => self.updateStatus(job)} class="btn btn-sm btn-info">
-              <RefreshCw/>
-            </button>
-          </td>
-          <td>
-            <button type="button" onClick={(e) => self.runJob(job)} class="btn btn-sm btn-success">
-              <Play/>
-            </button>
-          </td>
-          <td>
-            <button type="button" onClick={(e) => self.killJob(job)} class="btn btn-sm btn-warning">
-              <StopCircle/>
-            </button>
-          </td>
-          <td>
-            <button type="button" onClick={(e) => self.deleteJob(job)} class="btn btn-sm btn-danger">
-              <Delete/>
-            </button>
-          </td>
-        </tr>
-      );
-    });
+    return (<tbody>
+      {
+      _.map(_.range(params.start, params.end), function(index){
+          var job = self.state.jobs.filtered[index];
+            return (
+            <tr>
+              <td scope="row">
+                <Button size="sm" onClick={(e) => self.showJobDetail(job)} variant="info">
+                  <Eye/>
+                </Button>
+              </td>
+              <td>{job.name}</td>
+              <td>{job.userEmail}</td>
+              <td>{job.timestamp}</td>
+              <td>{job.jobstatus.status}</td>
+              <td>{job.executable}</td>
+              <td>{job.executionserver}</td>
+              <td>{job.jobstatus.jobid}</td>
+              <td>
+                <Button size="sm" onClick={(e) => self.downloadJob(job)} variant="primary">
+                  <DownloadCloud/>
+                </Button>
+              </td>
+              <td>
+                <Button size="sm" onClick={(e) => self.updateStatus(job)} variant="info">
+                  <RefreshCw/>
+                </Button>
+              </td>
+              <td>
+                <Button size="sm" onClick={(e) => self.runJob(job)} variant="success">
+                  <Play/>
+                </Button>
+              </td>
+              <td>
+                <Button size="sm" onClick={(e) => self.killJob(job)} variant="warning">
+                  <StopCircle/>
+                </Button>
+              </td>
+              <td>
+                <Button size="sm" onClick={(e) => self.deleteJob(job)} variant="danger">
+                  <Delete/>
+                </Button>
+              </td>
+            </tr>
+          )
+        })
+      }
+      </tbody>
+    ) 
   }
 
   setCurrentPage(pageNumber){
@@ -604,65 +611,73 @@ class ClusterpostJobs extends Component {
     var self = this;
 
     return (
-      <nav aria-label="Jobs navigation">
-        <ul class="pagination pagination-lg justify-content-center">
-          <li class="page-item"><a class="page-link" onClick={()=>{this.setCurrentPage(this.state.currentPage - 1)}}><ArrowLeftCircle/></a></li>
-          {
-            _.map(_.range(pageStart, pageEnd),function(index){
-              return <li class="page-item"><a class="page-link" onClick={()=>{self.setCurrentPage(index)}}>{index+1}</a></li>;
-            })
-          }
-          <li class="page-item"><a class="page-link" onClick={()=>{this.setCurrentPage(this.state.currentPage + 1)}}><ArrowRightCircle/></a></li>
-        </ul>
-      </nav>);
+      <ListGroup horizontal>
+        <ListGroup.Item action onClick={()=>{this.setCurrentPage(this.state.currentPage - 1)}}><Row className="justify-content-md-center"><Col md="auto"><ArrowLeftCircle/></Col></Row></ListGroup.Item>
+        {
+          _.map(_.range(pageStart, pageEnd),function(index){
+            return <ListGroup.Item action onClick={()=>{self.setCurrentPage(index)}} variant={currentPage == index? 'light' : ''}><Row className="justify-content-md-center"><Col md="auto">{index+1}</Col></Row></ListGroup.Item>
+          })
+        }
+        <ListGroup.Item action onClick={()=>{this.setCurrentPage(this.state.currentPage + 1)}}><Row className="justify-content-md-center"><Col md="auto"><ArrowRightCircle/></Col></Row></ListGroup.Item>
+      </ListGroup>
+      );
   }
 
   getTable(){
     return (
-      <div class="col">
-        <div class="card">
-          <h5 class="card-title alert alert-info">Execution servers</h5>
-          <div class="card-body" style={{overflow: "scroll"}}>
-            <table class="table table-striped table-bordered table-hover">
-              {this.getHeader()}
-              <tbody>
+      <Container fluid="true">
+        <Col>
+          <Card>
+            <Card.Title>
+              <h5 class="card-title alert alert-info">Execution servers</h5>
+            </Card.Title>
+            <Card.Body>
+              <Table striped bordered hover>
+                {this.getHeader()}
                 {this.getBody()}
-              </tbody>
-            </table>
-            {this.getPagination()}
-          </div>
-        </div>
-      </div>);
+              </Table>
+              {this.getPagination()}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Container>
+    );
+
   }
 
   getDetail(){
     var selectedJob = this.state.selectedJob;
 
-    return  (<div class="container">
-              <div class="row justify-content-center">
-                <div class="card col-6">
-                  <div class="card-body alert alert-success">
-                    <p style={{"whiteSpace": "pre", "overflow": "auto"}}>
-                      {selectedJob.stdout}
-                    </p>
-                  </div>
-                </div>
-                <div class="card col-6 alert alert-warning">
-                  <div class="card-body" role="alert">
-                    <p style={{"whiteSpace": "pre", "overflow": "auto"}}>
-                      {selectedJob.stderr}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="card col-12">
-                  <div class="card-body alert alert-info" style={{textAlign: "left"}}>
-                    <ReactJson src={selectedJob} />
-                  </div>
-                </div>
-              </div>
-            </div>);
+    return  (
+      <Container fluid="true">
+        <Row>
+          <Col>
+            <Card>
+              <Alert variant="success">
+                <p style={{"whiteSpace": "pre", "overflow": "auto"}}>
+                  {selectedJob.stdout}
+                </p>
+              </Alert>
+            </Card>
+          </Col>
+          <Col>
+            <Card>
+              <Alert variant="warning">
+                <p style={{"whiteSpace": "pre", "overflow": "auto"}}>
+                  {selectedJob.stderr}
+                </p>
+              </Alert>
+            </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Alert variant="info">
+              <ReactJson src={selectedJob} />
+            </Alert>
+          </Col>
+        </Row>
+      </Container>);
   }
 
   render() {
