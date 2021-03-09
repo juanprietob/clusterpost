@@ -55,32 +55,6 @@ var jobid;
 var token;
 var tokenraw;
 
-var updateJobStatusRec = function(jobid, validstatus){
-    var clustermodelstatus = Joi.object().keys({
-        jobid: Joi.number(),
-        status: Joi.string().valid(validstatus),
-        downloadstatus: Joi.array().items(Joi.object().keys({
-            path: Joi.string(),
-            status: Joi.boolean().valid(true)
-        })), 
-        uploadstatus: Joi.array().items(Joi.object())
-    });
-
-    return new Promise(function(resolve, reject){
-        setTimeout(resolve, 70000);
-    })
-    .then(function(){
-        return clusterpost.updateJobStatus(jobid)
-        .then(function(jobstatus){
-            Joi.assert(jobstatus, clustermodelstatus);
-            return jobstatus;
-        })
-        .catch(function(e){
-            return updateJobStatusRec(jobid);
-        });
-    })
-}
-
 var job = {
         "executable": "cksum",
         "parameters": [
@@ -134,7 +108,7 @@ var job2 = {
         "parameters": [
             {
                 "flag": "-c",
-                "name": "while True: print '.'"
+                "name": "import time; start_time=time.time(); time.sleep(60); print('I wait %s seconds' % (time.time() - start_time))"
             }
         ],
         "outputs": [
@@ -150,6 +124,48 @@ var job2 = {
         "type": "job",
         "userEmail": "algiedi85@gmail.com"
     };
+
+var job3 = {
+            "executable": "cksum",
+            "parameters": [
+                {
+                    "flag": "",
+                    "name": "juanprietob@gmail.com/some/test/gravitational-waves-simulation.jpg"
+                }
+            ],
+            "inputs": [
+                {
+                    "name": "juanprietob@gmail.com/some/test/gravitational-waves-simulation.jpg",
+                    "local_storage": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "directory",
+                    "name": "./",
+                    "local_storage": {
+                        target_path: "juanprietob@gmail.com/some/test/"
+                    }
+                },            
+                {
+                    "type": "tar.gz",
+                    "name": "./",
+                    "local_storage": {
+                        target_path: "juanprietob@gmail.com/some/test/"
+                    }
+                },
+                {
+                    "type": "file",
+                    "name": "stdout.out"
+                },
+                {
+                    "type": "file",
+                    "name": "stderr.err"
+                }
+            ],
+            "type": "job",
+            "userEmail": "algiedi85@gmail.com"
+        };
 
 lab.experiment("Test clusterpost", function(){
     
@@ -234,6 +250,7 @@ lab.experiment("Test clusterpost", function(){
         .then(function(res){
             job.executionserver = res[0].name;
             job2.executionserver = res[0].name;
+            job3.executionserver = res[0].name;
         });
     });
 
@@ -277,14 +294,24 @@ lab.experiment("Test clusterpost", function(){
     });
 
     lab.test('returns true when jobstatus is RUN', function(){
-        return updateJobStatusRec(jobid, "RUN")
+        return new Promise((resolve, reject)=>{
+            setTimeout(resolve, 60000);
+        })
+        .then(function(){
+            return clusterpost.updateJobStatus(jobid);
+        })
         .then(function(jobstatus){
-            Joi.assert(jobstatus.status, Joi.string().valid("RUN"));
+            Joi.assert(jobstatus.status, Joi.string().valid("RUN", "DONE"));
         });
     });
 
     lab.test('returns true until jobstatus is DONE', function(){
-        return updateJobStatusRec(jobid, "DONE")
+        return new Promise((resolve, reject)=>{
+            setTimeout(resolve, 60000);
+        })
+        .then(function(){
+            return clusterpost.updateJobStatus(jobid);
+        })
         .then(function(jobstatus){
             Joi.assert(jobstatus.status, Joi.string().valid("DONE"));
         });
@@ -347,8 +374,14 @@ lab.experiment("Test clusterpost", function(){
     });
 
     lab.test('returns true when second jobstatus is RUN', function(){
-        return updateJobStatusRec(jobid, "RUN")
+        return new Promise((resolve, reject)=>{
+            setTimeout(resolve, 60000);
+        })
+        .then(function(){
+            return clusterpost.updateJobStatus(jobid);
+        })
         .then(function(jobstatus){
+            console.log(jobstatus)
             Joi.assert(jobstatus.status, Joi.string().valid("RUN"));
         });
     });
@@ -430,13 +463,7 @@ lab.experiment("Test clusterpost", function(){
         return clusterpost.getExecutionServerToken()
         .then(function(res){
             Joi.assert(res, Joi.array().items(clustermodel.executionservertoken));
-            return Promise.map(res, function(es){
-                delete es.token;
-                return clusterpost.getExecutionServers(es);
-            })
-            .then(function(res){
-                Joi.assert(_.flatten(res), Joi.array().items(clustermodel.executionservertoken));
-            })
+            return true
         });
     });
 
@@ -522,6 +549,36 @@ lab.experiment("Test clusterpost", function(){
                     rev: Joi.string()
                 }));
             });
+        });
+    });
+
+
+    lab.test('returns true when document is created', function(){
+
+        Joi.assert(job3, clustermodel.jobpost);
+
+        return clusterpost.createDocument(job3)
+        .then(function(res){            
+            Joi.assert(res, joiokres);
+            jobid = res.id;
+            console.info("JOBID:", jobid);
+        });
+    });
+
+    lab.test('returns true when file is uploaded to storage', function(){
+        
+        return clusterpost.uploadToStorage(inputs[0], job3.inputs[0].name)
+        .then(function(allupload){
+            var joiupload = Joi.array().items(joiokres).min(1);
+            Joi.assert(allupload, joiupload);
+        });
+    });
+
+
+    lab.test('returns true when job is executed', function(){
+        return clusterpost.executeJob(jobid)
+        .then(function(jobstatus){
+            Joi.assert(jobstatus.status, Joi.string().valid("QUEUE"));
         });
     });
 

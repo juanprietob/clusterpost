@@ -1,3 +1,4 @@
 {
-	"uri": "http://localhost:8180"
+	"uri": "http://localhost:8180",
+	"couchdb": "http://localhost:5984/clusterjobs"
 }
