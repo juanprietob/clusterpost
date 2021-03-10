@@ -171,7 +171,7 @@ module.exports = function (server, conf) {
 
 		try{
 
-			var full_path = path.join(confstorage, req.params.path)
+			var full_path = path.join(local_storage, req.params.path)
 			if(fs.existsSync(full_path)){
 				return fs.createReadStream(full_path)	
 			}
