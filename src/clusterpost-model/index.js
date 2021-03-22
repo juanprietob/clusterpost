@@ -50,7 +50,7 @@ exports.jobpost = Joi.object().keys({
 
 exports.jobstatus = Joi.object().keys({
 		status: Joi.string().valid('CREATE', 'QUEUE', 'DOWNLOADING', 'RUN', 'FAIL', 'KILL', 'UPLOADING', 'EXIT', 'DONE', 'DELETE'),
-		jobid: Joi.number().optional(),
+		jobid: Joi.optional(),
 		stat: Joi.optional(),
 		error: Joi.optional(),
 		downloadstatus: Joi.array().items(Joi.object()).optional(),
