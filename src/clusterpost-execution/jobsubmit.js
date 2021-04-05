@@ -21,7 +21,8 @@ module.exports = function(doc, force, conf){
                         isago = false;
                     }
                 }
-                if(isago){                    
+                if(isago){
+                    subdoc.timestampstart = new Date();     
                     return clusterengine.submitJob(subdoc, cwd)
                     .catch(function(e){
                         return e;
@@ -34,10 +35,15 @@ module.exports = function(doc, force, conf){
                 
             })
             .then(function(jobstatus){
-                subdoc.jobstatus = jobstatus;
-                subdoc.timestampstart = new Date();
-                _.extend(subdoc.jobstatus, this);                
-                return executionmethods.uploadDocumentDataProvider(subdoc);
+                if(conf.run_only){
+                    subdoc.jobstatus = { status: 'DONE' };
+                    _.extend(subdoc.jobstatus, this);
+                    return executionmethods.uploadDocumentDataProvider(subdoc);
+                }else{
+                    subdoc.jobstatus = jobstatus;
+                    _.extend(subdoc.jobstatus, this);                
+                    return executionmethods.uploadDocumentDataProvider(subdoc);    
+                }
             });
 
     }
@@ -56,7 +62,12 @@ module.exports = function(doc, force, conf){
                 return submitJob(doc);
             }
             doc.jobstatus = status;
-            return executionmethods.uploadDocumentDataProvider(doc);
+            if(!conf.run_only){
+                return executionmethods.uploadDocumentDataProvider(doc);
+            }
+            else{
+                console.log(status);
+            }
         })
         .catch(function(e){
             console.error(e);

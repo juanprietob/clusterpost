@@ -139,7 +139,13 @@ module.exports = function (conf) {
 				});
 
 			}catch(e){
-				reject(e);
+				if(conf.run_only){
+					resolve({
+						status: 'DONE'
+					});
+				}else{
+					reject(e);	
+				}
 			}
 			
 		});
