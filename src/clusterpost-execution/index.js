@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-var _ = require('underscore');
-var argv = require('minimist')(process.argv.slice(2));
-var path = require('path');
-var fs = require('fs');
-var Promise = require('bluebird');
+const _ = require('underscore');
+const argv = require('minimist')(process.argv.slice(2));
+const path = require('path');
+const fs = require('fs');
+const Promise = require('bluebird');
+const chalk = require('chalk')
 
 var submit = argv["submit"];
 var jobid = argv["j"];
@@ -19,19 +20,21 @@ var jobdelete = argv["delete"];
 var remote = argv["remote"];
 
 var help = function(){
-    console.error("help: To execute the program you must specify the job id. ")
-    console.error(process.argv[0] + " " + process.argv[1] + " -j <jobid>");
-    console.error("To configure the couchdb, check conf.*.json");
-    console.error("Options:");
-    console.error("--submit 	Submit the job.");
-    console.error("-f  			force job submission");
-    console.error("--status  	get job status");
-    console.error("--kill  		kill job");
-    console.error("--delete  	delete job");
-    console.error("--remote     run as a daemon");
+    console.log(chalk.cyan("help: To execute the program you must specify the job id. "));
+    console.log(chalk.green("Options:"));
+    console.log(chalk.green("--j                <job id>"));
+    console.log(chalk.green("--submit           Submit the job."));
+    console.log(chalk.green("-f                 force job submission"));
+    console.log(chalk.green("--status  	        get job status"));
+    console.log(chalk.green("--kill             kill job"));
+    console.log(chalk.green("--delete  	        delete job"));
+    console.log(chalk.green("--remote           run as a daemon"));
+    console.log(chalk.red("Run only mode (no updates to document are made), set uri and token:"));
+    console.log(chalk.green("--uri              server uri"));
+    console.log(chalk.green("--token            token for authentication"));
 }
 
-if(!remote && (!jobid || !submit && !status && !kill && !jobdelete)){
+if(!remote && (!jobid || !submit && !status && !kill && !jobdelete) && (!argv["uri"] && argv["token"])){
     help();
     process.exit(1);
 }
@@ -46,12 +49,23 @@ const getConfigFile = function (base_directory) {
   }
 };
 
-var confpath = __dirname;
-if(module.parent && module.parent.filename){
-    confpath = path.dirname(module.parent.filename);
+if(argv["uri"] && argv["token"]){
+    var conf = {
+        uri: argv["uri"],
+        token: argv["token"],
+        engine: "engine_unix",
+        storagedir: "./",
+        run_only: true
+    }
+}else{
+    var confpath = __dirname;
+    if(module.parent && module.parent.filename){
+        confpath = path.dirname(module.parent.filename);
+    }
+
+    var conf = getConfigFile(confpath);    
 }
 
-var conf = getConfigFile(confpath);
 
 try{
     if(!conf.token){
@@ -68,8 +82,8 @@ try{
         _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
     }
     
-}catch(e){    
-    console.error(e);
+}catch(e){
+    console.error(chalk.red(e));
     process.exit(1);
 }
 
@@ -153,7 +167,7 @@ if(remote){
         
     });
 
-    console.log("Starting clusterpost-execution in remote mode:");
+    console.log(chalk.green("Starting clusterpost-execution in remote mode:"));
 
 }else{
 
@@ -164,7 +178,7 @@ if(remote){
         .then(function(doc){ 
 
             if(submit){
-                return require(path.join(__dirname, "jobsubmit"))(doc, force, conf);
+                return require(path.join(__dirname, "jobsubmit"))(doc, force, conf, );
             }else if(status){
                 return require(path.join(__dirname, "jobstatus"))(doc, conf);
             }else if(kill){
