@@ -34,9 +34,9 @@ var help = function(){
     console.log(chalk.green("--token            token for authentication"));
 }
 
-if(!remote && (!jobid || !submit && !status && !kill && !jobdelete) && (!argv["uri"] && argv["token"])){
+if(!remote && (!jobid || !submit && !status && !kill && !jobdelete) && !(argv["uri"] && argv["token"]) || argv["h"] || argv["help"]){
     help();
-    process.exit(1);
+    process.exit();
 }
 
 const getConfigFile = function (base_directory) {
