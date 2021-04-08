@@ -6,10 +6,10 @@
 2. Create a folder, navigate to it and run the following command.
 
 ----
-	npm install clusterpost-execution
+	npm install clusterpost-execution -g
 ----
 
-This installation step generated a conf.json file and index.js
+This installation step generated a conf.json file
 
 ## Configuration
 
@@ -58,7 +58,7 @@ Engine type to run the back end. See list below for options.
 #### detached
 
 This option is only available for 'engine_unix'.
-Run detached jobs, i.e., run the process in the background. 
+Run detached jobs, i.e., run the process in the background. Use with option maxjobs to allow only a single or multiple tasks in the same engine. 
 
 #### storagedir
 
@@ -106,8 +106,6 @@ or
 		"token": "copy and paste the token from the downloaded file"
 	}
 ----
-
-or rename the file token.json to '.token' and copy it into the clusterpost-execution folder in the computing grid. 
 
 
 2.1 Remote execution only
