@@ -36,13 +36,12 @@ module.exports = function(doc, force, conf){
             })
             .then(function(jobstatus){
                 if(conf.run_only){
-                    subdoc.jobstatus = { status: 'DONE' };
-                    _.extend(subdoc.jobstatus, this);
+                    subdoc.jobstatus.status = jobstatus.status
                     return executionmethods.uploadDocumentDataProvider(subdoc);
                 }else{
                     subdoc.jobstatus = jobstatus;
                     _.extend(subdoc.jobstatus, this);                
-                    return executionmethods.uploadDocumentDataProvider(subdoc);    
+                    return executionmethods.uploadDocumentDataProvider(subdoc);        
                 }
             });
 
