@@ -93,8 +93,8 @@ exports.softwarepost = Joi.object({
 		command: Joi.string(),
 		patterns: Joi.array(),
 		type: Joi.string().allow("software"),
-		docker: joi.string().optional(), 
-		cpus: joi.number().optional(), 
-		mem: joi.number().optional(),
-		gpu: joi.boolean().optional()
+		docker: Joi.string().optional(), 
+		cpus: Joi.number().optional(), 
+		mem: Joi.number().optional(),
+		gpu: Joi.boolean().optional()
 	})
