@@ -486,18 +486,26 @@ module.exports = function (server, conf) {
 	}
 
 	handler.getSoftware = async(req, h) => {
-		var view = '_design/software/_view/softwarePatterns';
-		var query = {
-			include_docs: true
-		}
-		
-		return server.methods.clusterprovider.getViewQs(view, query)
-		.then((res)=>{
-			var docs = _.pluck(res, 'doc');
-			return docs
-		})
 
-	  	return true
+		var _id = req.query._id
+
+		if(_id){
+			return server.methods.clusterprovider.getDocument(_id)
+			.then((doc)=>{
+				return [doc]
+			})
+		}else{
+			var view = '_design/software/_view/softwarePatterns';
+			var query = {
+				include_docs: true
+			}
+			
+			return server.methods.clusterprovider.getViewQs(view, query)
+			.then((res)=>{
+				var docs = _.pluck(res, 'doc');
+				return docs
+			})
+		}
 	  }
 
 

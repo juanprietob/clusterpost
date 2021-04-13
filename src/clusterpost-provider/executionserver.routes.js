@@ -158,7 +158,9 @@ module.exports = function (server, conf) {
 			},
 			handler: handlers.getSoftware,
 			validate: {
-				query: false,
+				query: Joi.object().keys({
+			  		_id: Joi.string().optional()
+			  	}),
 			    payload: null,
 			    params: null		    
 			},
