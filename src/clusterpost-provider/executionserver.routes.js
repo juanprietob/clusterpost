@@ -162,7 +162,9 @@ module.exports = function (server, conf) {
 			    payload: null,
 			    params: null		    
 			},
-			response: Joi.array().items(clustermodel.software)
+			response: {
+				schema: Joi.array().items(clustermodel.software)
+			}
 		}
 	});
 
