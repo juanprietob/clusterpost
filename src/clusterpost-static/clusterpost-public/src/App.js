@@ -9,12 +9,19 @@ import NavBar from './nav-bar'
 import Carousel from 'react-bootstrap/Carousel';
 import Image from 'react-bootstrap/Image'
 import Modal from 'react-bootstrap/Modal';
+import Dropdown from 'react-bootstrap/Dropdown';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Container from 'react-bootstrap/Container';
+
+import {Edit2, Trash2} from 'react-feather'
 
 import axios from 'axios';
 import store from "./redux/store";
 import { connect } from "react-redux";
 
-import {ClusterpostJobs, ClusterpostTokens, ClusterpostDashboard} from 'clusterpost-list-react'
+import {ClusterpostJobs, ClusterpostTokens, ClusterpostDashboard, ClusterpostSoftware, ClusterpostService} from 'clusterpost-list-react'
+
+const _ = require('underscore')
 
 class App extends Component {
 
@@ -30,7 +37,18 @@ class App extends Component {
 
     this.state = {
       user: {},
-      showLogin: true
+      showLogin: true,
+      selectedSoftware: {},
+      newSoftware: {
+        name: "",
+        description: "",
+        command: "",
+        patterns: [],
+        docker: "",
+        cpus: "",
+        mem: "",
+        gpu: false
+      }
     }
 
     store.dispatch({
@@ -56,6 +74,11 @@ class App extends Component {
         user: user
       });
     });
+
+    self.clusterpostservice = new ClusterpostService();
+    self.clusterpostservice.setHttp(http);
+
+    this.getSoftwares();
   }
 
   componentWillReceiveProps(newProps){
@@ -80,6 +103,15 @@ class App extends Component {
               </div>
               <Modal.Body><JWTAuth></JWTAuth></Modal.Body>
             </Modal>);
+  }
+
+  getSoftwares() {
+    const self = this
+
+    self.clusterpostservice.getSoftware()
+    .then(res => {
+      self.setState({softwares: res.data})
+    })
   }
 
   profile(){
@@ -116,6 +148,67 @@ class App extends Component {
           <ClusterpostJobs></ClusterpostJobs>
         </div>
       </div>;
+  }
+
+  deleteSoftware(){
+    const self = this
+    var {selectedSoftware} = self.state
+    if(selectedSoftware){
+      self.clusterpostservice.deleteSoftware(selectedSoftware)
+      .then(()=>{
+        self.getSoftwares()
+      });
+
+      self.setState({selectedSoftware: {}})
+    }
+    
+  }
+
+  editSoftware(){
+    const self = this
+    var {selectedSoftware} = self.state
+    self.setState({newSoftware: selectedSoftware})  
+    
+  }
+
+  chooseSoftware() {
+    const self = this
+    const {selectedSoftware, softwares, runDisabled} = self.state
+
+    return (
+      <ButtonGroup>
+        <Dropdown className="mt-1 mb-1 ml-2 mr-2">
+          <Dropdown.Toggle variant="info">
+            <i>Select: {selectedSoftware.name}</i>
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            {
+              _.map(softwares, (software) =>{
+                  return (<Dropdown.Item onClick={(e) => {
+                    self.setState({
+                      selectedSoftware: software
+                    })
+                  }}>{software.name}</Dropdown.Item>)
+                }
+              )
+            }
+          </Dropdown.Menu>
+        </Dropdown>
+
+        <Trash2 style={{color: "green", height: 20, cursor: "pointer", top: 0, bottom: 0, margin: "auto"}} onClick={() => self.deleteSoftware()}/>
+        <Edit2 style={{color: "green", height: 20, cursor: "pointer", top: 0, bottom: 0, margin: "auto"}} onClick={() => self.editSoftware()}/>
+
+      </ButtonGroup>
+    )
+
+  }
+
+  software(){
+    var {newSoftware} = this.state
+    return (<Container fluid="true">
+        {this.chooseSoftware()}
+        <ClusterpostSoftware newSoftware={newSoftware}/>
+      </Container>)
   }
 
   home(){
@@ -179,6 +272,7 @@ class App extends Component {
           <Route path="/login" component={this.login.bind(this)}/>
           <Route path="/logout" component={this.login.bind(this)}/>
           <Route path="/user" component={this.profile.bind(this)}/>
+          <Route path="/software" component={this.software.bind(this)}/>
           <Route path="/admin/users" component={this.adminUsers.bind(this)}/>
           <Route path="/admin/servers" component={this.adminServers.bind(this)}/>
           <Route path="/computing" component={this.computing.bind(this)}/>
