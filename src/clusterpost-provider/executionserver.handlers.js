@@ -485,6 +485,39 @@ module.exports = function (server, conf) {
 		}
 	}
 
+	handler.getSoftware = async(req, h) => {
+		var view = '_design/software/_view/softwarePatterns';
+		var query = {
+			include_docs: true
+		}
+		
+		return server.methods.clusterprovider.getViewQs(view, query)
+		.then((res)=>{
+			var docs = _.pluck(res, 'doc');
+			return docs
+		})
+
+	  	return true
+	  }
+
+
+	  handler.uploadSoftware = async(req, h) => {
+	  	var {payload} = req
+
+		return server.methods.clusterprovider.uploadDocuments(payload);
+	  }
+
+
+	  handler.deleteSoftware = async(req, h) => {
+	  	const {payload} = req
+
+
+		return server.methods.clusterprovider.deleteDocument(payload)
+		.then((res) => {
+			return true
+		})
+	  }
+
 	return handler;
 
 }
