@@ -945,8 +945,14 @@ class ClusterpostLib extends HapiJWTCouch{
     }
 
 
-    getSoftware(){
+    getSoftware(id){
         const self = this;
+
+        if(id){
+            var query_id = {
+                _id: id
+            }
+        }
 
         return new Promise(function(resolve, reject){
             var options = {
@@ -954,7 +960,8 @@ class ClusterpostLib extends HapiJWTCouch{
                 method: "GET",
                 agentOptions: self.agentOptions,
                 auth: self.auth,
-                json: true
+                json: true,
+                qs: query_id? query_id: undefined
             }
 
             request(options, function(err, res, body){
