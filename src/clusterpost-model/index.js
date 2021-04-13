@@ -96,7 +96,9 @@ exports.softwarepost = Joi.object().keys({
 		docker: Joi.string().optional(), 
 		cpus: Joi.number().optional(), 
 		mem: Joi.number().optional(),
-		gpu: Joi.boolean().optional()
+		gpu: Joi.boolean().optional(),
+		_id: Joi.string().optional(),
+		_rev: Joi.string().optional()
 	})
 
 exports.software = Joi.object().keys({
