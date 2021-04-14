@@ -436,6 +436,10 @@ module.exports = function (conf) {
 		return clusterpost.getDeleteQueue();
 	}
 
+	handler.getSoftware = function(id){
+		return clusterpost.getSoftware(id)
+	}
+
 	return handler;
 
 }
