@@ -944,6 +944,80 @@ class ClusterpostLib extends HapiJWTCouch{
         });
     }
 
+
+    getSoftware(id){
+        const self = this;
+
+        if(id){
+            var query_id = {
+                _id: id
+            }
+        }
+
+        return new Promise(function(resolve, reject){
+            var options = {
+                url : self.getServer() + "/executionserver/getSoftware",
+                method: "GET",
+                agentOptions: self.agentOptions,
+                auth: self.auth,
+                json: true,
+                qs: query_id? query_id: undefined
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    uploadSoftware(software){
+        const self = this;
+
+        return new Promise(function(resolve, reject){
+            var options = {
+                url : self.getServer() + "/executionserver/uploadSoftware",
+                method: "POST",
+                agentOptions: self.agentOptions,
+                auth: self.auth,
+                json: software
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    deleteSoftware(software){
+        const self = this;
+
+        return new Promise(function(resolve, reject){
+            var options = {
+                url : self.getServer() + "/executionserver/deleteSoftware",
+                method: "DELETE",
+                agentOptions: self.agentOptions,
+                auth: self.auth,
+                json: software
+            }
+
+            request(options, function(err, res, body){
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(body);
+                }
+            });
+        });
+    }
+
 }
 
 module.exports = new ClusterpostLib()

@@ -1,0 +1,9 @@
+{
+    "_id": "_design/software",
+    "views": {
+        "softwarePatterns": {
+            "map": "function (doc) {\n  if(doc.type == 'software'){\n    emit(doc.command, doc.patterns)\n  }\n}"
+        }
+    },
+    "language": "javascript"
+}

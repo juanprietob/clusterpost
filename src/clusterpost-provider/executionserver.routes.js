@@ -130,5 +130,63 @@ module.exports = function (server, conf) {
 			description: 'Get tokens for the remote execution servers'
 		}
 	});
+
+	server.route({
+		method: 'POST',
+		path: '/executionserver/uploadSoftware',
+		config: {
+			auth: {
+				strategy: 'token',
+				scope: ['admin']
+			},
+			handler: handlers.uploadSoftware,
+			validate: {
+				query: false,
+			    payload: clustermodel.softwarepost,
+			    params: null		    
+			},
+		}
+	});
+
+	server.route({
+		method: 'GET',
+		path: '/executionserver/getSoftware',
+		config: {
+			auth: {
+				strategy: 'token',
+				scope: ['admin', 'executionserver']
+			},
+			handler: handlers.getSoftware,
+			validate: {
+				query: Joi.object().keys({
+			  		_id: Joi.string().optional()
+			  	}),
+			    payload: null,
+			    params: null		    
+			},
+			response: {
+				schema: Joi.array().items(clustermodel.software)
+			}
+		}
+	});
+
+
+	server.route({
+		method: 'DELETE',
+		path: '/executionserver/deleteSoftware',
+		config: {
+			auth: {
+                strategy: 'token',
+                scope: ['admin']
+            },
+			handler: handlers.deleteSoftware,
+			validate: {
+				query: false,
+				params: null,
+				payload: clustermodel.software
+			},
+			description: "delete a softwate from the database"
+		}
+	})
 }
 

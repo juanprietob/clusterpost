@@ -239,4 +239,27 @@ export default class ClusterpostService{
       
       return Promise.resolve(job);
   }
+
+  uploadSoftware(software) {
+  return this.http({
+    method: 'POST',
+    url: '/executionserver/uploadSoftware',
+    data: software
+  });
+ }
+
+ getSoftware() {
+  return this.http({
+    method: 'GET',
+    url: '/executionserver/getSoftware',
+  });
+ }
+
+ deleteSoftware(software) {
+  return this.http({
+    method: 'DELETE',
+    url: '/executionserver/deleteSoftware',
+    data: software
+  });
+ }
 }

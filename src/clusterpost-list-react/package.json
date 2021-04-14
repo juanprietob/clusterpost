@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-list-react",
-  "version": "1.4.1",
+  "version": "1.5.1",
   "description": "clusterpost jobs view",
   "author": "juanprietob",
   "license": "MIT",
@@ -60,7 +60,7 @@
     "dist"
   ],
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "d3": "^5.9.2",
     "query-string": "^6.5.0",
     "react-d3-library": "^1.1.8",

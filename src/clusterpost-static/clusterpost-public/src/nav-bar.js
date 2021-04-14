@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import store from "./redux/store";
 import {withRouter} from 'react-router-dom';
-import {Home, User, Users, Cpu, Settings, LogOut, LogIn} from 'react-feather';
+import {Home, User, Users, Cpu, Settings, LogOut, LogIn, Box} from 'react-feather';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
@@ -21,6 +21,13 @@ class NavBar extends Component{
     const {user} = this.props;
     if(user && user.scope && user.scope.indexOf('clusterpost') != -1){
       return <Nav.Link><Link class="nav-link" to="/computing"><Cpu/> Computing</Link></Nav.Link>
+    }
+  }
+
+  getSoftware(){
+    const {user} = this.props;
+    if(user && user.scope && user.scope.indexOf('clusterpost') != -1){
+      return <Nav.Link><Link class="nav-link" to="/software"><Box/> Software</Link></Nav.Link>
     }
   }
 
@@ -72,6 +79,7 @@ class NavBar extends Component{
         <Nav className="mr-auto">
           <Nav.Link><Link class="nav-link" to="/home"><Home/> Home</Link></Nav.Link>
           {self.getComputing()}
+          {self.getSoftware()}
           <Nav.Link>
             {self.getSettings()}
           </Nav.Link>

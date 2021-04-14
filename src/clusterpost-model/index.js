@@ -86,3 +86,31 @@ exports.executionservertoken = Joi.object().keys({
 		token: Joi.string(),
 		name: Joi.string().optional()
 	})
+
+exports.softwarepost = Joi.object().keys({
+		name: Joi.string(),
+		description: Joi.string(),
+		command: Joi.string(),
+		patterns: Joi.array(),
+		type: Joi.string().allow("software"),
+		docker: Joi.string().optional(), 
+		cpus: Joi.number().optional(), 
+		mem: Joi.number().optional(),
+		gpu: Joi.boolean().optional(),
+		_id: Joi.string().optional(),
+		_rev: Joi.string().optional()
+	})
+
+exports.software = Joi.object().keys({
+		name: Joi.string(),
+		description: Joi.string(),
+		command: Joi.string(),
+		patterns: Joi.array(),
+		type: Joi.string().allow("software"),
+		docker: Joi.string().optional(), 
+		cpus: Joi.number().optional(), 
+		mem: Joi.number().optional(),
+		gpu: Joi.boolean().optional(),
+		_id: Joi.string().required(),
+		_rev: Joi.string().required()
+	})
