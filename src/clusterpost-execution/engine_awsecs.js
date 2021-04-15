@@ -18,91 +18,81 @@ module.exports = function (conf) {
 	handler.submitJob = function(doc, cwd){
 
 		Joi.assert(doc, clustermodel.job);
+
 		var jobid = doc._id;
+		var data = doc.data;
+		var software_id = doc.data.software_id;
+
 		console.log("Job ID: " + jobid);
 		console.log("URI: " + conf.uri);
 		console.log("Token: " + conf.token);
-		return new Promise(function(resolve, reject){
-			// var command = 'aws';
-			// //aws ecs create-service --cluster fly-by-cnn --service-name fly-by-cnn-service --task-definition fly-by-docker:4 --desired-count 1 --launch-type "FARGATE" --network-configuration "awsvpcConfiguration={subnets=[subnet-0c8cf4101362bdd63],securityGroups=[sg-042c3b29e1aa0a65c],assignPublicIp=ENABLED}"
-			// var parameters = ['ecs', 'run-task', '--cluster', 'fly-by-cnn', '--task-definition',
-			// 		 'fly-by-docker:4', '--launch-type', 'FARGATE', '--network-configuration',
-			// 		  'awsvpcConfiguration={subnets=[subnet-0c8cf4101362bdd63],securityGroups=[sg-042c3b29e1aa0a65c],assignPublicIp=ENABLED}',
-			// 		  '--overrides', 'containerOverrides={name=fly-by-docker-con, command=[echo ' + jobid + ']}'
-			// 		];
+		console.log("Software ID: " + software_id);
 
-			// Set the AWS region
-			const REGION = "us-east-1";
+		var software_name;
 
-			// Create an S3 client service object
-			const ecs = new ECSClient({ region: REGION });
+		return executionmethods.getSoftware(software_id)
+		.then((software)=>{
 
-			//--cluster fly-by-cnn --launch-type "FARGATE" --network-configuration "awsvpcConfiguration={subnets=[subnet-0c8cf4101362bdd63],securityGroups=[sg-042c3b29e1aa0a65c],assignPublicIp=ENABLED}" --task-definition fly-by-docker:4 --overrides "containerOverrides={name=fly-by-docker-con, command=[echo something]}"
+			return new Promise(function(resolve, reject){
 
-			const params = {
-			  cluster: "dsci-cluster",
-			  launchType: "FARGATE",
-			  taskDefinition: "imgsize:1",
-			  networkConfiguration: {
-			      awsvpcConfiguration :
-			      {
-			        subnets: ["subnet-03fffa45fdc3f92f0"],
-			        securityGroups: ["sg-02e3642913a4a28b2"],
-			        assignPublicIp: "ENABLED"
-			      }
-			  },
-			  overrides: {
-			      containerOverrides:
-			      [
-			        {
-			          name: "imgsize-con",
-			          command: ["cpex -f --j " + jobid + " --submit --uri " + conf.uri + " --token " + conf.token + " && pwd && ls && ls " + jobid + " && " + "cpex -f --j " + jobid + " --status --uri " + conf.uri + " --token " + conf.token]
-			        }
-			      ]
-			  },
-			  tags: [
-			  	{
-			  		key: "cs_jobid",
-			  		value: jobid
-			  	}
-			  ]
-			};
+				// Set the AWS region
+				const REGION = conf.aws_region;
 
-			ecs
-				.send(new RunTaskCommand(params))
-				.then( data => {
-					console.log(data.tasks[0].lastStatus);
-					var status = data.tasks[0].lastStatus;
-					console.log('Task status: ' + status)
-					console.log("Number of failures: " + data.failures.length)
-					if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING'].indexOf(status) >= 0 &&
-						data.failures.length == 0){
-						resolve( {
-							jobid : data.tasks[0].taskArn,
-							//taskArn : data.tasks[0].taskArn,
-							status: "RUN"
-						});
-					}
-					else{
-						reject(
-				    	{
-				    		status: "FAIL",
-				    		error: 'TASK status: ' + status + ' Number of ECS failures: ' + data.failures.length
-				    	}
-				    	);
+				// Create an ECS client service object
+				const ecs = new ECSClient({ region: REGION });
 
-					}
-				})
-				.catch((error) => {
-				    console.error(error);
-				    reject(
-				    	{
-				    	status: "FAIL",
-				    	error: error
-				  	  }
-					);
-				});
-		});
+				const params = conf.aws_params;
+				console.log("Software name: " + software[0].name);
+
+				var taskDefinition = software[0].name.toLowerCase();
+				var container_name = software[0].name.toLowerCase() + "-con";
+
+				console.log("Task Definition: " + taskDefinition + " Container name: " + container_name );
+				params.taskDefinition = taskDefinition;
+				params.overrides.containerOverrides[0].name = container_name;
+				params.overrides.containerOverrides[0].command = ["cpex -f --j " + jobid + " --submit --uri " + conf.uri + " --token " + conf.token + " && pwd && ls && ls " + jobid + " && " + "cpex -f --j " + jobid + " --status --uri " + conf.uri + " --token " + conf.token];
+
+				ecs
+					.send(new RunTaskCommand(params))
+					.then( data => {
+						console.log(data.tasks[0].lastStatus);
+						var status = data.tasks[0].lastStatus;
+						console.log('Task status: ' + status)
+						console.log("Number of failures: " + data.failures.length)
+						if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING'].indexOf(status) >= 0 &&
+							data.failures.length == 0){
+							resolve( {
+								jobid : data.tasks[0].taskArn,
+								//taskArn : data.tasks[0].taskArn,
+								status: "RUN"
+							});
+						}
+						else{
+							reject(
+					    	{
+					    		status: "FAIL",
+					    		error: 'TASK status: ' + status + ' Number of ECS failures: ' + data.failures.length
+					    	}
+					    	);
+
+						}
+					})
+					.catch((error) => {
+					    console.error(error);
+					    reject(
+					    	{
+					    	status: "FAIL",
+					    	error: error
+					  	  }
+						);
+					});
+			});
+
+		})
+		.catch((e)=>{
+			console.error(e);
+			return Promise.reject(e);
+		})
 
 	}
 
@@ -119,24 +109,28 @@ module.exports = function (conf) {
 			}
 
 			var taskArn = doc.jobstatus.jobid;
-
-			const REGION = "us-east-1";
+			if(taskArn == undefined || taskArn.length == 0)
+			{
+				reject({
+					status: "FAIL",
+					error: "ERROR: task is empty"
+				});
+			}
+			const REGION = conf.aws_region;
 
 			// Create an ECS client service object
 			const ecs = new ECSClient({ region: REGION });
 
 			const params = {
-			  cluster: "dsci-cluster",
+			  cluster: conf.aws_params.cluster,
 			  tasks: [ taskArn ]
 			};
 
 			ecs
 				.send(new DescribeTasksCommand(params))
 				.then( data => {
-					console.log(data.tasks.length)
-					console.log(data.failures.length)
 					if(data.tasks.length > 0 ){
-						console.log(data.tasks[0].lastStatus);
+						console.log("ECS Task last status: ", data.tasks[0].lastStatus);
 						var lastStatus = data.tasks[0].lastStatus;
 						if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING', 'DEACTIVATING', 'STOPPING', 'DEPROVISIONING'].indexOf(lastStatus) >= 0){
 							resolve( {
@@ -196,21 +190,28 @@ module.exports = function (conf) {
 		return new Promise(function(resolve, reject){
 
 			var taskArn = doc.jobstatus.jobid;
+			if(taskArn == undefined || taskArn.length == 0)
+			{
+				reject({
+					status: "FAIL",
+					error: "ERROR: task is empty"
+				});
+			}
 
-			const REGION = "us-east-1";
+			const REGION = conf.aws_region;
 
 			// Create an ECS client service object
 			const ecs = new ECSClient({ region: REGION });
 
 			const params = {
-			  cluster: "dsci-cluster",
+			  cluster: conf.aws_params.cluster,
 			  task: taskArn
 			};
 
 			ecs
 				.send(new StopTaskCommand(params))
 				.then( data => {
-					if(typeof data.task !== 'undefined'){
+					if(typeof data.task != 'undefined'){
 						var lastStatus = data.task.lastStatus;
 						if(lastStatus != 'STOPPED'){
 							reject({
