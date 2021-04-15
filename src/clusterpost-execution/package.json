@@ -19,6 +19,7 @@
   "author": "juanprietob@gmail.com",
   "license": "Apache-2.0",
   "dependencies": {
+    "@aws-sdk/client-ecs": "^3.8.0",
     "@hapi/joi": "^15.0.3",
     "bluebird": "^3.3.0",
     "chalk": "^4.1.0",
