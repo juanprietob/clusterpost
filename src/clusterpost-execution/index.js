@@ -39,15 +39,26 @@ if(!remote && (!jobid || !submit && !status && !kill && !jobdelete) && !(argv["u
     process.exit();
 }
 
-const getConfigFile = function (base_directory) {
-  try {
-    // Try to load the user's personal configuration file
-    return require(path.join(base_directory, 'conf.my.json'));
-  } catch (e) {
-    // Else, read the default configuration file
-    return require(path.join(base_directory, 'conf.json'));
-  }
-};
+const getConfigFile = function () {
+    var confpath = __dirname
+    var conf_file = path.join(confpath, "conf.json")
+
+    if(fs.existsSync(conf_file)){
+        console.log(chalk.green("Using configuration file at:", conf_file));
+        return require(conf_file)
+    }
+
+    confpath = "~/.clusterpost-execution"
+    conf_file = path.join(confpath, "conf.json")
+    if(fs.existsSync(conf_file)){
+        console.log(chalk.green("Using configuration file at:", conf_file));
+        return require(conf_file)
+    }else{
+        console.error(chalk.red("No configuration conf.json file found!"))
+        console.error(chalk.red("The configuration file should be created at directory", __dirname, "or ~/.clusterpost-execution"))
+        process.exit(1);
+    }
+}
 
 if(argv["uri"] && argv["token"]){
     var conf = {
@@ -58,32 +69,24 @@ if(argv["uri"] && argv["token"]){
         run_only: true
     }
 }else{
-    var confpath = __dirname;
-    if(module.parent && module.parent.filename){
-        confpath = path.dirname(module.parent.filename);
-    }
-
-    var conf = getConfigFile(confpath);    
+    var conf = getConfigFile();
 }
 
 
 try{
     if(!conf.token){
-        var tokenfile = path.join(confpath, ".token");
-        try{
-            fs.statSync(tokenfile);
-        }catch(e){
-            tokenfile = path.join(confpath, "token.json");
+        var tokenfile = "~/.clusterpost-execution/token.json"
+        if(fs.existsSync(tokenfile)){
+            _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
+        }else{
+            tokenfile = path.join(__dirname, "token.json")
+            _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
         }
-        
-        if(conf.tokenfile){
-            tokenfile = conf.tokenfile;
-        }
-        _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
     }
     
 }catch(e){
     console.error(chalk.red(e));
+    console.error(chalk.red("No authentication token found"));
     process.exit(1);
 }
 

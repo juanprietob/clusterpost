@@ -4,9 +4,15 @@ const chalk = require('chalk');
 
 var cwd = process.cwd();
 var defaultconfig = path.join(__dirname, "conf.json.in");
-var userconf = path.join(cwd, 'conf.json');
+
+var user_conf_dir = "~/.clusterpost-execution"
+var user_conf = path.join(user_conf_dir, 'conf.json');
+
 
 try{
+	if(!fs.existsSync(user_conf_dir)){
+		fs.mkdirSync(user_conf_dir);
+	}
 	var stats = fs.statSync(userconf);
 	console.log(chalk.green("Your configuration file is at"), chalk.green(userconf));
 }catch(e){
