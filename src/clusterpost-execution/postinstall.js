@@ -1,11 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const chalk = require('chalk');
 
 var cwd = process.cwd();
 var defaultconfig = path.join(__dirname, "conf.json.in");
 
-var user_conf_dir = "~/.clusterpost-execution"
+var user_conf_dir = path.join(os.homedir(), '.clusterpost-execution');
 var user_conf = path.join(user_conf_dir, 'conf.json');
 
 if(!fs.existsSync(user_conf_dir)){
