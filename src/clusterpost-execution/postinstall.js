@@ -8,11 +8,11 @@ var defaultconfig = path.join(__dirname, "conf.json.in");
 var user_conf_dir = "~/.clusterpost-execution"
 var user_conf = path.join(user_conf_dir, 'conf.json');
 
+if(!fs.existsSync(user_conf_dir)){
+	fs.mkdirSync(user_conf_dir, {recursive: true});
+}
 
 try{
-	if(!fs.existsSync(user_conf_dir)){
-		fs.mkdirSync(user_conf_dir);
-	}
 	var stats = fs.statSync(user_conf);
 	console.log(chalk.green("Your configuration file is at"), chalk.green(user_conf));
 }catch(e){
