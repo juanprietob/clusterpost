@@ -190,7 +190,8 @@ if(remote){
             }
             
         })
-        .then(function(){
+        .then(function(res){
+            console.log(res);
             process.exit();
         })
         .catch(function(error){
