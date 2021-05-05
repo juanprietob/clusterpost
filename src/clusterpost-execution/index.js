@@ -66,7 +66,8 @@ if(argv["uri"] && argv["token"]){
         token: argv["token"],
         engine: "engine_unix",
         storagedir: "./",
-        run_only: true
+        run_only: true,
+        detached: false
     }
 }else{
     var conf = getConfigFile();
