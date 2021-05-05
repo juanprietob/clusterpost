@@ -48,7 +48,7 @@ const getConfigFile = function () {
         return require(conf_file)
     }
 
-    confpath = "~/.clusterpost-execution"
+    confpath = path.join(os.homedir(), '.clusterpost-execution');
     conf_file = path.join(confpath, "conf.json")
     if(fs.existsSync(conf_file)){
         console.log(chalk.green("Using configuration file at:", conf_file));
@@ -76,7 +76,7 @@ if(argv["uri"] && argv["token"]){
 
 try{
     if(!conf.token){
-        var tokenfile = "~/.clusterpost-execution/token.json"
+        var tokenfile = path.join(os.homedir(), '.clusterpost-execution/token.json');
         if(fs.existsSync(tokenfile)){
             _.extend(conf, JSON.parse(fs.readFileSync(tokenfile)));
         }else{
