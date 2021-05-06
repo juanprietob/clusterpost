@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const Promise = require('bluebird');
 const chalk = require('chalk')
+const os = require('os');
 
 var submit = argv["submit"];
 var jobid = argv["j"];
