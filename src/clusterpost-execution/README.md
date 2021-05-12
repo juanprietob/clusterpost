@@ -48,6 +48,26 @@ Edit conf.js with a local path to store the data in the local machine and the UR
 				      ]
 				  }
 				},
+		"aws_params_gpu" : {
+				  "cluster": "name-of-ecs-cluster-with-ec2",
+				  "launchType": "EC2",
+				  "taskDefinition": "",
+				  "overrides": {
+				      "containerOverrides":
+				      [
+				        {
+				          "name": "",
+				          "command": [],
+				          "resourceRequirements": [
+				          	{
+				          		"type":"GPU",
+				          		"value":"1"
+				          	}
+				          ]
+				        }
+				      ]
+				  }
+				},
 		"aws_region" : "aws-deployment-region"
 	}
 ----
@@ -110,6 +130,10 @@ will avoid unnecessary data transfers.
 #### aws_params
 
 If the clusterpost-execution is run in AWS's ECS cluster management mode, aws_params and aws_region will be needed. Use the template in the example above to fill the cluster-name, subnet, and security group fields from your AWS ECS cluster information. It is also assumed that the task definitions have been setup in your AWS ECS. Task definitions should be named same as the software name. Refer to [AWS CLI reference](https://docs.aws.amazon.com/cli/latest/reference/ecs/run-task.html) for details on the fields of AWS configuration.
+
+#### aws_params_gpu
+
+If the clusterpost-execution is run in AWS's ECS cluster management mode and the task needs a gpu, aws_params)gpu and aws_region will be needed. Use the template in the example above to fill the cluster-name, from your AWS ECS cluster information. It is also assumed that the task definitions have been setup in your AWS ECS with network mode as 'host' (not awsvpc). Task definitions should be named same as the software name. Refer to [AWS CLI reference](https://docs.aws.amazon.com/cli/latest/reference/ecs/run-task.html) for details on the fields of AWS configuration.
 
 #### aws_region
 
