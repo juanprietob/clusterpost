@@ -7,7 +7,9 @@ module.exports = function (conf) {
 	var spawn = require('child_process').spawn;
 	var path = require('path');
 	var Joi = require('@hapi/joi');
+
 	const { ECSClient, ListClustersCommand, RunTaskCommand, DescribeTasksCommand, StopTaskCommand, DescribeClustersCommand } = require("@aws-sdk/client-ecs");
+	const { AutoScalingClient, UpdateAutoScalingGroupCommand} = require("@aws-sdk/client-auto-scaling");
 
 
 	var executionmethods = require('./executionserver.methods')(conf);
@@ -18,7 +20,6 @@ module.exports = function (conf) {
 	gpuInstanceIsReady = (ecs, conf)=>{
 		console.log("Getting GPU AWS parameters");
 
-
 			// RUn the describeclusters command, and make sure that the registered container isntances  > 0
 			const describeClusterParameters = { clusters: [conf.aws_params_gpu.cluster], region:conf.aws_region};
 
@@ -28,10 +29,22 @@ module.exports = function (conf) {
 					params = conf.aws_params_gpu;
 					return params;
 				}else{
-					return Promise.delay(6000)
-					.then(()=>{
-						return gpuInstanceIsReady(ecs, conf);
-					})
+					const params = {
+					  AutoScalingGroupName : conf.aws_autoscalinggroup,
+					  DesiredCapacity : 1 //switch on the cluster
+					}
+					try{
+						const autoscaling = new AutoScalingClient({ region: conf.aws_region });
+						autoscaling.send(new UpdateAutoScalingGroupCommand(params));
+						return Promise.delay(6000)
+						.then(()=>{
+							return gpuInstanceIsReady(ecs, conf);
+						})
+					}
+					catch (error){
+						console.log('Error switching on the GPU cluster')
+						console.log(error)
+					}
 				}
 			});
 			// otherwise, make the ec2 auto-scaling group increase the number of 'desired capacity' and wait for
@@ -45,6 +58,8 @@ module.exports = function (conf) {
 		var jobid = doc._id;
 		var data = doc.data;
 		var software_id = doc.data.software_id;
+
+		console.log("Doc: " + JSON.stringify(doc));
 
 		console.log("Job ID: " + jobid);
 		console.log("URI: " + conf.uri);
@@ -64,12 +79,19 @@ module.exports = function (conf) {
 				// Create an ECS client service object
 				const ecs = new ECSClient({ region: REGION });
 
+				console.log("PRINT THIS");
+				console.log(software);
 				console.log("Software name: " + software[0].name);
+				console.log("Software: " + JSON.stringify(software[0]));
+
 				var taskDefinition = software[0].name.toLowerCase();
 				var container_name = software[0].name.toLowerCase() + "-con";
 				var need_gpu = false;
 				if (software[0].gpu != undefined && software[0].gpu == true)
+				{
+					console.log("This job needs a GPU.")
 					need_gpu = true;
+				}
 
 				console.log("Task Definition: " + taskDefinition + " Container name: " + container_name );
 				var params =undefined;
@@ -210,6 +232,7 @@ module.exports = function (conf) {
 									});
 								}
 								else if( ['STOPPED'].indexOf(lastStatus) >= 0 ){
+
 									resolve( {
 										jobid : data.tasks[0].taskArn,
 										//taskArn : data.tasks[0].taskArn,
@@ -251,9 +274,40 @@ module.exports = function (conf) {
 						});
 				});
 		})
+		.then((status)=>{
+			//get gpu job queue length
+			return Promise.all([Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun()]).then((jobs)=>{ _.flatten(jobs) }), executionmethods.getSoftware()])
+			.spread((jobs, softwares)=>{
+
+				var jobs_gpu = executionmethods.splitJobsGPU(jobs, softwares).jobs_gpu;
+
+				if(jobs_gpu.length == 0){
+					// if empty, switch off the cluster
+					const params = {
+					  AutoScalingGroupName : conf.aws_autoscalinggroup,
+					  DesiredCapacity : 0 //switch on the cluster
+					}
+					try{
+						const autoscaling = new AutoScalingClient({ region: conf.aws_region });
+						autoscaling.send(new UpdateAutoScalingGroupCommand(params));
+						return Promise.delay(6000);
+					}
+					catch (error){
+						console.log('Error switching off the GPU cluster')
+						console.log(error)
+					}
+				}
+			}).then(()=>{
+				return status;
+			})
+		})
 		.catch((e)=>{
 			console.error(e);
-			return Promise.reject(e);
+			return Promise.reject(
+			{
+		    	status: "FAIL",
+			  	error: e
+			});
 		});
 	}
 

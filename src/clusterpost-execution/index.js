@@ -104,14 +104,33 @@ if(remote){
     crontab.scheduleJob("*/1 * * * *", function(){
         if(!isrunningtask){
             isrunningtask = true;        
-            Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun()])
-            .spread(function(jobs, jobs_run){
+            Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun(), executionmethods.getSoftware()])
+            .spread(function(jobs, jobs_run, softwares){
+
+                var j = executionmethods.splitJobsGPU(jobs, softwares);
+                var jobs = j.jobs;
+                var jobs_gpu = j.jobs_gpu
+                console.log("Length of gpu jobs on queue: " + len(jobs_gpu))
+
+                var j = executionmethods.splitJobsGPU(jobs_run, softwares);
+                var jobs_run = j.jobs;
+                var jobs_run_gpu = j.jobs_gpu
+                console.log("Length of gpu jobs running: " + len(jobs_run_gpu))
+
                 if(conf.maxjobs){
-                    maxJobsAllowed = conf.maxjobs - jobs_run.length;
+                    var maxJobsAllowed = conf.maxjobs - jobs_run.length;
                     if(maxJobsAllowed > 0){
                         jobs = jobs.slice(0, maxJobsAllowed);
                     }else{
                         jobs = [];    
+                    }
+                }
+                if(conf.maxjobsgpu){
+                    var maxJobsGPUAllowed = conf.maxjobsgpu - jobs_run_gpu.length;
+                    if(maxJobsGPUAllowed > 0){
+                        jobs_gpu = jobs_gpu.slice(0, maxJobsGPUAllowed);
+                    }else{
+                        jobs_gpu = [];
                     }
                 }
                 console.log("jobsubmit", jobs);
@@ -120,6 +139,16 @@ if(remote){
                 }, 
                 {
                     concurrency: 1
+                })
+                .then((res)=>{
+                    console.log(res)
+                    console.log("jobsubmit_gpu", jobs_gpu);
+                    return Promise.map(jobs_gpu, function(doc){
+                        return require(path.join(__dirname, "jobsubmit"))(doc, null, conf);
+                    },
+                    {
+                        concurrency: 1
+                    });
                 });
             })
             .then(function(res){
