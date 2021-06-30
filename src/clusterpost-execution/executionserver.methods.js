@@ -440,6 +440,36 @@ module.exports = function (conf) {
 		return clusterpost.getSoftware(id)
 	}
 
+	handler.splitJobsGPU = function( all_jobs, softwares) {
+// Return cpu and gpu jobs
+
+	    var jobs =  _.filter(all_jobs, (job)=>{
+	        var software = _.find(softwares, (s)=>{
+	            if(job.data && job.data.software_id && job.data.software_id == s._id){
+	                return true;
+	            }
+	            return false;
+	        })
+	        return !software.gpu;
+	    })
+
+	    var jobs_gpu = _.filter(all_jobs, (job)=>{
+	        var software = _.find(softwares, (s)=>{
+	            if(job.data && job.data.software_id && job.data.software_id == s._id){
+	                return true;
+	            }
+	            return false;
+	        })
+	        return software.gpu;
+	    })
+
+	    return {
+	        jobs,
+	        jobs_gpu
+	    }
+
+	}
+
 	return handler;
 
 }
