@@ -110,12 +110,12 @@ if(remote){
                 var j = executionmethods.splitJobsGPU(jobs, softwares);
                 var jobs = j.jobs;
                 var jobs_gpu = j.jobs_gpu
-                console.log("Length of gpu jobs on queue: " + len(jobs_gpu))
+                console.log("Length of gpu jobs on queue: " jobs_gpu)
 
                 var j = executionmethods.splitJobsGPU(jobs_run, softwares);
                 var jobs_run = j.jobs;
                 var jobs_run_gpu = j.jobs_gpu
-                console.log("Length of gpu jobs running: " + len(jobs_run_gpu))
+                console.log("Length of gpu jobs running: " + jobs_run_gpu)
 
                 if(conf.maxjobs){
                     var maxJobsAllowed = conf.maxjobs - jobs_run.length;
