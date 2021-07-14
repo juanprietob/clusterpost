@@ -25,6 +25,7 @@ exports.input = Joi.object().keys({
   		uri: Joi.string()
   	}).optional(),
   	local_storage: Joi.boolean().optional(),
+  	type: Joi.String().optional(),
   	local : Joi.object({
   		"useDefault": Joi.boolean().optional(),
   		"key": Joi.string().optional(),
