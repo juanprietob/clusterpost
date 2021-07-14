@@ -10,6 +10,7 @@ var os = require('os');
 var tarGzip = require('node-targz');
 const { PassThrough, Writable } = require('stream');
 const fs = require('fs');
+const archiver = require('archiver');
 
 module.exports = function (server, conf) {
 	
@@ -171,12 +172,41 @@ module.exports = function (server, conf) {
 
 		try{
 
-			var full_path = path.join(local_storage, req.params.path)
+			var full_path = path.join(local_storage, req.params.path);
+
 			if(fs.existsSync(full_path)){
-				return fs.createReadStream(full_path)	
+				if(fs.statSync(full_path).isDirectory()){
+					return new Promise((resolve, reject)=>{
+						// create a file to stream archive data to.
+						var output_zip = path.resolve(full_path) + ".zip";
+						var output = fs.createWriteStream(output_zip);
+
+						var archive = archiver('zip', {
+						  zlib: { level: 0 }
+						});
+						//When the output stream is closed we can resolve the promise
+						output.on('close', ()=>{
+							var outstream = fs.createReadStream(output_zip);
+							outstream.on('close', ()=>{
+						  		//When the outstream finishes we nuke the archive
+						  		fs.unlinkSync(output_zip);
+						  	})
+						  	resolve(outstream);
+						});
+
+						archive.pipe(output);
+
+						archive.directory(full_path, path.basename(full_path));
+
+						archive.finalize();
+					});
+				}else{
+					return fs.createReadStream(full_path);
+				}
+			}else{
+				return Boom.notFound(file);
 			}
 			return Promise.reject(Boom.notFound(full_path))
-			
 		}catch(e){
 			return (Boom.badRequest(e));
 		}

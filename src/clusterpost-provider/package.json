@@ -14,9 +14,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@hapi/joi": "^15.0.3",
+    "archiver": "^5.3.0",
     "bluebird": "^3.3.0",
     "boom": "^3.1.2",
-    "clusterpost-model": "^1.15.3",
+    "clusterpost-model": "^1.16.0",
     "couch-provider": "^2.1.0",
     "couch-update-views": "^1.0.10",
     "find-process": "^1.1.1",
