@@ -1,6 +1,6 @@
 {
   "name": "clusterpost-execution",
-  "version": "4.5.0",
+  "version": "4.5.1",
   "description": "Download data from the data provider to the local disk. Submit tasks to the job manager. Check if the task has finished and upload the results back to the data provider",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "@hapi/joi": "^15.0.3",
     "bluebird": "^3.3.0",
     "chalk": "^4.1.0",
-    "clusterpost-lib": "^2.8.0",
+    "clusterpost-lib": "^2.9.0",
     "clusterpost-model": "^1.16.0",
     "minimist": "^1.2.5",
     "node-crontab": "0.0.8",
