@@ -11,6 +11,7 @@ var prompt = require('prompt');
 var os = require('os');
 var jws = require('jsonwebtoken');
 var HapiJWTCouch = require('hapi-jwt-couch-lib');
+const extract = require('extract-zip')
 
 class ClusterpostLib extends HapiJWTCouch{
     constructor(){
@@ -474,7 +475,7 @@ class ClusterpostLib extends HapiJWTCouch{
         });
     }
 
-    getFromStorage(filename, target_path){
+    getFromStorage(filename, target_path, type){
         const self = this
 
         Joi.assert(filename, Joi.string())
@@ -501,7 +502,7 @@ class ClusterpostLib extends HapiJWTCouch{
                 var writestream = fs.createWriteStream(filename);
                 request(options).pipe(writestream);
 
-                writestream.on('finish', function(err){                 
+                writestream.on('finish', function(err){
                     if(err){
                         reject({
                             "path" : filename,
@@ -509,10 +510,20 @@ class ClusterpostLib extends HapiJWTCouch{
                             "error": err
                         });
                     }else{
-                        resolve({
-                            "path" : filename,
-                            "status" : true
-                        });
+                        if(type == 'd'){
+                            extract(filename, {dir: dirname})
+                            .then(()=>{
+                                resolve({
+                                    "path" : filename,
+                                    "status" : true
+                                })
+                            })
+                        }else{
+                            resolve({
+                                "path" : filename,
+                                "status" : true
+                            });    
+                        }
                     }
                 });
 
