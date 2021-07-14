@@ -153,7 +153,7 @@ module.exports = function (conf) {
 			});
 		}else{
 			if(inp.local_storage){
-				return clusterpost.getFromStorage(path.join(cwd, input.name), input.name);
+				return clusterpost.getFromStorage(path.join(cwd, input.name), input.name, input.type);
 			}else if(inp && inp.local){
 				if(conf.local_fs === undefined){
 					throw "No local_fs configuration";

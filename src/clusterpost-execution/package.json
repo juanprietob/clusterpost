@@ -25,7 +25,7 @@
     "bluebird": "^3.3.0",
     "chalk": "^4.1.0",
     "clusterpost-lib": "^2.8.0",
-    "clusterpost-model": "^1.14.1",
+    "clusterpost-model": "^1.16.0",
     "minimist": "^1.2.5",
     "node-crontab": "0.0.8",
     "node-targz": "0.0.3",
