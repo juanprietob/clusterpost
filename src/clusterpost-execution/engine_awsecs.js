@@ -59,8 +59,6 @@ module.exports = function (conf) {
 		var data = doc.data;
 		var software_id = doc.data.software_id;
 
-		console.log("Doc: " + JSON.stringify(doc));
-
 		console.log("Job ID: " + jobid);
 		console.log("URI: " + conf.uri);
 		console.log("Token: " + conf.token);
@@ -79,10 +77,8 @@ module.exports = function (conf) {
 				// Create an ECS client service object
 				const ecs = new ECSClient({ region: REGION });
 
-				console.log("PRINT THIS");
-				console.log(software);
 				console.log("Software name: " + software[0].name);
-				console.log("Software: " + JSON.stringify(software[0]));
+				//console.log("Software: " + JSON.stringify(software[0]));
 
 				var taskDefinition = software[0].name.toLowerCase();
 				var container_name = software[0].name.toLowerCase() + "-con";
@@ -93,7 +89,7 @@ module.exports = function (conf) {
 					need_gpu = true;
 				}
 
-				console.log("Task Definition: " + taskDefinition + " Container name: " + container_name );
+				//console.log("Task Definition: " + taskDefinition + " Container name: " + container_name );
 				var params =undefined;
 
 
@@ -126,10 +122,11 @@ module.exports = function (conf) {
 
 							console.log(data.tasks[0].lastStatus);
 							var status = data.tasks[0].lastStatus;
-							console.log('Task status: ' + status)
-							console.log("Number of failures: " + data.failures.length)
+							console.log('In SUBMITJOB: Task status: ' + status)
+							console.log("In SUBMITJOB: Number of failures: " + data.failures.length)
 							if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING'].indexOf(status) >= 0 &&
 								data.failures.length == 0){
+								console.log("In SUBMITJOB: making the status as RUN")
 								resolve( {
 									jobid : data.tasks[0].taskArn,
 									//taskArn : data.tasks[0].taskArn,
@@ -137,35 +134,29 @@ module.exports = function (conf) {
 								});
 							}
 							else{
-								resolve(
-						    	{
+								console.log("In SUBMITJOBm setting the status to FAIL?")
+								resolve({
 						    		status: "FAIL",
 						    		error: 'TASK status: ' + status + ' Number of ECS failures: ' + data.failures.length
-						    	}
-						    	);
-
+						    	});
 							}
 						})
 					}
 				})
 				.catch((error) => {
+					console.log("In SUBMITJOB, there was an error: ")
 				    console.error(error);
-				    resolve(
-				    	{
+				    resolve({
 				    	status: "FAIL",
 				    	error: error
-				  	  }
-					);
+				  	  });
 				});
-
 			});
-
 		})
 		.catch((e)=>{
 			console.error(e);
 			return Promise.reject(e);
 		})
-
 	}
 
 	handler.getJobStatus = function(doc){
@@ -201,7 +192,6 @@ module.exports = function (conf) {
 							need_gpu = true;
 
 					var params = undefined;
-
 					if(need_gpu){
 						params={
 							  cluster: conf.aws_params_gpu.cluster,
@@ -214,16 +204,18 @@ module.exports = function (conf) {
 						  tasks: [ taskArn ]
 						};
 					}
-					console.log("PARAMS now is: ");
+					console.log("In GETJOBSTATUS: PARAMS (for describetask) now is: ");
 					console.log(params);
 
 					ecs
 						.send(new DescribeTasksCommand(params))
 						.then( data => {
 							if(data.tasks.length > 0 ){
-								console.log("ECS Task last status: ", data.tasks[0].lastStatus);
+								console.log("In GETJOBSTATUS : number of tasks: ", data.tasks.length)
+								console.log(" In GETJOBSTATUS : ECS Task last status: ", data.tasks[0].lastStatus);
 								var lastStatus = data.tasks[0].lastStatus;
-								if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING', 'DEACTIVATING', 'STOPPING', 'DEPROVISIONING'].indexOf(lastStatus) >= 0){
+								if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING', 'DEACTIVATING','DEPROVISIONING'].indexOf(lastStatus) >= 0){
+									console.log("In GETJOBSTATUS, will put the status as RUN")
 									resolve( {
 										jobid : data.tasks[0].taskArn,
 										//taskArn : data.tasks[0].taskArn,
@@ -231,8 +223,8 @@ module.exports = function (conf) {
 										stat: lastStatus
 									});
 								}
-								else if( ['STOPPED'].indexOf(lastStatus) >= 0 ){
-
+								else if( ['STOPPING', 'STOPPED'].indexOf(lastStatus) >= 0 ){
+									console.log('In GETJOBSTATUS: Found STOPPED/STOPPING in the last status, setting status to Done.');
 									resolve( {
 										jobid : data.tasks[0].taskArn,
 										//taskArn : data.tasks[0].taskArn,
@@ -241,6 +233,7 @@ module.exports = function (conf) {
 									});
 								}
 								else{
+									console.log('In GETJOBSTATUS: unknown laststatus, setting status to fail.');
 									resolve( {
 										jobid : data.tasks[0].taskArn,
 										//taskArn : data.tasks[0].taskArn,
@@ -251,20 +244,22 @@ module.exports = function (conf) {
 
 							}
 							else{
+								console.log("In GETJOBSTATUS : number of tasks (should be 0): ", data.tasks.length)
 								// Are there any failures?
 								var error = 'Unknown';
 								if(data.failures.length > 0) {
 									error = data.failures[0].reason
+									console.log("In GETJOBSTATUS: there was an error: ", error)
 								}
 								resolve({
 							    		status: "FAIL",
 							    		error: 'Number of ECS failures: ' + data.failures.length + ' Reason: ' + error
-							    	}
-						    	);
+							    	});
 							}
 						})
 						.catch((error) => {
 						    console.error(error);
+						    console.log("In GETJOBSTATUS, rejecting, error: ", error)
 						    reject(
 						    	{
 						    	status: "FAIL",
@@ -273,33 +268,6 @@ module.exports = function (conf) {
 							);
 						});
 				});
-		})
-		.then((status)=>{
-			//get gpu job queue length
-			return Promise.all([Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun()]).then((jobs)=>{ _.flatten(jobs) }), executionmethods.getSoftware()])
-			.spread((jobs, softwares)=>{
-
-				var jobs_gpu = executionmethods.splitJobsGPU(jobs, softwares).jobs_gpu;
-
-				if(jobs_gpu.length == 0){
-					// if empty, switch off the cluster
-					const params = {
-					  AutoScalingGroupName : conf.aws_autoscalinggroup,
-					  DesiredCapacity : 0 //switch on the cluster
-					}
-					try{
-						const autoscaling = new AutoScalingClient({ region: conf.aws_region });
-						autoscaling.send(new UpdateAutoScalingGroupCommand(params));
-						return Promise.delay(6000);
-					}
-					catch (error){
-						console.log('Error switching off the GPU cluster')
-						console.log(error)
-					}
-				}
-			}).then(()=>{
-				return status;
-			})
 		})
 		.catch((e)=>{
 			console.error(e);
@@ -353,10 +321,9 @@ module.exports = function (conf) {
 						};
 					}
 
-					ecs
-						.send(new StopTaskCommand(params))
+					ecs.send(new StopTaskCommand(params))
 						.then( data => {
-							if(typeof data.task != 'undefined'){
+							if(data.task != undefined){
 								var lastStatus = data.task.lastStatus;
 								if(lastStatus != 'STOPPED'){
 									resolve({
@@ -388,6 +355,56 @@ module.exports = function (conf) {
 			console.error(e);
 			return Promise.reject(e);
 		});
+	}
+
+	handler.checkGPUNodes = function(){
+		return Promise.all([Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun()]).then((jobs)=>{ return _.flatten(jobs) }), executionmethods.getSoftware()])
+		.spread((jobs, softwares)=>{
+
+			if (jobs != undefined){
+				console.log("In checkGPUNodes::  Number of jobs: ", jobs.length)
+			}
+
+			var jobs_gpu = executionmethods.splitJobsGPU(jobs, softwares).jobs_gpu;
+			if(jobs_gpu.length == 0){
+				console.log("IN checkGPUNodes::: number of gpu jobs is 0 will try to switch off the cluster")
+				const REGION = conf.aws_region;
+
+				// Create an ECS client service object
+				const ecs = new ECSClient({ region: REGION });
+				const describeClusterParameters = { clusters: [conf.aws_params_gpu.cluster], region:conf.aws_region};
+
+				ecs.send(new DescribeClustersCommand(describeClusterParameters))
+					.then( data => {
+						if( data.clusters[0].registeredContainerInstancesCount > 0){
+							// if empty, switch off the cluster if the number of instances running is more than 0.
+							console.log("IN checkGPUNodes:: number of container instance count is more than 0, switching off the cluster")
+							const params = {
+							  AutoScalingGroupName : conf.aws_autoscalinggroup,
+							  DesiredCapacity : 0 //switch on the cluster
+							}
+							try{
+								const autoscaling = new AutoScalingClient({ region: conf.aws_region });
+								autoscaling.send(new UpdateAutoScalingGroupCommand(params));
+								return Promise.delay(6000);
+							}
+							catch (error){
+								console.log('checkGPUNodes:: Error switching off the GPU cluster')
+								console.log(error)
+							}
+						}
+					})
+			}
+		})
+		.catch((e)=>{
+			console.error(" checkGPUNodes \n" + e);
+			return Promise.reject(
+			{
+		    	status: "FAIL",
+			  	error: e
+			});
+		});
+
 	}
 	return handler;
 }
