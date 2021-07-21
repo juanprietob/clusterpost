@@ -358,7 +358,7 @@ module.exports = function (conf) {
 	}
 
 	handler.checkGPUNodes = function(){
-		return Promise.all([Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsRun()]).then((jobs)=>{ return _.flatten(jobs) }), executionmethods.getSoftware()])
+		return Promise.all([Promise.all([executionmethods.getJobsQueue(), executionmethods.getJobsUploading(), executionmethods.getJobsRun()]).then((jobs)=>{ return _.flatten(jobs) }), executionmethods.getSoftware()])
 		.spread((jobs, softwares)=>{
 
 			if (jobs != undefined){
