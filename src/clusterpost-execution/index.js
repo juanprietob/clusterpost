@@ -190,6 +190,9 @@ if(remote){
                     concurrency: 1
                 });
             })
+            .then(()=>{
+                return require(path.join(__dirname, "jobstatus"))(null, conf)
+            })
             .then(function(){
                 isrunningtask = false;
             })
