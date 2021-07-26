@@ -154,7 +154,7 @@ module.exports = function (server, conf) {
 		config: {
 			auth: {
 				strategy: 'token',
-				scope: ['admin', 'executionserver']
+				scope: ['admin', 'executionserver', 'clusterpost']
 			},
 			handler: handlers.getSoftware,
 			validate: {
