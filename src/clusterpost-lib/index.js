@@ -499,7 +499,12 @@ class ClusterpostLib extends HapiJWTCouch{
                     fs.mkdirSync(dirname, {recursive: true})
                 }
 
-                var writestream = fs.createWriteStream(filename);
+                if(type == "d"){
+                    var writestream = fs.createWriteStream(filename + ".zip");
+                }else{
+                    var writestream = fs.createWriteStream(filename);    
+                }
+                
                 request(options).pipe(writestream);
 
                 writestream.on('finish', function(err){
@@ -511,8 +516,12 @@ class ClusterpostLib extends HapiJWTCouch{
                         });
                     }else{
                         if(type == 'd'){
-                            extract(filename, {dir: dirname})
+                            extract(filename + ".zip", {dir: path.resolve(dirname)})
                             .then(()=>{
+                                fs.unlinkSync(filename + ".zip");
+                                if(!fs.existsSync(filename)){
+                                    fs.mkdirSync(filename)
+                                }
                                 resolve({
                                     "path" : filename,
                                     "status" : true
