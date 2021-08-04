@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import {Accordion, ListGroup, Container, Button, Table, Card, Col, Row, DropdownButton, Dropdown, Form, Modal, Alert, OverlayTrigger, Overlay, Tooltip, Popover, Badge, ButtonToolbar, ButtonGroup, InputGroup, FormControl, Spinner, Navbar, Nav, Breadcrumb, ProgressBar, Collapse, Tabs, Tab} from 'react-bootstrap'
 import {Edit2, X, ChevronDown, ChevronUp, HelpCircle, XCircle, Trash2} from 'react-feather'
 
-import {ClusterpostService} from 'clusterpost-list-react'
+import ClusterpostService from './clusterpost-service'
 
 const _ = require('underscore');
 const Promise = require('bluebird');
@@ -23,6 +23,8 @@ class ClusterpostSoftware extends Component {
 				docker: "",
 				cpus: "",
 				mem: "",
+				group: "",
+				subgroup: "",
 				gpu: false
 			},
 		}
@@ -69,9 +71,14 @@ class ClusterpostSoftware extends Component {
 					docker: "",
 					cpus: "",
 					mem: "",
+					group: "",
+					subgroup: "",
 					gpu: false
 				}
 				self.setState({newSoftware})
+			})
+			.catch((e)=>{
+				console.error(e)
 			})
 		}
 	}
@@ -90,7 +97,7 @@ class ClusterpostSoftware extends Component {
 		}
 
 		newSoftware.patterns.push({...newFlag, position: newSoftware.patterns.length})
-		self.setState({...self.state, newSoftware: newSoftware})
+		self.setState({...self.state, newSoftware})
 
 	}
 
@@ -113,8 +120,8 @@ class ClusterpostSoftware extends Component {
 					</Form.Row>
 					<Form.Row>
 						<Form.Control value={newSoftware.docker} placeholder="docker tag" type="text" autoComplete="off" onChange={(e) => {newSoftware.docker = e.target.value; self.setState({newSoftware})}}/>
-						<Form.Control value={newSoftware.cpus} placeholder="number of cpus" type="number" autoComplete="off" onChange={(e) => {newSoftware.cpus = e.target.value; self.setState({newSoftware})}}/>
-						<Form.Control value={newSoftware.mem} placeholder="memory in mb" type="number" autoComplete="off" onChange={(e) => {newSoftware.mem = e.target.value; self.setState({newSoftware})}}/>
+						<Form.Control value={newSoftware.cpus} placeholder="number of cpus" type="number" autoComplete="off" onChange={(e) => {newSoftware.cpus = Number(e.target.value); self.setState({newSoftware})}}/>
+						<Form.Control value={newSoftware.mem} placeholder="memory in mb" type="number" autoComplete="off" onChange={(e) => {newSoftware.mem = Number(e.target.value); self.setState({newSoftware})}}/>
 						<Form.Check checked={newSoftware.gpu} type="checkbox" label="gpu" autoComplete="off" onChange={(e) => {newSoftware.gpu = e.target.checked; self.setState({newSoftware})}}/>
 					</Form.Row>
 					<Form.Row>
