@@ -98,6 +98,8 @@ exports.softwarepost = Joi.object().keys({
 		cpus: Joi.number().optional(), 
 		mem: Joi.number().optional(),
 		gpu: Joi.boolean().optional(),
+		group: Joi.string().optional(),
+		subgroup: Joi.string().optional(),
 		_id: Joi.string().optional(),
 		_rev: Joi.string().optional()
 	})
@@ -112,6 +114,8 @@ exports.software = Joi.object().keys({
 		cpus: Joi.number().optional(), 
 		mem: Joi.number().optional(),
 		gpu: Joi.boolean().optional(),
+		group: Joi.string().optional(),
+		subgroup: Joi.string().optional(),
 		_id: Joi.string().required(),
 		_rev: Joi.string().required()
 	})
