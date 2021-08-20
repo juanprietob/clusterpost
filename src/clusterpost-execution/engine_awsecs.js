@@ -20,18 +20,21 @@ module.exports = function (conf) {
 	gpuInstanceIsReady = (ecs, conf)=>{
 		console.log("Getting GPU AWS parameters");
 
+
 			// RUn the describeclusters command, and make sure that the registered container isntances  > 0
 			const describeClusterParameters = { clusters: [conf.aws_params_gpu.cluster], region:conf.aws_region};
 
 			return ecs.send(new DescribeClustersCommand(describeClusterParameters))
 				.then( data => {
 				if( data.clusters[0].registeredContainerInstancesCount > 0){
+					console.log("Found at least one registered container instance count")
 					params = conf.aws_params_gpu;
+					console.log("Returning parameters")
 					return params;
 				}else{
 					const params = {
 					  AutoScalingGroupName : conf.aws_autoscalinggroup,
-					  DesiredCapacity : 1 //switch on the cluster
+					  DesiredCapacity : 2 //switch on the cluster
 					}
 					try{
 						const autoscaling = new AutoScalingClient({ region: conf.aws_region });
@@ -103,6 +106,7 @@ module.exports = function (conf) {
 
 				return is_ready
 				.then((params)=>{
+					console.log("GOT GPU PARAMETERS!!");
 					if(params==undefined) {
 						resolve (
 							{
@@ -115,30 +119,41 @@ module.exports = function (conf) {
 						params.taskDefinition = taskDefinition;
 						params.overrides.containerOverrides[0].name = container_name;
 						params.overrides.containerOverrides[0].command = ["cpex -f --j " + jobid + " --submit --uri " + conf.uri + " --token " + conf.token + " && pwd && ls && ls " + jobid + " && " + "cpex -f --j " + jobid + " --status --uri " + conf.uri + " --token " + conf.token];
-
+						console.log("Will now send the runtask commamd");
 						return ecs
 						.send(new RunTaskCommand(params))
 						.then( data => {
-
-							console.log(data.tasks[0].lastStatus);
-							var status = data.tasks[0].lastStatus;
-							console.log('In SUBMITJOB: Task status: ' + status)
-							console.log("In SUBMITJOB: Number of failures: " + data.failures.length)
-							if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING'].indexOf(status) >= 0 &&
-								data.failures.length == 0){
-								console.log("In SUBMITJOB: making the status as RUN")
-								resolve( {
-									jobid : data.tasks[0].taskArn,
-									//taskArn : data.tasks[0].taskArn,
-									status: "RUN"
-								});
+							console.log("Got the data back from runtaskcommand")
+							if(data.tasks.length > 0 ){
+								console.log(data.tasks[0].lastStatus);
+								var status = data.tasks[0].lastStatus;
+								console.log('In SUBMITJOB: Task status: ' + status)
+								console.log("In SUBMITJOB: Number of failures: " + data.failures.length)
+								if(['PROVISIONING', 'PENDING', 'ACTIVATING', 'RUNNING'].indexOf(status) >= 0 &&
+									data.failures.length == 0){
+									console.log("In SUBMITJOB: making the status as RUN")
+									resolve( {
+										jobid : data.tasks[0].taskArn,
+										//taskArn : data.tasks[0].taskArn,
+										status: "RUN"
+									});
+								}
+								else{
+									console.log("In SUBMITJOBm setting the status to FAIL?")
+									resolve({
+							    		status: "FAIL",
+							    		error: 'TASK status: ' + status + ' Number of ECS failures: ' + data.failures.length
+							    	});
+								}
 							}
 							else{
-								console.log("In SUBMITJOBm setting the status to FAIL?")
-								resolve({
-						    		status: "FAIL",
-						    		error: 'TASK status: ' + status + ' Number of ECS failures: ' + data.failures.length
-						    	});
+								console.log("Number of tasks returned 0 ");
+								console.log(params)
+								resolve(
+								{
+									status: "QUEUE",
+									stat: "Submitted, but waiting"
+								});
 							}
 						})
 					}
@@ -174,6 +189,7 @@ module.exports = function (conf) {
 			var taskArn = doc.jobstatus.jobid;
 			if(taskArn == undefined || taskArn.length == 0)
 			{
+				console.log("TaskARN is empty");
 				resolve({
 					status: "FAIL",
 					error: "ERROR: task is empty"
@@ -288,18 +304,22 @@ module.exports = function (conf) {
 			var taskArn = doc.jobstatus.jobid;
 			if(taskArn == undefined || taskArn.length == 0)
 			{
+				console.log("In KillJOB, Task is undefined");
 				resolve({
 					status: "FAIL",
 					error: "ERROR: task is empty"
 				});
 			}
 
+			console.log("In KillJOB Printing: " + taskArn);
+
 			const REGION = conf.aws_region;
 
 			// Create an ECS client service object
 			const ecs = new ECSClient({ region: REGION });
-
 			var software_id = doc.data.software_id;
+			console.log("In kill job software id: " + software_id);
+
 			return executionmethods.getSoftware(software_id)
 				.then((software)=>{
 					var need_gpu = false;
@@ -311,19 +331,24 @@ module.exports = function (conf) {
 					if(need_gpu){
 						params={
 							  cluster: conf.aws_params_gpu.cluster,
-							  tasks: [ taskArn ]
+							  task: taskArn
 							};
 					}
 					else{
 						params={
 						  cluster: conf.aws_params.cluster,
-						  tasks: [ taskArn ]
+						  task: taskArn
 						};
 					}
+					console.log("In kill job params: ");
+					console.log(params);
 
 					ecs.send(new StopTaskCommand(params))
 						.then( data => {
+							print(data)
 							if(data.task != undefined){
+								console.log("In KillJOb: stop command return: " );
+								console.log(data)
 								var lastStatus = data.task.lastStatus;
 								if(lastStatus != 'STOPPED'){
 									resolve({
@@ -338,17 +363,24 @@ module.exports = function (conf) {
 									});
 								}
 							}
+							else{
+
+								resolve({
+										status: 'EXIT',
+										stat: 'Stopping job, not found on ECS'
+								});
+							}
 						})
 						.catch((error) => {
+							console.log("Got an error in Killjob");
 						    console.error(error);
+						    console.log("Setting status to FAIL");
 						    resolve({
 						    	status: "FAIL",
 						    	error: error
 						  	  }
 							);
 						});
-
-
 				});
 		})
 		.catch((e)=>{

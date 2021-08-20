@@ -7,7 +7,7 @@ module.exports = function(doc, conf){
     if(doc.jobstatus){
         return clusterengine.killJob(doc)
         .then(function(status){
-            if(doc.jobstatus.status === "RUN"){
+            if(doc.jobstatus.status === "RUN" || doc.jobstatus.status === "KILL"){
                 doc.jobstatus.status = status.status;
                 return executionmethods.uploadDocumentDataProvider(doc)
                 .then(function(){
