@@ -28,7 +28,17 @@ module.exports = function(doc, conf){
     }
     if(conf.engine == "engine_awsecs"){
         if(doc){
-            return clusterengine.getJobStatus(doc);
+            return clusterengine.getJobStatus(doc)
+            .then(function(status){
+                if(status.status === 'FAIL'){
+                    doc.jobstatus = _.extend(doc.jobstatus, status);
+                    return executionmethods.uploadDocumentDataProvider(doc)
+                    .then(function(){
+                        return status;
+                    });
+                }
+                return status;
+            })
         }else{
             return clusterengine.checkGPUNodes();
         }
