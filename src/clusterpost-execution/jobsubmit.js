@@ -50,7 +50,11 @@ module.exports = function(doc, force, conf){
     var sjprom;
     
     if (doc.jobstatus.status === 'CREATE' || doc.jobstatus.status === 'QUEUE' || doc.jobstatus.status === 'DOWNLOADING' || doc.jobstatus.status === 'FAIL'){
-        sjprom = submitJob(doc);        
+        sjprom = submitJob(doc)
+        .catch(function(e){
+            console.error(e)
+            return e            
+        });
     } else {
         sjprom = clusterengine.getJobStatus(doc)
         .then(function(status){
